@@ -1,0 +1,26 @@
+---
+description: TypeScript 7 strict syntax used across web, api, db, and schemas
+globs: "**/*.{ts,tsx}"
+alwaysApply: false
+---
+
+# TypeScript
+
+Strict. `verbatimModuleSyntax`. `erasableSyntaxOnly`. Import `.ts` / `.tsx`
+extensions on local files. Type-only imports use `import type`.
+
+```ts
+// ✅
+import type { HealthResponse } from "@agentic-kanban/schemas";
+import { healthRoutes } from "./routes/health.ts";
+
+// ❌
+import { HealthResponse } from "@agentic-kanban/schemas";
+import { healthRoutes } from "./routes/health";
+```
+
+- Treat API JSON as `unknown` and parse with Zod. Never `as HealthResponse`.
+- Web `tsconfig` types: `["vite/client"]` only. Do not leak `@types/bun` into `apps/web`.
+- API and db: `types: ["bun"]`. Schemas: no extra `types`.
+- No `baseUrl`. Web `@/*` paths live without it; Vite aliases `@` → `apps/web/src`.
+- Tests import from `vite-plus/test`, not `vitest`.

@@ -1,0 +1,24 @@
+---
+description: Lazy libSQL + Drizzle 0.45 — file DB, tenant-scoped queries
+globs: packages/db/**/*.ts
+alwaysApply: false
+---
+
+# Database (`packages/db`)
+
+Local file libSQL only. Stay on `drizzle-orm` 0.45. Do not add Postgres,
+Prisma, Turso Cloud, `better-sqlite3`, or `pg`.
+
+```text
+Hono → drizzle-orm/libsql → @libsql/client → file:…/agentic-kanban.db
+```
+
+- Open lazily (`getDb()` / proxied `db`) so Docker volumes exist before the
+  first query. Do not connect at import time.
+- Host default: `file:<repo>/data/agentic-kanban.db`. Compose:
+  `DATABASE_URL=file:/data/agentic-kanban.db` on volume `api_data`.
+- `pingDatabase()` is `SELECT 1` and retries once after a stale handle.
+- Schema folder is empty on purpose. When tables land, use `sqliteTable` /
+  `text` / `integer` from `drizzle-orm/sqlite-core`.
+- Every tenant-owned query must include an authorized `workspace_id`.
+- `db:generate` / `db:migrate` exist — do not auto-run them. Never commit `*.db`.

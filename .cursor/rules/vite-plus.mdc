@@ -1,0 +1,29 @@
+---
+description: Vite+ owns frontend toolchain — import from vite-plus, not Vite
+globs: "**/vite.config.ts"
+alwaysApply: false
+---
+
+# Vite+
+
+Vite+ 0.2.9 owns fmt, lint, typecheck, test, and the web dev server. Import
+config from `vite-plus`. Do not add standalone Vite, ESLint, Prettier, or a
+second Vitest.
+
+```ts
+// ✅ apps/web/vite.config.ts
+import { defineConfig, lazyPlugins } from "vite-plus";
+
+export default defineConfig({
+  plugins: lazyPlugins(() => [react(), tailwindcss()]),
+  server: {
+    host: "0.0.0.0",
+    port: 5173,
+    proxy: { "/api": { target: process.env.API_PROXY_TARGET ?? "http://localhost:3000" } },
+  },
+});
+```
+
+- Root `vite.config.ts` owns workspace `fmt` / `lint` (Oxlint, including
+  `vite-plus/prefer-vite-plus-imports`).
+- Commands: `vp check`, `vp test`, `vp dev apps/web`, `vp build apps/web`.

@@ -1,0 +1,33 @@
+---
+description: React SPA patterns — TanStack Query, relative /api, shadcn, Tailwind 4
+globs: apps/web/**/*.{ts,tsx,css}
+alwaysApply: false
+---
+
+# Web (`apps/web`)
+
+One `QueryClient` (see `src/lib/query-client.ts` + `main.tsx`). Server state
+goes through TanStack Query hooks. Local UI state is React state. No Redux.
+
+Fetch **relative** `/api/...` only. The Vite+ proxy forwards to
+`API_PROXY_TARGET`. Never call `localhost:3000` from the browser.
+
+```ts
+// ✅
+const json: unknown = await (await fetch("/api/health")).json();
+return healthResponseSchema.parse(json);
+
+// ❌
+const data = (await res.json()) as HealthResponse;
+await fetch("http://localhost:3000/api/health");
+```
+
+- App imports: `@/hooks/...`, `@/components/ui/...` with `.tsx` where the file
+  uses that style. Generated shadcn under `src/components/ui` — do not restyle
+  unless the task is UI.
+- Compose classes with `cn()` from `@/lib/utils`.
+- Tailwind 4 via `@import "tailwindcss"` in `src/index.css`. No `tailwind.config`.
+- `next-themes` is the theme helper, not Next.js. Do not add Next, React Router,
+  or React Hook Form. Do not implement drag-and-drop (`@dnd-kit/react` is
+  installed only).
+- After `bunx shadcn@4.18.0 add …`, re-pin every new dependency (never `@latest`).

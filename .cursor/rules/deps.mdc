@@ -1,0 +1,26 @@
+---
+description: Exact-pin dependencies — Bun workspaces, no carets, bun.lock only
+globs: "**/package.json"
+alwaysApply: false
+---
+
+# Dependencies
+
+Bun 1.3.14 is the package manager and the API runtime (`packageManager:
+bun@1.3.14`). Exact-pin every third-party direct dependency. No `^`, `~`, or `*`.
+
+```json
+// ✅
+"hono": "4.13.3",
+"@agentic-kanban/db": "workspace:*"
+
+// ❌
+"hono": "^4.13.3"
+```
+
+- Internal packages: `workspace:*` only.
+- Commit `bun.lock` only (never `package-lock.json` / `yarn.lock` / `pnpm-lock.yaml`).
+- Required root overrides: `vite` → `npm:@voidzero-dev/vite-plus-core@0.2.9`,
+  `vitest` → `4.1.10`.
+- After any `shadcn@4.18.0` add, re-pin the CLI and every new package.
+- Do not add a second toolchain (ESLint, Prettier, standalone Vite, extra Vitest).

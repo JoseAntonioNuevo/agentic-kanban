@@ -1,0 +1,28 @@
+---
+description: Shared Zod 4 contracts — one schema, both web and api parse it
+globs: packages/schemas/**/*.ts
+alwaysApply: false
+---
+
+# Schemas (`packages/schemas`)
+
+Runtime contracts live here, not in ad-hoc types in web or api. Zod 4.4.3
+(same major as both apps). Export the schema and `z.infer` the type.
+
+```ts
+// ✅
+export const healthResponseSchema = z.object({
+  status: z.enum(["ok", "degraded", "error"]),
+  api: serviceStatusSchema,
+  database: serviceStatusSchema,
+});
+export type HealthResponse = z.infer<typeof healthResponseSchema>;
+
+// ❌
+export interface HealthResponse { status: string }
+```
+
+- Re-export public schemas and types from `src/index.ts`.
+- Web and API both `parse()` the same schema. Do not duplicate shapes.
+- Tests: `import { describe, expect, it } from "vite-plus/test"`. Cover a
+  valid parse and a reject path (see `src/health.test.ts`).

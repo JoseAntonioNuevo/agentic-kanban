@@ -186,6 +186,7 @@ Postgres, Turso Cloud, Prisma, `@tursodatabase/database`, Redux, Zustand,
 React Router, tRPC, Socket.IO, React Hook Form, ESLint, Prettier, dotenv,
 Resend, Turborepo, Nx, Redis, queues.
 
-Do not create `.cursor/rules/*` unless asked. Do not create `sesion-*` tags.
+Layer how-tos live in `.cursor/rules/`. Keep them thin and file-scoped. Do not
+add more unless asked. Do not create `sesion-*` tags.
 
 Pin versions after any shadcn add (`shadcn@4.18.0`, never `@latest`).
