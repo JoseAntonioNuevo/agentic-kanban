@@ -5,14 +5,26 @@
  */
 export { db, getDb, getLibsql, libsql, pingDatabase } from "./client.ts";
 export {
+  createTaskForMember,
+  deleteTaskForMember,
   findUserIdByEmail,
+  getBoardForMember,
+  getColumnForProjectMember,
   getProjectForMember,
+  getTaskForMember,
+  insertColumn,
   insertProject,
+  insertTask,
   insertWorkspace,
   insertWorkspaceMember,
   listWorkspacesForUser,
+  moveTaskForMember,
+  updateTaskForMember,
+  upsertColumn,
   upsertProject,
+  upsertTask,
   upsertWorkspace,
   upsertWorkspaceMember,
 } from "./queries.ts";
+export type { BoardRow, ColumnRow, ProjectRow, TaskRow, WorkspaceRow } from "./queries.ts";
 export { authSchema } from "./schema/index.ts";

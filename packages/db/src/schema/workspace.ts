@@ -34,10 +34,7 @@ export const workspaceMember = sqliteTable(
       .references(() => user.id, { onDelete: "cascade" }),
   },
   (table) => [
-    uniqueIndex("workspace_member_workspace_id_user_id_unique").on(
-      table.workspaceId,
-      table.userId,
-    ),
+    uniqueIndex("workspace_member_workspace_id_user_id_unique").on(table.workspaceId, table.userId),
     index("workspace_member_user_id_idx").on(table.userId),
   ],
 );

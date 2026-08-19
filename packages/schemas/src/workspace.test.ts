@@ -20,11 +20,13 @@ describe("workspaceSchema", () => {
         id: "ws_1",
         name: "Demo",
         createdAt,
+        projects: [],
       }),
     ).toEqual({
       id: "ws_1",
       name: "Demo",
       createdAt,
+      projects: [],
     });
   });
 

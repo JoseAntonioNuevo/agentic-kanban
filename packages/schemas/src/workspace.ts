@@ -14,10 +14,16 @@ export const projectIdParamSchema = z.object({
   projectId: z.string().min(1),
 });
 
+export const projectSummarySchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+});
+
 export const workspaceSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1),
   createdAt: z.iso.datetime(),
+  projects: z.array(projectSummarySchema),
 });
 
 export const workspaceListResponseSchema = z.array(workspaceSchema);
@@ -31,6 +37,7 @@ export const projectSchema = z.object({
 
 export type WorkspacesQuery = z.infer<typeof workspacesQuerySchema>;
 export type ProjectIdParam = z.infer<typeof projectIdParamSchema>;
+export type ProjectSummary = z.infer<typeof projectSummarySchema>;
 export type Workspace = z.infer<typeof workspaceSchema>;
 export type WorkspaceListResponse = z.infer<typeof workspaceListResponseSchema>;
 export type Project = z.infer<typeof projectSchema>;

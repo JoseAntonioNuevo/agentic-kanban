@@ -29,8 +29,9 @@ export interface HealthResponse { status: string }
   applied to `/api/auth/*`.
 - Workspace/project GET contracts live in `src/workspace.ts`
   (`workspaceListResponseSchema`, `projectSchema`, `projectIdParamSchema`,
-  `workspacesQuerySchema`). The API parses responses with the same schemas.
+  `workspacesQuerySchema`). Board/move contracts live in `src/board.ts`.
+  The API parses responses with the same schemas.
   `workspaceId` in JSON is data, not permission.
 - Tests: `import { describe, expect, it } from "vite-plus/test"`. Cover a
   valid parse and a reject path (see `src/health.test.ts`, `src/auth.test.ts`,
-  `src/workspace.test.ts`).
+  `src/workspace.test.ts`, `src/board.test.ts`).

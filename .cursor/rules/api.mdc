@@ -17,9 +17,8 @@ app.route("/", projectRoutes);
 
 - One Hono app per route file (`new Hono()`), then `app.route("/", …)`.
 - Validate responses (and later inputs) with `@agentic-kanban/schemas`.
-- Database access only through `@agentic-kanban/db` (`listWorkspacesForUser`,
-  `getProjectForMember`). Never import `@libsql/client` or `drizzle-orm`
-  from the API.
+- Database access only through `@agentic-kanban/db` (workspace/project/board
+  helpers). Never import `@libsql/client` or `drizzle-orm` from the API.
 - Better Auth is wired in `src/auth/index.ts` (`betterAuth` + `drizzleAdapter`
   with `provider: "sqlite"`). `src/routes/auth.ts` mounts `/api/auth/*` via
   `auth.handler`. Do not wrap `/api/auth/*` with `@hono/zod-validator`: Better
@@ -31,7 +30,8 @@ app.route("/", projectRoutes);
   on a project, `workspace_id` comes from the row.
 - `GET /api/workspaces` and `GET /api/projects/:projectId` use
   `@hono/zod-validator` (query/param) and `.parse()` the response schema.
-  No workspace/project HTTP writes.
+  Board: `GET /api/projects/:projectId/board`, task create/update/delete,
+  `POST /api/tasks/:taskId/move`. No workspace/project HTTP writes.
 - Seed is `src/seed.ts` via `bun run db:seed`. Do not import it from the
   server. Users: `auth.api.signUpEmail` (reuse `user.id` if the email exists).
   Tenant rows: upsert by id / unique `(workspace_id, user_id)`. Never mass

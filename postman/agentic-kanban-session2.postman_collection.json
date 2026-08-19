@@ -1,0 +1,340 @@
+{
+  "info": {
+    "_postman_id": "a9d4c2b1-7e3f-4a18-9c6d-2b5e8f0a1c33",
+    "name": "Agentic Kanban — Session 2",
+    "description": "Rutas reales de `apps/api`.\n\nSesión Better Auth por cookie (`Set-Cookie` en sign-in). Activa el cookie jar. No uses Bearer. Origin `http://localhost:5173` se inyecta en cada request.\n\nAuthz: sin cookie → 401. Recurso ajeno → 404 (nunca 403).\n\nFlujo: Login Ana → Get Workspaces → Get Board → Create Task → Update Task → Delete Task.\n\nCambia `baseUrl` a `http://localhost:3002` si el 3000 está ocupado.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "pm.request.headers.upsert({",
+          "  key: 'Origin',",
+          "  value: 'http://localhost:5173'",
+          "});"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    }
+  ],
+  "item": [
+    {
+      "name": "01 - Auth",
+      "item": [
+        {
+          "name": "Login Ana",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"ana@demo.test\",\n  \"password\": \"Demo1234!\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/sign-in/email"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('JSON con user.email', function () {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body.user.email).to.eql('ana@demo.test');",
+                  "});",
+                  "pm.test('Set-Cookie de sesión', function () {",
+                  "  pm.expect(pm.response.headers.get('Set-Cookie')).to.be.ok;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "02 - Workspaces",
+      "item": [
+        {
+          "name": "Get Workspaces",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/workspaces"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('JSON array de workspaces', function () {",
+                  "  pm.expect(body).to.be.an('array');",
+                  "  pm.expect(body.length).to.be.above(0);",
+                  "  pm.expect(body[0].id).to.be.a('string');",
+                  "  pm.expect(body[0].projects).to.be.an('array');",
+                  "});",
+                  "const demo = body.find(function (row) { return row.id === 'ws_thepower_demo'; }) || body[0];",
+                  "if (demo) { pm.environment.set('workspaceId', demo.id); }",
+                  "const project = demo && demo.projects && demo.projects[0];",
+                  "if (project && project.id) { pm.environment.set('projectId', project.id); }"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "03 - Board",
+      "item": [
+        {
+          "name": "Get Board",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/projects/{{projectId}}/board"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('board con project y columns', function () {",
+                  "  pm.expect(body.project.id).to.be.a('string');",
+                  "  pm.expect(body.columns).to.be.an('array');",
+                  "});",
+                  "pm.environment.set('projectId', body.project.id);",
+                  "pm.environment.set('workspaceId', body.project.workspaceId);",
+                  "const col = body.columns[0];",
+                  "if (col) {",
+                  "  pm.environment.set('columnId', col.id);",
+                  "  if (col.tasks && col.tasks[0]) { pm.environment.set('taskId', col.tasks[0].id); }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "04 - Tasks",
+      "item": [
+        {
+          "name": "Create Task",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"columnId\": \"{{columnId}}\",\n  \"title\": \"Tarea Postman\",\n  \"description\": \"Creada desde la colección\"\n}"
+            },
+            "url": "{{baseUrl}}/api/projects/{{projectId}}/tasks"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 201', function () { pm.response.to.have.status(201); });",
+                  "const body = pm.response.json();",
+                  "pm.test('tarea con id', function () {",
+                  "  pm.expect(body.id).to.be.a('string');",
+                  "  pm.expect(body.title).to.eql('Tarea Postman');",
+                  "});",
+                  "pm.environment.set('taskId', body.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Task",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Tarea Postman editada\",\n  \"description\": \"Actualizada\"\n}"
+            },
+            "url": "{{baseUrl}}/api/tasks/{{taskId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('título actualizado', function () {",
+                  "  pm.expect(body.title).to.eql('Tarea Postman editada');",
+                  "  pm.expect(body.id).to.be.a('string');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Move Task",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"columnId\": \"{{columnId}}\",\n  \"position\": 0\n}"
+            },
+            "url": "{{baseUrl}}/api/tasks/{{taskId}}/move"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('position presente', function () {",
+                  "  pm.expect(body.columnId).to.be.a('string');",
+                  "  pm.expect(body.position).to.be.a('number');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Task",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/tasks/{{taskId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('JSON con id', function () {",
+                  "  pm.expect(pm.response.json().id).to.be.a('string');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "05 - Security & Validation",
+      "item": [
+        {
+          "name": "Create Task — payload inválido",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"columnId\": \"{{columnId}}\",\n  \"title\": \"\"\n}"
+            },
+            "url": "{{baseUrl}}/api/projects/{{projectId}}/tasks"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('status 400', function () { pm.response.to.have.status(400); });"]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Board — sin cookie",
+          "protocolProfileBehavior": { "disableCookies": true },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/projects/{{projectId}}/board"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 401 (no 403)', function () {",
+                  "  pm.response.to.have.status(401);",
+                  "  pm.expect(pm.response.code).to.not.eql(403);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login Luis",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"luis@demo.test\",\n  \"password\": \"Demo1234!\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/sign-in/email"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('status 200', function () { pm.response.to.have.status(200); });"]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Board ajeno — Luis no es miembro",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/projects/proj_ana_notes/board"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 404 (nunca 403)', function () {",
+                  "  pm.response.to.have.status(404);",
+                  "  pm.expect(pm.response.code).to.not.eql(403);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

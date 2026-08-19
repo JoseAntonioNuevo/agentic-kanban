@@ -1,7 +1,7 @@
 /**
- * Proyecto de un workspace. Sin columns ni tasks — eso es tablero, más
- * adelante. Toda fila lleva `workspace_id` NOT NULL; las queries de tenant
- * (más adelante) lo usarán como filtro, no el cliente.
+ * Proyecto de un workspace. Toda fila lleva `workspace_id` NOT NULL; las
+ * queries de tenant lo usan como filtro, no el cliente. Columns y tasks
+ * viven en `./column.ts` / `./task.ts`.
  */
 import { sql } from "drizzle-orm";
 import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";

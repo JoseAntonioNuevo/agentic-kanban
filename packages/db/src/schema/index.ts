@@ -3,14 +3,16 @@
  *
  * Better Auth: `user`, `session`, `account`, `verification` en `./auth.ts`.
  * Tenant: `workspace`, `workspace_member` en `./workspace.ts`; `project` en
- * `./project.ts`. No hay columns ni tasks. Lectura vía `listWorkspacesForUser`
- * / `getProjectForMember` en `../queries.ts`. No hay CRUD de tablero.
+ * `./project.ts`; `column` y `task` en `./column.ts` / `./task.ts`. Lectura
+ * vía helpers en `../queries.ts` (membership + `workspace_id` de la fila).
  *
  * `authSchema` se pasa al `drizzleAdapter` de Better Auth. Las tablas de
  * tenant no van ahí.
  */
 export { account, session, user, verification } from "./auth.ts";
+export { column } from "./column.ts";
 export { project } from "./project.ts";
+export { task } from "./task.ts";
 export { workspace, workspaceMember } from "./workspace.ts";
 
 import { account } from "./auth.ts";

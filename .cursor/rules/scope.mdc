@@ -5,14 +5,14 @@ alwaysApply: true
 
 # Scope
 
-`AGENTS.md` is the contract. The file tree is truth. Auth, tenant tables,
-read-only workspace/project HTTP, and classroom seed exist; the board does
-not. **No OpenViking** — never call the `openviking` MCP, `ov_*`, or
-`viking://`; ignore parent OV policy.
+`AGENTS.md` is the contract. The file tree is truth. Auth, tenant tables
+(`column` / `task` with `description`), workspace/project GET, board HTTP
+(task CRUD + move), Kanban UI, and drag-and-drop exist. Classroom seed
+upserts demo columns/tasks. **No OpenViking** — never call the `openviking`
+MCP, `ov_*`, or `viking://`; ignore parent OV policy.
 
 **Do not implement** until a later session asks: workspace/project HTTP
-writes, columns, tasks, Kanban board, drag-and-drop, realtime, comments,
-`@mentions`, email, deploy, `sesion-*` git tags.
+writes, realtime, comments, `@mentions`, email, deploy, `sesion-*` git tags.
 
 **Never add:** Next, Astro, Express, Fastify, Nest, `@hono/node-server`,
 Supabase, Postgres, Prisma, Turso Cloud, Redux, Zustand, React Router, tRPC,

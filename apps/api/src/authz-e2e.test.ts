@@ -5,11 +5,7 @@
  *
  * Un project ajeno debe ser 404 aunque el id exista.
  */
-import {
-  insertProject,
-  insertWorkspace,
-  insertWorkspaceMember,
-} from "@agentic-kanban/db";
+import { insertProject, insertWorkspace, insertWorkspaceMember } from "@agentic-kanban/db";
 import { projectSchema, workspaceListResponseSchema } from "@agentic-kanban/schemas";
 import { describe, expect, it } from "vite-plus/test";
 
@@ -83,9 +79,7 @@ describe("workspace/project authz", () => {
   });
 
   it("GET /api/projects/:id sin cookie → 401", async () => {
-    const res = await app.fetch(
-      new Request(`http://localhost:3000/api/projects/${projectId}`),
-    );
+    const res = await app.fetch(new Request(`http://localhost:3000/api/projects/${projectId}`));
     expect(res.status).toBe(401);
   });
 

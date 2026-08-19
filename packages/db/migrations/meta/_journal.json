@@ -15,6 +15,20 @@
       "when": 1787152567844,
       "tag": "0001_tenant",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1787162749226,
+      "tag": "0002_board",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1787165592482,
+      "tag": "0003_lumpy_toad",
+      "breakpoints": true
     }
   ]
 }

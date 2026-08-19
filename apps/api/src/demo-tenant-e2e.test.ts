@@ -31,9 +31,7 @@ async function signIn(email: string): Promise<string> {
 
   const cookie = extractCookie(res);
   if (res.status !== 200 || !cookie) {
-    throw new Error(
-      `sign-in falló para ${email}: ${res.status}. ¿Corriste bun run db:seed?`,
-    );
+    throw new Error(`sign-in falló para ${email}: ${res.status}. ¿Corriste bun run db:seed?`);
   }
 
   return cookie;

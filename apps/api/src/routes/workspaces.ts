@@ -27,6 +27,7 @@ workspaceRoutes.get(
           id: row.id,
           name: row.name,
           createdAt: row.createdAt.toISOString(),
+          projects: row.projects,
         })),
       ),
     );

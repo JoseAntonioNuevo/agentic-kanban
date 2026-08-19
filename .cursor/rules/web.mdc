@@ -24,14 +24,17 @@ await fetch("http://localhost:3000/api/health");
 
 The dashboard is health (`useHealth`) plus the workspace list
 (`useWorkspaces` → `GET /api/workspaces` with `credentials: "include"`).
-Parse with `workspaceListResponseSchema`. Accent classes come from
-`workspace.id` (`src/lib/workspace-accent.ts`), never from the user.
+Parse with `workspaceListResponseSchema`. Opening a project loads
+`useBoard` (`GET /api/projects/:projectId/board`). Card moves use
+`useMoveTask` (optimistic cache + `POST /api/tasks/:taskId/move`).
+Accent classes come from `workspace.id` (`src/lib/workspace-accent.ts`),
+never from the user.
 Better Auth is wired: the React client lives in `src/lib/auth-client.ts`
 (`createAuthClient` with no `baseURL` — fetch is relative `/api/auth/*`).
 Sign-up / sign-in forms (`src/components/sign-up-form.tsx`,
 `sign-in-form.tsx`) use local state and `signInSchema` / `signUpSchema`
 from `@agentic-kanban/schemas`. `useSession` gates the dashboard vs. auth
-forms. No React Router. No board CRUD.
+forms. No React Router. Drag-and-drop uses `@dnd-kit/react` only.
 
 - App imports: `@/hooks/...`, `@/components/ui/...` with `.tsx` where the file
   uses that style. Generated shadcn under `src/components/ui` — do not restyle
@@ -39,6 +42,5 @@ forms. No React Router. No board CRUD.
 - Compose classes with `cn()` from `@/lib/utils`.
 - Tailwind 4 via `@import "tailwindcss"` in `src/index.css`. No `tailwind.config`.
 - `next-themes` is the theme helper, not Next.js. Do not add Next, React Router,
-  or React Hook Form. Do not implement drag-and-drop (`@dnd-kit/react` is
-  installed only).
+  or React Hook Form. Do not add `@dnd-kit/core` / `sortable`.
 - After `bunx shadcn@4.18.0 add …`, re-pin every new dependency (never `@latest`).

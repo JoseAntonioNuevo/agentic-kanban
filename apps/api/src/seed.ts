@@ -10,7 +10,9 @@
  */
 import {
   findUserIdByEmail,
+  upsertColumn,
   upsertProject,
+  upsertTask,
   upsertWorkspace,
   upsertWorkspaceMember,
 } from "@agentic-kanban/db";
@@ -22,6 +24,51 @@ const DEMO_WORKSPACE_ID = "ws_thepower_demo";
 const DEMO_PROJECT_ID = "proj_agentic_kanban";
 const ANA_WORKSPACE_ID = "ws_ana_demo";
 const ANA_PROJECT_ID = "proj_ana_notes";
+
+const DEMO_COLUMNS = [
+  { id: "col_todo", name: "To Do", position: 0 },
+  { id: "col_in_progress", name: "In Progress", position: 1 },
+  { id: "col_done", name: "Done", position: 2 },
+] as const;
+
+const DEMO_TASKS = [
+  {
+    id: "task_write_readme",
+    columnId: "col_todo",
+    title: "Escribir el README del aula",
+    position: 0,
+  },
+  {
+    id: "task_live_demo",
+    columnId: "col_todo",
+    title: "Preparar la demo en vivo",
+    position: 1,
+  },
+  {
+    id: "task_model_board",
+    columnId: "col_in_progress",
+    title: "Modelar column y task",
+    position: 0,
+  },
+  {
+    id: "task_seed_board",
+    columnId: "col_in_progress",
+    title: "Sembrar el tablero",
+    position: 1,
+  },
+  {
+    id: "task_auth_email",
+    columnId: "col_done",
+    title: "Montar auth con Better Auth",
+    position: 0,
+  },
+  {
+    id: "task_tenant_list",
+    columnId: "col_done",
+    title: "Listar workspaces por membresía",
+    position: 1,
+  },
+] as const;
 
 const seedHeaders = new Headers({
   origin: "http://localhost:5173",
@@ -73,6 +120,27 @@ async function seed(): Promise<void> {
     name: "Agentic Kanban",
   });
 
+  for (const col of DEMO_COLUMNS) {
+    await upsertColumn({
+      id: col.id,
+      workspaceId: DEMO_WORKSPACE_ID,
+      projectId: DEMO_PROJECT_ID,
+      name: col.name,
+      position: col.position,
+    });
+  }
+
+  for (const card of DEMO_TASKS) {
+    await upsertTask({
+      id: card.id,
+      workspaceId: DEMO_WORKSPACE_ID,
+      projectId: DEMO_PROJECT_ID,
+      columnId: card.columnId,
+      title: card.title,
+      position: card.position,
+    });
+  }
+
   for (const userId of userIds) {
     await upsertWorkspaceMember({
       workspaceId: DEMO_WORKSPACE_ID,
@@ -96,8 +164,19 @@ async function seed(): Promise<void> {
     userId: anaId,
   });
 
+  for (const col of DEMO_COLUMNS) {
+    await upsertColumn({
+      id: `ana_${col.id}`,
+      workspaceId: ANA_WORKSPACE_ID,
+      projectId: ANA_PROJECT_ID,
+      name: col.name,
+      position: col.position,
+    });
+  }
+
   console.log(`workspace ${DEMO_WORKSPACE_ID}`);
   console.log(`project ${DEMO_PROJECT_ID}`);
+  console.log(`columns ${DEMO_COLUMNS.length} tasks ${DEMO_TASKS.length}`);
   console.log(`workspace ${ANA_WORKSPACE_ID} (Ana only)`);
   console.log(`project ${ANA_PROJECT_ID}`);
   console.log(`members ${userIds.length + 1}`);

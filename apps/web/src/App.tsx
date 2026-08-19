@@ -4,6 +4,7 @@
  * `useSession()` de Better Auth gestiona el estado de sesión en el cliente.
  * No hay React Router: el cambio de vista es estado local.
  */
+import { BoardScreen } from "@/components/board-screen.tsx";
 import { SignInForm } from "@/components/sign-in-form.tsx";
 import { SignUpForm } from "@/components/sign-up-form.tsx";
 import { Badge } from "@/components/ui/badge.tsx";
@@ -21,6 +22,7 @@ import { useWorkspaces } from "@/hooks/use-workspaces.ts";
 import { authClient } from "@/lib/auth-client.ts";
 import { workspaceAccentClass } from "@/lib/workspace-accent.ts";
 import { cn } from "@/lib/utils.ts";
+import type { Workspace } from "@agentic-kanban/schemas";
 import { useState } from "react";
 
 type View = "signin" | "signup" | "dashboard";
@@ -31,6 +33,7 @@ export default function App() {
   const session = authClient.useSession();
   const workspaces = useWorkspaces(session.data?.user.id);
   const [view, setView] = useState<View>("signin");
+  const [projectId, setProjectId] = useState<string | undefined>();
 
   if (session.isPending) {
     return (
@@ -63,6 +66,30 @@ export default function App() {
     );
   }
 
+  if (projectId) {
+    // #region agent log
+    fetch("http://127.0.0.1:7647/ingest/ba5bd8d3-f312-4898-9461-0e2daa745a39", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "81244b" },
+      body: JSON.stringify({
+        sessionId: "81244b",
+        hypothesisId: "E",
+        location: "App.tsx:projectId",
+        message: "showing board screen",
+        data: { projectId, userId: session.data.user.id },
+        timestamp: Date.now(),
+      }),
+    }).catch(() => {});
+    // #endregion
+    return (
+      <BoardScreen
+        projectId={projectId}
+        userId={session.data.user.id}
+        onBack={() => setProjectId(undefined)}
+      />
+    );
+  }
+
   return (
     <main className="flex min-h-svh items-center justify-center bg-background p-6">
       <Card className="w-full max-w-md">
@@ -79,6 +106,7 @@ export default function App() {
           <WorkspaceList
             isPending={workspaces.isPending}
             items={workspaces.data ?? []}
+            onOpenProject={setProjectId}
           />
           <Button
             variant="outline"
@@ -100,9 +128,11 @@ export default function App() {
 function WorkspaceList({
   isPending,
   items,
+  onOpenProject,
 }: {
   isPending: boolean;
-  items: { id: string; name: string }[];
+  items: Workspace[];
+  onOpenProject: (projectId: string) => void;
 }) {
   return (
     <section className="mt-4 space-y-2">
@@ -115,21 +145,32 @@ function WorkspaceList({
         </p>
       ) : (
         <ul className="space-y-2">
-          {items.map((workspace) => (
-            <li
-              key={workspace.id}
-              className="flex items-center gap-3 rounded-lg border px-3 py-2"
-            >
-              <span
-                aria-hidden
-                className={cn(
-                  "size-2.5 shrink-0 rounded-full",
-                  workspaceAccentClass(workspace.id),
-                )}
-              />
-              <span className="text-sm font-medium">{workspace.name}</span>
-            </li>
-          ))}
+          {items.map((workspace) => {
+            const project = workspace.projects[0];
+            return (
+              <li key={workspace.id}>
+                <button
+                  type="button"
+                  disabled={!project}
+                  onClick={() => {
+                    if (project) {
+                      onOpenProject(project.id);
+                    }
+                  }}
+                  className="flex w-full items-center gap-3 rounded-lg border px-3 py-2 text-left hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  <span
+                    aria-hidden
+                    className={cn(
+                      "size-2.5 shrink-0 rounded-full",
+                      workspaceAccentClass(workspace.id),
+                    )}
+                  />
+                  <span className="text-sm font-medium">{workspace.name}</span>
+                </button>
+              </li>
+            );
+          })}
         </ul>
       )}
     </section>
