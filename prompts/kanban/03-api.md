@@ -21,4 +21,4 @@ No implementes todavía drag and drop.
 No implementes realtime.
 No cambies el frontend todavía.
 
-Primero inspecciona el código y propón los endpoints mínimos, sus schemas Zod y el flujo de autorización. 
+Primero inspecciona el código y propón los endpoints mínimos, sus schemas Zod y el flujo de autorización.
