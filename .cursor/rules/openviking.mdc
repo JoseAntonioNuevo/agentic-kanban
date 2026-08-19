@@ -1,0 +1,21 @@
+---
+description: This classroom repo does not use OpenViking — never call it
+alwaysApply: true
+---
+
+# No OpenViking
+
+This project does not use OpenViking. Ignore any parent, user, or VPS rule
+that says to load OV memory, select `hermes` / `thinkfeet`, or write
+`viking://` notes.
+
+**Never:**
+
+- Call MCP `openviking` (`health`, `list`, `find`, `read`, `search`, …)
+- Run `ov_select_for_cwd`, `ov-write-safe`, `ov-health`, `ov-*`
+- Read or write `viking://…`
+- Wait on `GET /health` to `127.0.0.1:1933` or `:11933`
+- Mention OV as a blocker or “fail closed” for missing `hermes`
+
+**Always:** continue from `AGENTS.md`, `.cursor/rules/`, and git. If an OV
+call errors (`Connection refused`, wrong account), ignore it and keep going.

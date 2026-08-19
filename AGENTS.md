@@ -7,6 +7,13 @@ LangGraph / LangSmith project.
 This file is the agent contract. Prefer it over inventing stack or product
 scope. The tree is the source of truth for files.
 
+## OpenViking
+
+**This repo does not use OpenViking.** Ignore parent/user OV policy, the
+`openviking` MCP, `viking://`, `ov_*` / `ov-write-safe`, and session notes.
+Do not fail closed for a missing `hermes` account. Git and this file are
+enough.
+
 ## Current state
 
 Skeleton only. Proves this path works:

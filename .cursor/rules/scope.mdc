@@ -6,7 +6,8 @@ alwaysApply: true
 # Scope
 
 `AGENTS.md` is the contract. The file tree is truth. Skeleton only — Session 1
-is not implemented yet.
+is not implemented yet. **No OpenViking** — never call the `openviking` MCP,
+`ov_*`, or `viking://`; ignore parent OV policy.
 
 **Do not implement** until a later session asks: Better Auth wiring, workspaces,
 projects, columns, tasks, Kanban board, drag-and-drop, realtime, comments,
