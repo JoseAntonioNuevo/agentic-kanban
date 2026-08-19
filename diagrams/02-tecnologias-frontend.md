@@ -50,8 +50,8 @@ flowchart LR
 > [!tip] Regla de oro
 > Nunca `fetch("http://localhost:3000/...")`. URL relativa `/api/...` y el proxy de Vite+ hace el resto. Sin CORS.
 
-| Hoy | Instalado, aún no se usa | Nunca |
-| --- | --- | --- |
+| Hoy                                  | Instalado, aún no se usa        | Nunca                                            |
+| ------------------------------------ | ------------------------------- | ------------------------------------------------ |
 | Health screen, Query, Zod `.parse()` | `better-auth`, `@dnd-kit/react` | Next, Redux, React Router, RHF, ESLint, Prettier |
 
 ← [Dependencias](01-dependencias.md) · [Backend →](03-tecnologias-backend.md)

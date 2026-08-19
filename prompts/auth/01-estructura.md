@@ -4,6 +4,7 @@ Alcance: registro, login, sesión por cookie, logout.
 Fuera de alcance: workspaces, membership, workspace_id, tablero, React Router, paquetes nuevos.
 
 Usa lo que ya hay:
+
 - better-auth 1.7.1 (API y web), placeholder en apps/api/src/auth/
 - drizzleAdapter + provider sqlite sobre @agentic-kanban/db (el mismo .db)
 - Zod en @agentic-kanban/schemas: sign-up/sign-in solo en el cliente (password mínimo 8 y con medidas de seguridad apropiadas). Better Auth valida el servidor; no envuelvas `/api/auth/*` con `@hono/zod-validator`
@@ -12,6 +13,7 @@ Usa lo que ya hay:
 - `trustedOrigins`: `http://localhost:5173` y `http://127.0.0.1:5173`
 
 Seguridad de esta sesión (nada más):
+
 - cookies httpOnly de Better Auth
 - rate limit in-memory en Hono solo en POST de sign-up y sign-in (no en get-session)
 - no inventar XSS extra: no dangerouslySetInnerHTML

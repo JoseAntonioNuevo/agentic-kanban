@@ -19,13 +19,13 @@ flowchart TB
   runtime -.-> later
 ```
 
-| Capa | Quién | Qué hace |
-| --- | --- | --- |
-| Tipos | `tsc` / Vite+ | Forma en compile-time |
-| Contrato | `@agentic-kanban/schemas` | `.parse()` en API **y** en web |
-| Autenticación | Better Auth en `apps/api/src/auth/` | Quién eres |
-| Autorización | Checks de membership en la API | Si puedes entrar a ese workspace |
-| Tenant | `workspace_id` en cada query Drizzle | No cruzar datos de otro workspace |
+| Capa          | Quién                                | Qué hace                          |
+| ------------- | ------------------------------------ | --------------------------------- |
+| Tipos         | `tsc` / Vite+                        | Forma en compile-time             |
+| Contrato      | `@agentic-kanban/schemas`            | `.parse()` en API **y** en web    |
+| Autenticación | Better Auth en `apps/api/src/auth/`  | Quién eres                        |
+| Autorización  | Checks de membership en la API       | Si puedes entrar a ese workspace  |
+| Tenant        | `workspace_id` en cada query Drizzle | No cruzar datos de otro workspace |
 
 ```mermaid
 flowchart LR
@@ -44,8 +44,8 @@ flowchart LR
 > [!warning] Hoy vs luego
 > Health solo usa TypeScript + Zod. Login, membership y `workspace_id` **aún no existen**. No los inventes en el cliente.
 
-| Hoy | Instalado, aún no se usa | Nunca |
-| --- | --- | --- |
+| Hoy                                     | Instalado, aún no se usa                | Nunca                                              |
+| --------------------------------------- | --------------------------------------- | -------------------------------------------------- |
 | TS estricto + el mismo Zod en web y API | Better Auth, membership, `workspace_id` | Authz en el navegador, RLS de Postgres, RBAC extra |
 
 ← [Monorepo](05-monorepo.md) · [Índice](README.md)

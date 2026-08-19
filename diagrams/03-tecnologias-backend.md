@@ -45,8 +45,8 @@ flowchart LR
 > [!tip] Regla de oro
 > Sin CORS: el navegador no llama a `:3000`. Llama a `/api` en `:5173` y Vite+ hace de puente.
 
-| Hoy | Instalado, aún no se usa | Nunca |
-| --- | --- | --- |
+| Hoy                           | Instalado, aún no se usa                  | Nunca                                        |
+| ----------------------------- | ----------------------------------------- | -------------------------------------------- |
 | Hono + Bun, `GET /api/health` | Better Auth, `@hono/zod-validator` (CRUD) | Express, Nest, Node server, Socket.IO, Redis |
 
 ← [Frontend](02-tecnologias-frontend.md) · [Base de datos →](04-base-de-datos.md)

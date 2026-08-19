@@ -46,10 +46,10 @@ flowchart LR
 ```
 
 > [!tip] Regla de oro — capas (no las mezcles)
-> TypeScript tipa · Zod valida · Better Auth autentica *(luego)* · la API autoriza *(luego)* · `workspace_id` aísla *(luego)*. Detalle en [Capas](06-capas.md). **El navegador nunca decide autorización.**
+> TypeScript tipa · Zod valida · Better Auth autentica _(luego)_ · la API autoriza _(luego)_ · `workspace_id` aísla _(luego)_. Detalle en [Capas](06-capas.md). **El navegador nunca decide autorización.**
 
-| Hoy | Instalado, aún no se usa | Nunca |
-| --- | --- | --- |
+| Hoy                                     | Instalado, aún no se usa  | Nunca                                         |
+| --------------------------------------- | ------------------------- | --------------------------------------------- |
 | Health de punta a punta, 2 contenedores | Auth, workspaces, tablero | Microservicios, cola, Redis, contenedor de DB |
 
 ← [Base de datos](04-base-de-datos.md) · [Capas →](06-capas.md)

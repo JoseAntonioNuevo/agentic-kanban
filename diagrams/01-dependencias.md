@@ -39,8 +39,8 @@ flowchart LR
 > [!tip] Regla de oro
 > Interno = `workspace:*`. Terceros = número cerrado. El navegador nunca importa `@agentic-kanban/db`.
 
-| Hoy | Instalado, aún no se usa | Nunca |
-| --- | --- | --- |
-| 4 paquetes, `workspace:*`, `bun.lock` | — | Turborepo, Nx, Lerna, `package-lock.json` |
+| Hoy                                   | Instalado, aún no se usa | Nunca                                     |
+| ------------------------------------- | ------------------------ | ----------------------------------------- |
+| 4 paquetes, `workspace:*`, `bun.lock` | —                        | Turborepo, Nx, Lerna, `package-lock.json` |
 
 ← [Índice](README.md) · [Frontend →](02-tecnologias-frontend.md)

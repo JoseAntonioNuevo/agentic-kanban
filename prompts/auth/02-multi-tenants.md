@@ -1,6 +1,7 @@
 Basado en el monorepo actual y lo que ya tenemos implementado planifica la implementación del modelo multi-tenant en Drizzle. Sin endpoints, UI, seed, Zod de API.
 
 Tablas (sqliteTable / text / integer de drizzle-orm/sqlite-core):
+
 - workspace: id (text PK), name, created_at
 - workspace_member: workspace_id, user_id, unique (workspace_id, user_id).
   user_id FK a user.id de Better Auth. Sin role (RBAC está fuera de alcance).
