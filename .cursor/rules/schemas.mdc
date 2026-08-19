@@ -24,5 +24,13 @@ export interface HealthResponse { status: string }
 
 - Re-export public schemas and types from `src/index.ts`.
 - Web and API both `parse()` the same schema. Do not duplicate shapes.
+- `signUpSchema` and `signInSchema` (`src/auth.ts`) validate client-side input
+  only (password ≥ 8). Better Auth validates the server — these are NOT
+  applied to `/api/auth/*`.
+- Workspace/project GET contracts live in `src/workspace.ts`
+  (`workspaceListResponseSchema`, `projectSchema`, `projectIdParamSchema`,
+  `workspacesQuerySchema`). The API parses responses with the same schemas.
+  `workspaceId` in JSON is data, not permission.
 - Tests: `import { describe, expect, it } from "vite-plus/test"`. Cover a
-  valid parse and a reject path (see `src/health.test.ts`).
+  valid parse and a reject path (see `src/health.test.ts`, `src/auth.test.ts`,
+  `src/workspace.test.ts`).

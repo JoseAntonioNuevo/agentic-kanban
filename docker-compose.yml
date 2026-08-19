@@ -14,7 +14,8 @@ services:
     environment:
       DATABASE_URL: file:/data/agentic-kanban.db
       API_PORT: "3000"
-      # Placeholders de Better Auth; la Sesión 1 los usará de verdad.
+      # Better Auth: secreto de dev (cámbialo en prod). La URL apunta a Vite+
+      # porque el navegador habla con el frontend y el proxy reenvía /api.
       BETTER_AUTH_SECRET: local-dev-only-change-in-session-1
       BETTER_AUTH_URL: http://localhost:5173
     volumes:

@@ -22,9 +22,16 @@ const data = (await res.json()) as HealthResponse;
 await fetch("http://localhost:3000/api/health");
 ```
 
-The starter UI is the health screen (`useHealth`). Better Auth is installed
-only — do not add `createAuthClient()`, login, or workspace UI yet. No React
-Router.
+The dashboard is health (`useHealth`) plus the workspace list
+(`useWorkspaces` → `GET /api/workspaces` with `credentials: "include"`).
+Parse with `workspaceListResponseSchema`. Accent classes come from
+`workspace.id` (`src/lib/workspace-accent.ts`), never from the user.
+Better Auth is wired: the React client lives in `src/lib/auth-client.ts`
+(`createAuthClient` with no `baseURL` — fetch is relative `/api/auth/*`).
+Sign-up / sign-in forms (`src/components/sign-up-form.tsx`,
+`sign-in-form.tsx`) use local state and `signInSchema` / `signUpSchema`
+from `@agentic-kanban/schemas`. `useSession` gates the dashboard vs. auth
+forms. No React Router. No board CRUD.
 
 - App imports: `@/hooks/...`, `@/components/ui/...` with `.tsx` where the file
   uses that style. Generated shadcn under `src/components/ui` — do not restyle

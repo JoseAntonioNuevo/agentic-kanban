@@ -11,15 +11,36 @@ Bun-native server. Do not add Node, `@hono/node-server`, Express, or CORS.
 ```ts
 // ✅ src/index.ts
 app.route("/", healthRoutes);
+app.route("/", workspaceRoutes);
+app.route("/", projectRoutes);
 ```
 
 - One Hono app per route file (`new Hono()`), then `app.route("/", …)`.
 - Validate responses (and later inputs) with `@agentic-kanban/schemas`.
-- Database access only through `@agentic-kanban/db`. Never import
-  `@libsql/client` or `drizzle-orm` from the API.
-- Better Auth is installed only. `src/auth/index.ts` stays a placeholder until
-  Session 1. Do not mount `/api/auth/*` yet.
+- Database access only through `@agentic-kanban/db` (`listWorkspacesForUser`,
+  `getProjectForMember`). Never import `@libsql/client` or `drizzle-orm`
+  from the API.
+- Better Auth is wired in `src/auth/index.ts` (`betterAuth` + `drizzleAdapter`
+  with `provider: "sqlite"`). `src/routes/auth.ts` mounts `/api/auth/*` via
+  `auth.handler`. Do not wrap `/api/auth/*` with `@hono/zod-validator`: Better
+  Auth validates the server. Client-side Zod schemas live in
+  `@agentic-kanban/schemas`.
+- Authz order: `auth.api.getSession({ headers: c.req.raw.headers })` → `401`
+  if missing; membership via db helpers → `404` if not a member or missing
+  (never `403`). Do not take `workspaceId` from query/body as permission;
+  on a project, `workspace_id` comes from the row.
+- `GET /api/workspaces` and `GET /api/projects/:projectId` use
+  `@hono/zod-validator` (query/param) and `.parse()` the response schema.
+  No workspace/project HTTP writes.
+- Seed is `src/seed.ts` via `bun run db:seed`. Do not import it from the
+  server. Users: `auth.api.signUpEmail` (reuse `user.id` if the email exists).
+  Tenant rows: upsert by id / unique `(workspace_id, user_id)`. Never mass
+  DELETE. Never HTTP to `/api/auth`.
+- `src/middleware/rate-limit.ts` is an in-memory rate limiter for POST
+  sign-up / sign-in only (not get-session). `src/middleware/session.ts`
+  requires a session.
 - `src/realtime/index.ts` stays a placeholder. Realtime must stay in this
   process (SSE or WebSocket). No Socket.IO, Redis, or extra service.
-- Do not auto-run migrations or seed. Dev: `bun run --hot`. Listen
-  `0.0.0.0:${API_PORT:-3000}`.
+- Do not auto-run migrations. Dev: `bun run --hot`. Listen
+  `0.0.0.0:${API_PORT:-3000}`. Never run this API on the Mac while Compose
+  is using the same `.db`.

@@ -18,8 +18,15 @@ Hono → drizzle-orm/libsql → @libsql/client → file:…/agentic-kanban.db
 - Host default: `file:<repo>/data/agentic-kanban.db`. Compose:
   `DATABASE_URL=file:/data/agentic-kanban.db` bind-mounted from `./data`.
 - `pingDatabase()` is `SELECT 1` and retries once after a stale handle.
-- Schema folder is empty on purpose. No Better Auth or workspace tables yet.
-- Every tenant-owned query must include an authorized `workspace_id` when
-  Session 1 adds tables.
-- Do not auto-run migrations or seed. Keep `db:generate` / `db:migrate` for
-  later. Never commit `*.db`.
+- Schema folder: Better Auth tables in `schema/auth.ts` (`authSchema` for the
+  `drizzleAdapter`). Tenant tables in `schema/workspace.ts` (`workspace`,
+  `workspace_member`) and `schema/project.ts` (`project`). No `role`, slug,
+  owner, columns, or tasks.
+- Reads: `listWorkspacesForUser`, `getProjectForMember` in `src/queries.ts`
+  (membership + the row's `workspace_id`). Insert helpers are for tests.
+  Seed upserts: `upsertWorkspace`, `upsertProject`, `upsertWorkspaceMember`,
+  plus `findUserIdByEmail` (select only). No board CRUD. Never mass DELETE.
+- Migrations: `bun run db:generate` then `bun run db:migrate` (once). After
+  deleting `data/*.db*`, run `db:migrate` again. Never auto-run migrations.
+  Never point the Mac API and Compose at the same `.db`.
+- Every tenant-owned query must include an authorized `workspace_id`.

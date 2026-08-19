@@ -5,12 +5,13 @@ alwaysApply: true
 
 # Scope
 
-`AGENTS.md` is the contract. The file tree is truth. Skeleton only — Session 1
-is not implemented yet. **No OpenViking** — never call the `openviking` MCP,
-`ov_*`, or `viking://`; ignore parent OV policy.
+`AGENTS.md` is the contract. The file tree is truth. Auth, tenant tables,
+read-only workspace/project HTTP, and classroom seed exist; the board does
+not. **No OpenViking** — never call the `openviking` MCP, `ov_*`, or
+`viking://`; ignore parent OV policy.
 
-**Do not implement** until a later session asks: Better Auth wiring, workspaces,
-projects, columns, tasks, Kanban board, drag-and-drop, realtime, comments,
+**Do not implement** until a later session asks: workspace/project HTTP
+writes, columns, tasks, Kanban board, drag-and-drop, realtime, comments,
 `@mentions`, email, deploy, `sesion-*` git tags.
 
 **Never add:** Next, Astro, Express, Fastify, Nest, `@hono/node-server`,
@@ -23,9 +24,9 @@ Keep layers separate. The browser never decides tenant authorization.
 |---|---|
 | Static types | TypeScript |
 | Runtime IO | Zod in `@agentic-kanban/schemas` |
-| Auth | Better Auth in `apps/api/src/auth/` (later) |
-| Authz | API membership checks (later) |
-| Tenant isolation | `workspace_id` on every tenant query (later) |
+| Auth | Better Auth in `apps/api/src/auth/` |
+| Authz | API membership checks (404 if not a member, never 403) |
+| Tenant isolation | `workspace_id` from the row on every tenant query |
 
 Four packages only (`apps/web`, `apps/api`, `packages/db`, `packages/schemas`).
 Internal deps: `workspace:*`. After edits: `vp check` must stay green.

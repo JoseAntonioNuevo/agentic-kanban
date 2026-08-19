@@ -38,4 +38,8 @@ export default defineConfig({
   run: {
     cache: true,
   },
+  test: {
+    // Un solo fichero libSQL: dos e2e en paralelo dan SQLITE_BUSY.
+    fileParallelism: false,
+  },
 });
