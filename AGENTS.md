@@ -9,15 +9,19 @@ scope. The tree is the source of truth for files.
 
 ## Current state
 
-Skeleton only. Proves this path works:
+Session 1 is implemented. This path works:
 
 ```text
-React → TanStack Query → fetch("/api/health") → Vite+ proxy
-  → Hono (Bun) → Drizzle → @libsql/client → local libSQL file
+React → Better Auth session → TanStack Query → /api/workspaces
+  → Hono → session → workspace_member → authorized workspace_id
+  → Drizzle → local libSQL
 ```
 
-**Not implemented yet (do not invent):** product tables, Better Auth wiring,
-login/register, demo users, workspace/project/task CRUD, Kanban board,
+Demo users `ana@demo.test` / `luis@demo.test` (password `Demo1234!`) share
+workspace `thePower Demo` and project `Agentic Kanban`. API boot runs
+migrations and the idempotent seed.
+
+**Not implemented yet (do not invent):** columns, tasks, Kanban board,
 drag-and-drop, realtime, comments, mentions, email, deploy, session git tags.
 
 Finished product (later, still small): one demo workspace, one board, three
@@ -31,13 +35,13 @@ microservices, queues, extra cloud.
 
 Never conflate these:
 
-| Layer | Owner | Role |
-|---|---|---|
-| TypeScript | `tsc` / Vite+ typecheck | static types |
-| Zod | `@agentic-kanban/schemas` | runtime input / response validation |
-| Better Auth | `apps/api/src/auth/` (later) | authentication |
-| Membership checks | API (later) | authorization |
-| `workspace_id` on every tenant query | API + Drizzle (later) | tenant isolation |
+| Layer                                | Owner                        | Role                                |
+| ------------------------------------ | ---------------------------- | ----------------------------------- |
+| TypeScript                           | `tsc` / Vite+ typecheck      | static types                        |
+| Zod                                  | `@agentic-kanban/schemas`    | runtime input / response validation |
+| Better Auth                          | `apps/api/src/auth/`         | authentication                      |
+| Membership checks                    | API `requireWorkspaceMember` | authorization                       |
+| `workspace_id` on every tenant query | API + Drizzle                | tenant isolation                    |
 
 The browser must never decide tenant authorization.
 
@@ -47,25 +51,26 @@ Server state → TanStack Query. Local UI state → React state. No Redux/Zustan
 
 Bun workspaces (`apps/*`, `packages/*`). Internal deps: `workspace:*`.
 
-| Package | Name | Job |
-|---|---|---|
-| web | `@agentic-kanban/web` | React SPA |
-| api | `@agentic-kanban/api` | Hono on Bun |
-| db | `@agentic-kanban/db` | single libSQL + Drizzle client |
-| schemas | `@agentic-kanban/schemas` | shared Zod (web + api) |
+| Package | Name                      | Job                            |
+| ------- | ------------------------- | ------------------------------ |
+| web     | `@agentic-kanban/web`     | React SPA                      |
+| api     | `@agentic-kanban/api`     | Hono on Bun                    |
+| db      | `@agentic-kanban/db`      | single libSQL + Drizzle client |
+| schemas | `@agentic-kanban/schemas` | shared Zod (web + api)         |
 
 Do not add Turborepo, Nx, Lerna, or extra architecture packages.
 
-## How a health request travels
+## How an authorized request travels
 
-1. `apps/web` mounts one `QueryClient` in `main.tsx`.
-2. `useHealth()` `fetch("/api/health")` — relative URL only, never `localhost:3000`.
-3. Vite+ proxies `/api` → `API_PROXY_TARGET` (`http://localhost:3000` on host,
-   `http://api:3000` in Compose). No CORS.
-4. Hono `GET /api/health` imports `healthResponseSchema` from schemas and
-   `pingDatabase()` from db.
-5. Drizzle runs `SELECT 1` through `@libsql/client`.
-6. Web **parses** the JSON with the same Zod schema (no type casts).
+1. Web `createAuthClient()` talks to `/api/auth` on the same origin (Vite+ proxy).
+2. `useSession()` restores the Better Auth cookie. Logged-out users see login.
+3. `useWorkspaces()` fetches `/api/workspaces` — relative URL only, never
+   `localhost:3000`.
+4. Hono mounts Better Auth at `/api/auth/*`, then `requireSession` (401) and
+   `requireWorkspaceMember` (403).
+5. Tenant queries in `@agentic-kanban/db` include the authorized `workspace_id`.
+6. Web **parses** JSON with `@agentic-kanban/schemas` (no type casts).
+7. `GET /api/health` still exists for Compose healthchecks.
 
 ## Runtime and toolchain
 
@@ -95,33 +100,35 @@ only.
 
 ## Frontend (`apps/web`)
 
-| Dep | Why |
-|---|---|
-| React 19.2.8 | SPA. No Next, Astro, React Router (until routing is real). |
-| Vite+ + `@vitejs/plugin-react` 6.0.5 | Dev/build. Import plugins via `vite-plus`. |
-| Tailwind 4.3.3 + `@tailwindcss/vite` | CSS via Vite plugin. `@import "tailwindcss"` — no v3 config. |
-| shadcn 4.18.0 | Pinned CLI. Components in `src/components/ui`. No `form` (no RHF). |
-| radix-ui, cva, clsx, tailwind-merge, lucide-react, tw-animate-css, geist | Pulled in by shadcn. Keep exact pins. |
-| sonner + next-themes | Toasts. `next-themes` is **not** Next.js. |
-| TanStack Query 5.101.4 | One `QueryClient`. Fetches `/api/health` today. |
-| Zod 4.4.3 | Runtime-parse API JSON with `@agentic-kanban/schemas`. |
-| `@dnd-kit/react` 0.5.0 | Installed only. Do **not** add `@dnd-kit/core` / `sortable` as the API. Do not implement DnD yet. |
+| Dep                                                                      | Why                                                                                               |
+| ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------- |
+| React 19.2.8                                                             | SPA. No Next, Astro, React Router (until routing is real).                                        |
+| Vite+ + `@vitejs/plugin-react` 6.0.5                                     | Dev/build. Import plugins via `vite-plus`.                                                        |
+| Tailwind 4.3.3 + `@tailwindcss/vite`                                     | CSS via Vite plugin. `@import "tailwindcss"` — no v3 config.                                      |
+| shadcn 4.18.0                                                            | Pinned CLI. Components in `src/components/ui`. No `form` (no RHF).                                |
+| radix-ui, cva, clsx, tailwind-merge, lucide-react, tw-animate-css, geist | Pulled in by shadcn. Keep exact pins.                                                             |
+| sonner + next-themes                                                     | Toasts. `next-themes` is **not** Next.js.                                                         |
+| TanStack Query 5.101.4                                                   | One `QueryClient`. Fetches `/api/workspaces` after login.                                         |
+| better-auth 1.7.1                                                        | Official React client (`createAuthClient`, `useSession`). Same pin as the API.                    |
+| Zod 4.4.3                                                                | Runtime-parse API JSON with `@agentic-kanban/schemas`.                                            |
+| `@dnd-kit/react` 0.5.0                                                   | Installed only. Do **not** add `@dnd-kit/core` / `sortable` as the API. Do not implement DnD yet. |
 
 `vp dev apps/web` / `vp build apps/web`. Dev server `0.0.0.0:5173`.
 
 ## Backend (`apps/api`)
 
-| Dep | Why |
-|---|---|
-| Hono 4.13.3 | HTTP. Bun-native `export default { port, hostname: "0.0.0.0", fetch }`. |
-| `@hono/zod-validator` 0.9.0 | Request validation (unused until CRUD). |
-| Zod 4.4.3 | Same major as schemas. |
-| Better Auth 1.7.1 | Installed only. Future: `drizzleAdapter` + `provider: "sqlite"` on this libSQL. No fake auth. |
-| `@agentic-kanban/db` | Only database access. |
-| `@agentic-kanban/schemas` | Shared response / (later) input shapes. |
+| Dep                         | Why                                                                          |
+| --------------------------- | ---------------------------------------------------------------------------- |
+| Hono 4.13.3                 | HTTP. Bun-native `export default { port, hostname: "0.0.0.0", fetch }`.      |
+| `@hono/zod-validator` 0.9.0 | Path-param validation on workspace routes.                                   |
+| Zod 4.4.3                   | Same major as schemas.                                                       |
+| Better Auth 1.7.1           | `drizzleAdapter` + `provider: "sqlite"` on this libSQL. Email/password only. |
+| `@agentic-kanban/db`        | Only database access.                                                        |
+| `@agentic-kanban/schemas`   | Shared response / (later) input shapes.                                      |
 
-Placeholders: `src/auth/index.ts`, `src/realtime/index.ts`. Realtime must stay
-inside this process (SSE or WebSocket). No Socket.IO, Redis, extra service.
+Auth lives in `src/auth/`. `src/realtime/index.ts` stays a placeholder. Realtime
+must stay inside this process (SSE or WebSocket). No Socket.IO, Redis, extra
+service. API boot runs `applyMigrations()` then `seedDemoData()`.
 
 Listen `0.0.0.0:${API_PORT:-3000}`. Hot reload: `bun run --hot`.
 
@@ -134,11 +141,11 @@ Local file only. No Postgres, Prisma, Turso Cloud, `@tursodatabase/database`,
 Hono → drizzle-orm/libsql → @libsql/client → file:…/agentic-kanban.db
 ```
 
-| Dep | Why |
-|---|---|
-| drizzle-orm 0.45.2 | Stay on 0.45. Do not jump to 1.0 RC. |
-| drizzle-kit 0.31.10 | `db:generate` / `db:migrate` exist; do not auto-run (no product schema). |
-| @libsql/client 0.17.4 | File driver. |
+| Dep                   | Why                                                                 |
+| --------------------- | ------------------------------------------------------------------- |
+| drizzle-orm 0.45.2    | Stay on 0.45. Do not jump to 1.0 RC.                                |
+| drizzle-kit 0.31.10   | `db:generate` / `db:migrate` for debugging. API boot also migrates. |
+| @libsql/client 0.17.4 | File driver.                                                        |
 
 `getDb()` / proxied `db` open **lazily** so Docker volumes exist before the
 first query. `pingDatabase()` is `SELECT 1` (retry once after a stale handle).
@@ -147,9 +154,9 @@ Host default: `file:<repo>/data/agentic-kanban.db`.
 Compose: `DATABASE_URL=file:/data/agentic-kanban.db` on volume `api_data`.
 Never commit `*.db`. `docker compose down` keeps the volume; `down -v` wipes it.
 
-Schema folder is empty on purpose. Use `sqliteTable` / `text` / `integer` from
-`drizzle-orm/sqlite-core` when Session 1 adds tables. Every tenant-owned query
-must be scoped by an authorized `workspace_id`.
+Schema: Better Auth tables plus `workspace`, `workspace_member`, `project`.
+Every tenant-owned query must be scoped by an authorized `workspace_id`. Do not
+add `column` / `task` / `comment` yet.
 
 ## Docker
 
@@ -176,6 +183,7 @@ vp build apps/web
 vp toolchain --json
 bun --filter @agentic-kanban/api dev
 vp dev apps/web
+bun run db:seed
 docker compose up --build
 ```
 

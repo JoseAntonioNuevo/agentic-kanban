@@ -5,6 +5,11 @@ import { mkdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import * as schema from "./schema/index.ts";
+
+export type AppSchema = typeof schema;
+export type Database = LibSQLDatabase<AppSchema>;
+
 function resolveDatabaseUrl(): string {
   if (process.env.DATABASE_URL) {
     return process.env.DATABASE_URL;
@@ -23,9 +28,10 @@ function ensureDatabaseDirectory(url: string): void {
 }
 
 let cachedClient: Client | undefined;
-let cachedDb: LibSQLDatabase | undefined;
+let cachedDb: Database | undefined;
+let foreignKeysReady: Promise<void> | undefined;
 
-function openDatabase(): { client: Client; db: LibSQLDatabase } {
+function openDatabase(): { client: Client; db: Database } {
   if (cachedClient && cachedDb) {
     return { client: cachedClient, db: cachedDb };
   }
@@ -33,11 +39,11 @@ function openDatabase(): { client: Client; db: LibSQLDatabase } {
   const databaseUrl = resolveDatabaseUrl();
   ensureDatabaseDirectory(databaseUrl);
   cachedClient = createClient({ url: databaseUrl });
-  cachedDb = drizzle(cachedClient);
+  cachedDb = drizzle(cachedClient, { schema });
   return { client: cachedClient, db: cachedDb };
 }
 
-function resetDatabase(): void {
+export function resetDatabase(): void {
   if (cachedClient) {
     try {
       cachedClient.close();
@@ -48,13 +54,20 @@ function resetDatabase(): void {
 
   cachedClient = undefined;
   cachedDb = undefined;
+  foreignKeysReady = undefined;
+}
+
+export async function ensureForeignKeys(): Promise<void> {
+  const { client } = openDatabase();
+  foreignKeysReady ??= client.execute("PRAGMA foreign_keys = ON").then(() => undefined);
+  await foreignKeysReady;
 }
 
 export function getLibsql(): Client {
   return openDatabase().client;
 }
 
-export function getDb(): LibSQLDatabase {
+export function getDb(): Database {
   return openDatabase().db;
 }
 
@@ -70,14 +83,16 @@ function forward<T extends object>(getTarget: () => T): T {
   });
 }
 
-export const db: LibSQLDatabase = forward(getDb);
+export const db: Database = forward(getDb);
 export const libsql: Client = forward(getLibsql);
 
 export async function pingDatabase(): Promise<void> {
   try {
+    await ensureForeignKeys();
     await getDb().run(sql`SELECT 1`);
   } catch {
     resetDatabase();
+    await ensureForeignKeys();
     await getDb().run(sql`SELECT 1`);
   }
 }

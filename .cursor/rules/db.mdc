@@ -18,7 +18,8 @@ Hono → drizzle-orm/libsql → @libsql/client → file:…/agentic-kanban.db
 - Host default: `file:<repo>/data/agentic-kanban.db`. Compose:
   `DATABASE_URL=file:/data/agentic-kanban.db` on volume `api_data`.
 - `pingDatabase()` is `SELECT 1` and retries once after a stale handle.
-- Schema folder is empty on purpose. When tables land, use `sqliteTable` /
-  `text` / `integer` from `drizzle-orm/sqlite-core`.
+- Tables: Better Auth (`user`, `session`, `account`, `verification`) plus
+  `workspace`, `workspace_member`, `project`. No columns/tasks yet.
 - Every tenant-owned query must include an authorized `workspace_id`.
-- `db:generate` / `db:migrate` exist — do not auto-run them. Never commit `*.db`.
+- API boot runs `applyMigrations()` + seed. Keep `db:generate` / `db:migrate`
+  / `db:seed` for debugging. Never commit `*.db`.

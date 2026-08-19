@@ -5,11 +5,11 @@ alwaysApply: true
 
 # Scope
 
-`AGENTS.md` is the contract. The file tree is truth. This is a classroom skeleton.
+`AGENTS.md` is the contract. The file tree is truth. Session 1 is implemented.
 
-**Do not implement** until a session asks: product tables, Better Auth, login,
-workspace/project/task CRUD, Kanban board, drag-and-drop, realtime, comments,
-`@mentions`, email, deploy, `sesion-*` git tags.
+**Do not implement** until a later session asks: columns, tasks, Kanban board,
+drag-and-drop, realtime, comments, `@mentions`, email, deploy, `sesion-*` git
+tags.
 
 **Never add:** Next, Astro, Express, Fastify, Nest, `@hono/node-server`,
 Supabase, Postgres, Prisma, Turso Cloud, Redux, Zustand, React Router, tRPC,
@@ -21,9 +21,9 @@ Keep layers separate. The browser never decides tenant authorization.
 |---|---|
 | Static types | TypeScript |
 | Runtime IO | Zod in `@agentic-kanban/schemas` |
-| Auth (later) | Better Auth in `apps/api/src/auth/` |
-| Authz (later) | API membership checks |
-| Tenant isolation (later) | `workspace_id` on every tenant query |
+| Auth | Better Auth in `apps/api/src/auth/` |
+| Authz | API membership checks |
+| Tenant isolation | `workspace_id` on every tenant query |
 
 Four packages only (`apps/web`, `apps/api`, `packages/db`, `packages/schemas`).
 Internal deps: `workspace:*`. After edits: `vp check` must stay green.

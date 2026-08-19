@@ -1,4 +1,2 @@
-// Product tables are added in later course sessions.
-// Do not invent workspace/board/task schema in the skeleton.
-
-export {};
+export { account, session, user, verification } from "./auth.ts";
+export { project, workspace, workspaceMember } from "./app.ts";

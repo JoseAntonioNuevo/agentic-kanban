@@ -11,7 +11,7 @@ services:
       DATABASE_URL: file:/data/agentic-kanban.db
       API_PORT: "3000"
       BETTER_AUTH_SECRET: local-dev-only-change-in-session-1
-      BETTER_AUTH_URL: http://localhost:3000
+      BETTER_AUTH_URL: http://localhost:5173
     volumes:
       - .:/app
       - /app/node_modules
@@ -27,7 +27,7 @@ services:
       interval: 5s
       timeout: 5s
       retries: 12
-      start_period: 10s
+      start_period: 20s
 
   web:
     build:

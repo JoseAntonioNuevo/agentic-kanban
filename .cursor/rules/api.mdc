@@ -10,23 +10,18 @@ Bun-native server. Do not add Node, `@hono/node-server`, Express, or CORS.
 
 ```ts
 // ✅ src/index.ts
-const app = new Hono();
+app.on(["POST", "GET"], "/api/auth/*", (c) => auth.handler(c.req.raw));
 app.route("/", healthRoutes);
-
-export default {
-  port: Number(process.env.API_PORT ?? 3000),
-  hostname: "0.0.0.0",
-  fetch: app.fetch,
-};
+app.route("/", workspaceRoutes);
 ```
 
 - One Hono app per route file (`new Hono()`), then `app.route("/", …)`.
 - Validate responses (and later inputs) with `@agentic-kanban/schemas`.
 - Database access only through `@agentic-kanban/db`. Never import
   `@libsql/client` or `drizzle-orm` from the API.
-- `src/auth/index.ts` and `src/realtime/index.ts` stay placeholders until a
-  session asks. Realtime must stay in this process (SSE or WebSocket). No
-  Socket.IO, Redis, or extra service.
-- Future Better Auth: `drizzleAdapter` + `provider: "sqlite"` on this libSQL.
-  No fake auth.
-- Dev: `bun run --hot`. Listen `0.0.0.0:${API_PORT:-3000}`.
+- Auth: Better Auth `drizzleAdapter` + `provider: "sqlite"`. Session → 401
+  (`requireSession`). Missing membership → 403 (`requireWorkspaceMember`).
+- `src/realtime/index.ts` stays a placeholder. Realtime must stay in this
+  process (SSE or WebSocket). No Socket.IO, Redis, or extra service.
+- Boot runs migrate + idempotent seed. Dev: `bun run --hot`. Listen
+  `0.0.0.0:${API_PORT:-3000}`.

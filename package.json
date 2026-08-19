@@ -14,7 +14,8 @@
     "test": "vp test",
     "build": "vp build apps/web",
     "db:generate": "bun --filter @agentic-kanban/db generate",
-    "db:migrate": "bun --filter @agentic-kanban/db migrate"
+    "db:migrate": "bun --filter @agentic-kanban/db migrate",
+    "db:seed": "bun --filter @agentic-kanban/api seed"
   },
   "devDependencies": {
     "typescript": "7.0.2",
