@@ -5,12 +5,12 @@ export const errorResponseSchema = z.object({
 });
 
 export const workspaceIdParamSchema = z.object({
-  workspaceId: z.string().min(1),
+  workspaceId: z.string().trim().min(1),
 });
 
 export const workspaceProjectParamsSchema = z.object({
-  workspaceId: z.string().min(1),
-  projectId: z.string().min(1),
+  workspaceId: z.string().trim().min(1),
+  projectId: z.string().trim().min(1),
 });
 
 export const projectSchema = z.object({

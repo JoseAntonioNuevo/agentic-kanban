@@ -113,6 +113,11 @@ describe("authentication", () => {
     expect(response.status).toBe(400);
   });
 
+  it("rejects invalid credentials", async () => {
+    const { response } = await signIn("ana@demo.test", "WrongPassword1!");
+    expect(response.status).toBe(401);
+  });
+
   it("creates a session for a demo user", async () => {
     const { response, cookie } = await signIn("ana@demo.test", "Demo1234!");
     expect(response.status).toBe(200);
@@ -124,6 +129,18 @@ describe("authentication", () => {
     expect(session.status).toBe(200);
     const body = (await session.json()) as { user?: { email?: string } };
     expect(body.user?.email).toBe("ana@demo.test");
+  });
+
+  it("creates a session for Luis", async () => {
+    const { response, cookie } = await signIn("luis@demo.test", "Demo1234!");
+    expect(response.status).toBe(200);
+
+    const session = await app.request("/api/auth/get-session", {
+      headers: { cookie, origin: ORIGIN },
+    });
+    expect(session.status).toBe(200);
+    const body = (await session.json()) as { user?: { email?: string } };
+    expect(body.user?.email).toBe("luis@demo.test");
   });
 
   it("invalidates the session on sign-out", async () => {
@@ -142,6 +159,30 @@ describe("workspace authorization", () => {
   it("returns 401 without a session", async () => {
     const response = await app.request(`/api/workspaces/${demoWorkspaceId}`);
     expect(response.status).toBe(401);
+  });
+
+  it("returns 400 for an empty workspace path param", async () => {
+    const { cookie } = await signIn("ana@demo.test", "Demo1234!");
+    const response = await app.request("/api/workspaces/%20%20", {
+      headers: { cookie },
+    });
+    expect(response.status).toBe(400);
+  });
+
+  it("lets a registered user with no membership see an empty list", async () => {
+    const { auth } = await import("./auth/index.ts");
+    await auth.api.signUpEmail({
+      body: {
+        name: "Pat",
+        email: "pat@test.local",
+        password: "Pat12345!",
+      },
+    });
+
+    const { cookie } = await signIn("pat@test.local", "Pat12345!");
+    const response = await app.request("/api/workspaces", { headers: { cookie } });
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({ workspaces: [] });
   });
 
   it("lets Ana read the demo workspace she belongs to", async () => {
@@ -216,5 +257,41 @@ describe("workspace authorization", () => {
       { headers: { cookie: outsider.cookie } },
     );
     expect(denied.status).toBe(403);
+  });
+
+  it("lets Luis read the demo workspace he belongs to", async () => {
+    const { cookie } = await signIn("luis@demo.test", "Demo1234!");
+    const list = await app.request("/api/workspaces", { headers: { cookie } });
+    expect(list.status).toBe(200);
+    const listed = (await list.json()) as {
+      workspaces: Array<{ name: string; project: { name: string } | null }>;
+    };
+    expect(listed.workspaces).toHaveLength(1);
+    expect(listed.workspaces[0]?.name).toBe("thePower Demo");
+    expect(listed.workspaces[0]?.project?.name).toBe("Agentic Kanban");
+  });
+});
+
+describe("seed", () => {
+  it("converges to the same demo state when run again", async () => {
+    const { seedDemoData } = await import("./seed.ts");
+    const { getUserByEmail } = await import("@agentic-kanban/db");
+
+    await seedDemoData();
+    await seedDemoData();
+
+    const ana = await getUserByEmail("ana@demo.test");
+    const luis = await getUserByEmail("luis@demo.test");
+    expect(ana).not.toBeNull();
+    expect(luis).not.toBeNull();
+
+    const { cookie } = await signIn("ana@demo.test", "Demo1234!");
+    const list = await app.request("/api/workspaces", { headers: { cookie } });
+    expect(list.status).toBe(200);
+    const listed = (await list.json()) as {
+      workspaces: Array<{ id: string; name: string }>;
+    };
+    expect(listed.workspaces).toHaveLength(1);
+    expect(listed.workspaces[0]?.name).toBe("thePower Demo");
   });
 });
