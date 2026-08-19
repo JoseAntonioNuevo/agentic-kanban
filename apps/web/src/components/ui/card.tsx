@@ -1,7 +1,12 @@
+/**
+ * Piezas de tarjeta de shadcn/ui usadas en la pantalla health:
+ * Card, Header, Title, Description, Content (y Footer/Action si se necesitan).
+ */
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
+/** Contenedor de la tarjeta (borde, fondo, spacing). */
 function Card({
   className,
   size = "default",
@@ -20,6 +25,7 @@ function Card({
   );
 }
 
+/** Cabecera: título + descripción. */
 function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
@@ -33,6 +39,7 @@ function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
+/** Título principal de la tarjeta. */
 function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
@@ -46,6 +53,7 @@ function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
+/** Subtítulo o texto de apoyo bajo el título. */
 function CardDescription({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
@@ -56,6 +64,7 @@ function CardDescription({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
+/** Acción alineada a la derecha del header (botón, menú). */
 function CardAction({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
@@ -66,12 +75,14 @@ function CardAction({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
+/** Cuerpo de la tarjeta: aquí van las filas de health. */
 function CardContent({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div data-slot="card-content" className={cn("px-(--card-spacing)", className)} {...props} />
   );
 }
 
+/** Pie de tarjeta (acciones secundarias). */
 function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div

@@ -1,3 +1,11 @@
+/**
+ * Ruta de infraestructura: `GET /api/health`.
+ *
+ * Sirve para Docker (healthcheck) y para la pantalla starter.
+ * Flujo: ping a libSQL → armar el objeto → validarlo con Zod (el mismo
+ * schema que parsea el frontend) → JSON. Si `SELECT 1` falla, la API
+ * sigue viva y responde 503 con `database: "error"`.
+ */
 import { pingDatabase } from "@agentic-kanban/db";
 import { healthResponseSchema } from "@agentic-kanban/schemas";
 import { Hono } from "hono";
@@ -16,7 +24,7 @@ healthRoutes.get("/api/health", async (c) => {
       }),
     );
   } catch (error) {
-    console.error("Health database check failed", error);
+    console.error("Falló el chequeo de la base de datos", error);
 
     return c.json(
       healthResponseSchema.parse({

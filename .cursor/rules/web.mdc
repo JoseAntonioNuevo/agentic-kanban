@@ -14,16 +14,17 @@ Fetch **relative** `/api/...` only. The Vite+ proxy forwards to
 
 ```ts
 // ✅
-const json: unknown = await (await fetch("/api/workspaces")).json();
-return workspaceListResponseSchema.parse(json);
+const json: unknown = await (await fetch("/api/health")).json();
+return healthResponseSchema.parse(json);
 
 // ❌
-const data = (await res.json()) as WorkspaceListResponse;
-await fetch("http://localhost:3000/api/workspaces");
+const data = (await res.json()) as HealthResponse;
+await fetch("http://localhost:3000/api/health");
 ```
 
-Auth uses one `createAuthClient()` in `src/lib/auth-client.ts`. Do not hard-code
-API hosts. Conditional login vs workspace UI — no React Router.
+The starter UI is the health screen (`useHealth`). Better Auth is installed
+only — do not add `createAuthClient()`, login, or workspace UI yet. No React
+Router.
 
 - App imports: `@/hooks/...`, `@/components/ui/...` with `.tsx` where the file
   uses that style. Generated shadcn under `src/components/ui` — do not restyle

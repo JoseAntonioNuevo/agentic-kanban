@@ -1,7 +1,9 @@
+/** Input de texto de shadcn/ui. Se usará en el login de la Sesión 1. */
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
+/** Campo de texto nativo con estilos de shadcn. */
 function Input({ className, type, ...props }: React.ComponentProps<"input">) {
   return (
     <input

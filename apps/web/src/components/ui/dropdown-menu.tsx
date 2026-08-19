@@ -1,3 +1,4 @@
+/** Menú desplegable de shadcn/ui (Radix Dropdown Menu): ítems, checkboxes y submenús. */
 "use client";
 
 import * as React from "react";

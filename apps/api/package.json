@@ -4,8 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "bun run --hot src/index.ts",
-    "start": "bun run src/index.ts",
-    "seed": "bun run src/seed.ts"
+    "start": "bun run src/index.ts"
   },
   "dependencies": {
     "@agentic-kanban/db": "workspace:*",

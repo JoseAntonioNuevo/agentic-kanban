@@ -1,7 +1,9 @@
+/** Textarea de shadcn/ui. Reservado para comentarios en sesiones posteriores. */
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
+/** Área de texto multilínea con los mismos tokens que Input. */
 function Textarea({ className, ...props }: React.ComponentProps<"textarea">) {
   return (
     <textarea

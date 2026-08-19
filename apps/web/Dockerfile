@@ -1,10 +1,10 @@
-# ghcr.io/voidzero-dev/vite-plus:0.2.9 is the official toolchain image,
-# but unauthenticated pulls are denied. Bun 1.3.14 + pinned vite-plus@0.2.9
-# still runs the web app through Vite+, not standalone Vite.
+# Imagen oficial de Vite+ deniega pulls sin auth.
+# Bun 1.3.14 + vite-plus@0.2.9 del workspace: el frontend sigue yendo por Vite+.
 FROM oven/bun:1.3.14
 
 WORKDIR /app
 
+# Manifests primero para cachear la instalación.
 COPY package.json bun.lock ./
 COPY apps/api/package.json apps/api/package.json
 COPY apps/web/package.json apps/web/package.json

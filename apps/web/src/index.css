@@ -1,3 +1,6 @@
+/* Estilos globales del SPA: Tailwind 4, animaciones, tokens de shadcn y fuente Geist.
+   No hay tailwind.config: el tema vive en @theme. El bloque final fuerza cursor:pointer
+   en controles clicables. */
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";

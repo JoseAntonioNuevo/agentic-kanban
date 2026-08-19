@@ -1,3 +1,12 @@
+/**
+ * Punto de entrada del SPA.
+ *
+ * Monta React en #root y envuelve la app con los providers que el resto
+ * del frontend da por sentados:
+ * - QueryClientProvider: un único cliente de TanStack Query para estado de servidor.
+ * - TooltipProvider: contexto de tooltips de shadcn/Radix.
+ * - Toaster: toasts (sonner). Hoy no se usan; el esqueleto ya lo deja listo.
+ */
 import { QueryClientProvider } from "@tanstack/react-query";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
@@ -12,7 +21,7 @@ import { queryClient } from "./lib/query-client.ts";
 const rootElement = document.getElementById("root");
 
 if (!rootElement) {
-  throw new Error("Root element #root was not found");
+  throw new Error("No se encontró el elemento #root");
 }
 
 createRoot(rootElement).render(

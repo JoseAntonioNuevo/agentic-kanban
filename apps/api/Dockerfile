@@ -1,7 +1,9 @@
+# API: Bun 1.3.14. Instala el monorepo y arranca Hono con --hot.
 FROM oven/bun:1.3.14
 
 WORKDIR /app
 
+# Primero los manifests para cachear node_modules entre builds.
 COPY package.json bun.lock ./
 COPY apps/api/package.json apps/api/package.json
 COPY apps/web/package.json apps/web/package.json
@@ -10,6 +12,7 @@ COPY packages/schemas/package.json packages/schemas/package.json
 
 RUN bun install --frozen-lockfile
 
+# El código se bind-montea en runtime; esta COPY vale para la imagen base.
 COPY . .
 
 ENV DATABASE_URL=file:/data/agentic-kanban.db

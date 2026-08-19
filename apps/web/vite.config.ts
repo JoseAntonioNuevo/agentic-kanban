@@ -1,3 +1,11 @@
+/**
+ * Configuración de Vite+ para el frontend.
+ *
+ * - `lazyPlugins`: React + Tailwind 4 (plugin de Vite, sin `tailwind.config`).
+ * - Alias `@` → `apps/web/src` (TS 7 ya no usa `baseUrl`).
+ * - El servidor escucha en 0.0.0.0:5173 y reenvía `/api` a la API Hono
+ *   (`API_PROXY_TARGET` en Compose es `http://api:3000`).
+ */
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { fileURLToPath, URL } from "node:url";

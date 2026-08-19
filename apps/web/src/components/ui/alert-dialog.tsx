@@ -1,3 +1,4 @@
+/** Diálogo de confirmación (Radix Alert Dialog). Pedirá OK/Cancelar en acciones destructivas. */
 import * as React from "react";
 import { AlertDialog as AlertDialogPrimitive } from "radix-ui";
 

@@ -1,3 +1,10 @@
+/**
+ * Config raíz de Vite+: fmt (Oxfmt), lint (Oxlint) y typecheck de todo el monorepo.
+ *
+ * El frontend no usa ESLint/Prettier. `prefer-vite-plus-imports` obliga a
+ * importar `defineConfig` / `test` desde `vite-plus`. En `apps/web` se
+ * activan las rules de React; en la API se permite `console` (logs de health).
+ */
 import { defineConfig } from "vite-plus";
 
 export default defineConfig({

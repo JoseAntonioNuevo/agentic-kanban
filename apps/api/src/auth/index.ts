@@ -1,21 +1,15 @@
-import { db, schema } from "@agentic-kanban/db";
-import { betterAuth } from "better-auth";
-import { drizzleAdapter } from "better-auth/adapters/drizzle";
+/**
+ * Placeholder de autenticación (Sesión 1).
+ *
+ * `better-auth` ya está instalado en API y web, pero aún no se configura.
+ * Aquí irá `betterAuth({ database: drizzleAdapter(...), emailAndPassword })`
+ * y el mount de `/api/auth/*`. No implementes login en el esqueleto.
+ *
+ * Stack previsto:
+ * - better-auth
+ * - drizzleAdapter de "better-auth/adapters/drizzle"
+ * - provider: "sqlite"
+ * - libSQL local (el mismo fichero que usa Drizzle)
+ */
 
-const classroomSecret = "local-dev-only-change-in-session-1";
-
-export const auth = betterAuth({
-  secret: process.env.BETTER_AUTH_SECRET ?? classroomSecret,
-  baseURL: process.env.BETTER_AUTH_URL ?? "http://localhost:5173",
-  trustedOrigins: ["http://localhost:5173", "http://localhost:3000"],
-  database: drizzleAdapter(db, {
-    provider: "sqlite",
-    schema,
-  }),
-  emailAndPassword: {
-    enabled: true,
-  },
-  rateLimit: {
-    enabled: process.env.VITEST !== "true",
-  },
-});
+export {};

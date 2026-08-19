@@ -1,3 +1,12 @@
+/**
+ * Cliente lazy de libSQL + Drizzle.
+ *
+ * No se abre el fichero al importar el módulo: Docker monta `/data` después
+ * de arrancar el proceso. `getDb()` / `getLibsql()` (y los proxies `db` /
+ * `libsql`) crean el cliente en la primera query.
+ *
+ * Cadena: Hono → drizzle-orm/libsql → @libsql/client → file:…/agentic-kanban.db
+ */
 import { createClient, type Client } from "@libsql/client";
 import { sql } from "drizzle-orm";
 import { drizzle, type LibSQLDatabase } from "drizzle-orm/libsql";
@@ -5,11 +14,11 @@ import { mkdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import * as schema from "./schema/index.ts";
-
-export type AppSchema = typeof schema;
-export type Database = LibSQLDatabase<AppSchema>;
-
+/**
+ * Resuelve la URL del fichero SQLite.
+ * En Compose: `DATABASE_URL=file:/data/agentic-kanban.db`.
+ * En el Mac: `file:<repo>/data/agentic-kanban.db` (el mismo path que TablePlus).
+ */
 function resolveDatabaseUrl(): string {
   if (process.env.DATABASE_URL) {
     return process.env.DATABASE_URL;
@@ -19,6 +28,7 @@ function resolveDatabaseUrl(): string {
   return `file:${resolve(repoRoot, "data/agentic-kanban.db")}`;
 }
 
+/** Crea el directorio del `.db` si la URL es `file:` y la carpeta no existe. */
 function ensureDatabaseDirectory(url: string): void {
   if (!url.startsWith("file:")) {
     return;
@@ -28,10 +38,10 @@ function ensureDatabaseDirectory(url: string): void {
 }
 
 let cachedClient: Client | undefined;
-let cachedDb: Database | undefined;
-let foreignKeysReady: Promise<void> | undefined;
+let cachedDb: LibSQLDatabase | undefined;
 
-function openDatabase(): { client: Client; db: Database } {
+/** Abre (o reutiliza) el cliente libSQL y el wrapper de Drizzle. */
+function openDatabase(): { client: Client; db: LibSQLDatabase } {
   if (cachedClient && cachedDb) {
     return { client: cachedClient, db: cachedDb };
   }
@@ -39,38 +49,41 @@ function openDatabase(): { client: Client; db: Database } {
   const databaseUrl = resolveDatabaseUrl();
   ensureDatabaseDirectory(databaseUrl);
   cachedClient = createClient({ url: databaseUrl });
-  cachedDb = drizzle(cachedClient, { schema });
+  cachedDb = drizzle(cachedClient);
   return { client: cachedClient, db: cachedDb };
 }
 
-export function resetDatabase(): void {
+/**
+ * Cierra el handle cacheado. Útil si Docker remonta el volumen y el
+ * descriptor queda inválido (`SQLITE_READONLY_DBMOVED` en el pasado).
+ */
+function resetDatabase(): void {
   if (cachedClient) {
     try {
       cachedClient.close();
     } catch {
-      // The previous handle may already be invalid after a volume remount.
+      // El handle anterior puede estar ya inválido tras un remount.
     }
   }
 
   cachedClient = undefined;
   cachedDb = undefined;
-  foreignKeysReady = undefined;
 }
 
-export async function ensureForeignKeys(): Promise<void> {
-  const { client } = openDatabase();
-  foreignKeysReady ??= client.execute("PRAGMA foreign_keys = ON").then(() => undefined);
-  await foreignKeysReady;
-}
-
+/** Cliente crudo de `@libsql/client`. */
 export function getLibsql(): Client {
   return openDatabase().client;
 }
 
-export function getDb(): Database {
+/** Instancia de Drizzle para `SELECT` / `insert` / migraciones futuras. */
+export function getDb(): LibSQLDatabase {
   return openDatabase().db;
 }
 
+/**
+ * Proxy que reenvía cada acceso al objeto real.
+ * Así se puede exportar `db` en el top-level sin abrir el fichero al importar.
+ */
 function forward<T extends object>(getTarget: () => T): T {
   return new Proxy({} as T, {
     get(_target, property, receiver) {
@@ -83,16 +96,18 @@ function forward<T extends object>(getTarget: () => T): T {
   });
 }
 
-export const db: Database = forward(getDb);
+export const db: LibSQLDatabase = forward(getDb);
 export const libsql: Client = forward(getLibsql);
 
+/**
+ * Health de la base: `SELECT 1`.
+ * Si el handle está stale, se resetea y se reintenta una vez.
+ */
 export async function pingDatabase(): Promise<void> {
   try {
-    await ensureForeignKeys();
     await getDb().run(sql`SELECT 1`);
   } catch {
     resetDatabase();
-    await ensureForeignKeys();
     await getDb().run(sql`SELECT 1`);
   }
 }

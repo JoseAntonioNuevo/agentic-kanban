@@ -10,18 +10,16 @@ Bun-native server. Do not add Node, `@hono/node-server`, Express, or CORS.
 
 ```ts
 // ✅ src/index.ts
-app.on(["POST", "GET"], "/api/auth/*", (c) => auth.handler(c.req.raw));
 app.route("/", healthRoutes);
-app.route("/", workspaceRoutes);
 ```
 
 - One Hono app per route file (`new Hono()`), then `app.route("/", …)`.
 - Validate responses (and later inputs) with `@agentic-kanban/schemas`.
 - Database access only through `@agentic-kanban/db`. Never import
   `@libsql/client` or `drizzle-orm` from the API.
-- Auth: Better Auth `drizzleAdapter` + `provider: "sqlite"`. Session → 401
-  (`requireSession`). Missing membership → 403 (`requireWorkspaceMember`).
+- Better Auth is installed only. `src/auth/index.ts` stays a placeholder until
+  Session 1. Do not mount `/api/auth/*` yet.
 - `src/realtime/index.ts` stays a placeholder. Realtime must stay in this
   process (SSE or WebSocket). No Socket.IO, Redis, or extra service.
-- Boot runs migrate + idempotent seed. Dev: `bun run --hot`. Listen
+- Do not auto-run migrations or seed. Dev: `bun run --hot`. Listen
   `0.0.0.0:${API_PORT:-3000}`.

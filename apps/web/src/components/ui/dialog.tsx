@@ -1,3 +1,4 @@
+/** Modal genérico de shadcn/ui (Radix Dialog): overlay, panel, título y cierre. */
 "use client";
 
 import * as React from "react";

@@ -1,3 +1,4 @@
+/** Avatar (imagen o fallback con iniciales). Útil para los dos usuarios demo. */
 import * as React from "react";
 import { Avatar as AvatarPrimitive } from "radix-ui";
 

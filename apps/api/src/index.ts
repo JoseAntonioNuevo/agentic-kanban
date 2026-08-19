@@ -1,27 +1,20 @@
-import { applyMigrations } from "@agentic-kanban/db";
+/**
+ * Servidor HTTP de la API: Hono sobre Bun (no Node).
+ *
+ * Hoy solo monta `GET /api/health`. Better Auth y las rutas de workspace
+ * se añaden en la Sesión 1. Bun usa este `export default` (`port`,
+ * `hostname`, `fetch`) para escuchar.
+ */
 import { Hono } from "hono";
 
-import { auth } from "./auth/index.ts";
 import { healthRoutes } from "./routes/health.ts";
-import { workspaceRoutes } from "./routes/workspaces.ts";
-import { seedDemoData } from "./seed.ts";
 
-export const app = new Hono();
+const app = new Hono();
 
-app.on(["POST", "GET"], "/api/auth/*", (c) => auth.handler(c.req.raw));
+// Cada módulo de rutas es un Hono pequeño; se cuelga en la raíz.
 app.route("/", healthRoutes);
-app.route("/", workspaceRoutes);
-
-export async function prepareDatabase(): Promise<void> {
-  await applyMigrations();
-  await seedDemoData();
-}
 
 const port = Number(process.env.API_PORT ?? 3000);
-
-if (import.meta.main) {
-  await prepareDatabase();
-}
 
 export default {
   port,

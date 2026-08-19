@@ -1,3 +1,4 @@
+/** Separador visual horizontal o vertical (Radix Separator). */
 "use client";
 
 import * as React from "react";

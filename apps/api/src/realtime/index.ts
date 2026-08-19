@@ -1,6 +1,8 @@
 /**
- * Session 3 will add SSE or WebSocket realtime inside this Hono process.
- * Do not introduce Socket.IO or a separate realtime service.
+ * Placeholder de realtime (Sesión 3).
+ *
+ * El realtime debe vivir en este mismo proceso Hono (SSE o WebSocket).
+ * No añadas Socket.IO, Redis ni un servicio aparte.
  */
 
 export {};

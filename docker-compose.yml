@@ -1,3 +1,6 @@
+# Dos servicios: web (Vite+) y api (Hono/Bun). No hay contenedor de base de datos.
+# libSQL es un fichero en ./data, montado en /data (fuera de /app para no
+# romper SQLite con el bind-mount del código + bun --hot).
 name: agentic-kanban
 
 services:
@@ -6,16 +9,18 @@ services:
       context: .
       dockerfile: apps/api/Dockerfile
     ports:
+      # En el Mac, si 3000 está ocupado: API_HOST_PORT=3002
       - "${API_HOST_PORT:-3000}:3000"
     environment:
       DATABASE_URL: file:/data/agentic-kanban.db
       API_PORT: "3000"
+      # Placeholders de Better Auth; la Sesión 1 los usará de verdad.
       BETTER_AUTH_SECRET: local-dev-only-change-in-session-1
       BETTER_AUTH_URL: http://localhost:5173
     volumes:
       - .:/app
-      - /app/node_modules
-      - ./data:/data
+      - /app/node_modules # anónimo: el node_modules de Linux no lo pisa el Mac
+      - ./data:/data # mismo fichero que TablePlus en el host
     healthcheck:
       test:
         [
@@ -36,6 +41,7 @@ services:
     ports:
       - "5173:5173"
     environment:
+      # El proxy de Vite+ habla con el servicio api por la red de Compose.
       API_PROXY_TARGET: http://api:3000
     volumes:
       - .:/app

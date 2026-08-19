@@ -1,3 +1,4 @@
+/** Popover flotante de shadcn/ui (Radix). Contenido anclado a un trigger. */
 import * as React from "react";
 import { Popover as PopoverPrimitive } from "radix-ui";
 

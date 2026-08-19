@@ -1,3 +1,4 @@
+/** Tooltip de shadcn/ui. `TooltipProvider` ya envuelve la app en main.tsx. */
 "use client";
 
 import * as React from "react";
