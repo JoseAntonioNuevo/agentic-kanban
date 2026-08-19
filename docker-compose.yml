@@ -1,0 +1,60 @@
+name: agentic-kanban
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    ports:
+      - "${API_HOST_PORT:-3000}:3000"
+    environment:
+      DATABASE_URL: file:/data/agentic-kanban.db
+      API_PORT: "3000"
+      BETTER_AUTH_SECRET: local-dev-only-change-in-session-1
+      BETTER_AUTH_URL: http://localhost:3000
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - api_data:/data
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "bun",
+          "-e",
+          "const r = await fetch('http://127.0.0.1:3000/api/health'); const b = await r.json(); if (b.api !== 'ok' || b.database !== 'ok') process.exit(1)",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    ports:
+      - "5173:5173"
+    environment:
+      API_PROXY_TARGET: http://api:3000
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "bun",
+          "-e",
+          "const r = await fetch('http://127.0.0.1:5173'); if (!r.ok) process.exit(1)",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
+volumes:
+  api_data:
