@@ -16,7 +16,7 @@ Hono → drizzle-orm/libsql → @libsql/client → file:…/agentic-kanban.db
 - Open lazily (`getDb()` / proxied `db`) so Docker volumes exist before the
   first query. Do not connect at import time.
 - Host default: `file:<repo>/data/agentic-kanban.db`. Compose:
-  `DATABASE_URL=file:/data/agentic-kanban.db` on volume `api_data`.
+  `DATABASE_URL=file:/data/agentic-kanban.db` bind-mounted from `./data`.
 - `pingDatabase()` is `SELECT 1` and retries once after a stale handle.
 - Tables: Better Auth (`user`, `session`, `account`, `verification`) plus
   `workspace`, `workspace_member`, `project`. No columns/tasks yet.

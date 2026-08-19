@@ -43,10 +43,17 @@ A newly registered user with no membership sees an empty workspace state.
 docker compose down
 ```
 
+## Database file
+
+Compose and the host share `data/agentic-kanban.db` (`./data` → `/data`). Open
+that file in TablePlus as SQLite and refresh after writes. Do not run the
+host API while Compose is up — both would lock the same file.
+
 ## Reset local database
 
 ```bash
-docker compose down -v
+docker compose down
+rm -f data/*.db data/*.db-*
 docker compose up --build
 ```
 

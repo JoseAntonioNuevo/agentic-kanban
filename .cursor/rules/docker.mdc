@@ -1,5 +1,5 @@
 ---
-description: Two Compose services, Bun images, DB volume on /data
+description: Two Compose services, Bun images, DB bind-mount ./data:/data
 globs: docker-compose.yml,**/Dockerfile*
 alwaysApply: false
 ---
@@ -12,9 +12,10 @@ Two services only: `web` and `api`. No database container.
   `ghcr.io/voidzero-dev/vite-plus:0.2.9` (unauthenticated pulls are denied).
 - Bind-mount source plus anonymous `/app/node_modules` so the host does not
   overwrite Linux deps.
-- Persist SQLite on **`/data`**, not `/app/data`. A volume under the source
-  mount plus `bun --hot` caused `SQLITE_READONLY_DBMOVED`.
+- Persist SQLite on **`./data` → `/data`**, not `/app/data`. A volume under
+  the source mount plus `bun --hot` caused `SQLITE_READONLY_DBMOVED`.
 - API: `DATABASE_URL=file:/data/agentic-kanban.db`. Web:
   `API_PROXY_TARGET=http://api:3000`.
 - Classroom start: `docker compose up --build`. If host 3000 is taken:
-  `API_HOST_PORT=3002`. `docker compose down` keeps `api_data`; `down -v` wipes it.
+  `API_HOST_PORT=3002`. `docker compose down` keeps `./data`; delete
+  `data/*.db*` to reset. Do not run the host API while Compose is up.

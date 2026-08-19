@@ -151,8 +151,8 @@ Hono → drizzle-orm/libsql → @libsql/client → file:…/agentic-kanban.db
 first query. `pingDatabase()` is `SELECT 1` (retry once after a stale handle).
 
 Host default: `file:<repo>/data/agentic-kanban.db`.
-Compose: `DATABASE_URL=file:/data/agentic-kanban.db` on volume `api_data`.
-Never commit `*.db`. `docker compose down` keeps the volume; `down -v` wipes it.
+Compose: `DATABASE_URL=file:/data/agentic-kanban.db` bind-mounted from `./data`.
+Never commit `*.db`. `docker compose down` keeps `./data`; delete `data/*.db*` to reset.
 
 Schema: Better Auth tables plus `workspace`, `workspace_member`, `project`.
 Every tenant-owned query must be scoped by an authorized `workspace_id`. Do not
@@ -167,8 +167,8 @@ Two services only: `web`, `api`. No database container.
   `ghcr.io/voidzero-dev/vite-plus:0.2.9` denies unauthenticated pulls.
 - Bind-mount source; anonymous `/app/node_modules` so the host does not
   overwrite Linux deps.
-- DB volume is **`/data`**, not `/app/data`. A volume under the source mount
-  plus `bun --hot` caused `SQLITE_READONLY_DBMOVED`.
+- DB is **`./data` → `/data`**, not `/app/data`. A volume under the source
+  mount plus `bun --hot` caused `SQLITE_READONLY_DBMOVED`.
 
 Classroom command: `docker compose up --build`. Students should not need a
 local Bun/Node/Turso account. If host 3000 is taken: `API_HOST_PORT=3002`.
