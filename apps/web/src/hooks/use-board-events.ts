@@ -1,7 +1,8 @@
 /**
  * SSE del project abierto. Parchea la cache de TanStack Query y tostea
- * eventos de otros usuarios. Se cierra al desmontar. Ignora eventos del
- * propio usuario (ni cache ni toast).
+ * eventos de otros usuarios. `comment.created` invalida comentarios y
+ * notificaciones (no muta el snapshot del board). Se cierra al desmontar.
+ * Ignora eventos del propio usuario (ni cache ni toast). Un solo EventSource.
  */
 import {
   applyBoardEvent,
@@ -14,6 +15,8 @@ import { useEffect } from "react";
 import { toast } from "sonner";
 
 import { boardQueryKey } from "@/hooks/use-board.ts";
+import { commentsQueryKey } from "@/hooks/use-comments.ts";
+import { notificationsQueryKey } from "@/hooks/use-notifications.ts";
 
 function taskTitleFromBoard(board: Board | undefined, taskId: string): string | undefined {
   if (!board) {
@@ -56,6 +59,17 @@ export function useBoardEvents(projectId: string, userId: string | undefined) {
 
       const event = parsed.data;
       if (event.actorUserId === userId) {
+        return;
+      }
+
+      if (event.type === "comment.created") {
+        toast.info(boardEventToastMessage(event, undefined));
+        void queryClient.invalidateQueries({
+          queryKey: commentsQueryKey(event.comment.taskId, userId),
+        });
+        void queryClient.invalidateQueries({
+          queryKey: notificationsQueryKey(userId),
+        });
         return;
       }
 

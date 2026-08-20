@@ -2,6 +2,7 @@
  * Pantalla del tablero: query, loading/error, diálogos y columnas.
  */
 import { KanbanBoard } from "@/components/kanban-board.tsx";
+import { NotificationBell } from "@/components/notification-bell.tsx";
 import { TaskFormDialog } from "@/components/task-form-dialog.tsx";
 import {
   AlertDialog,
@@ -17,6 +18,7 @@ import { Button } from "@/components/ui/button.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { useBoard } from "@/hooks/use-board.ts";
 import { useBoardEvents } from "@/hooks/use-board-events.ts";
+import { useComments, useCreateComment } from "@/hooks/use-comments.ts";
 import { useCreateTask, useDeleteTask, useUpdateTask } from "@/hooks/use-task-mutations.ts";
 import { authClient } from "@/lib/auth-client.ts";
 import type { Task } from "@agentic-kanban/schemas";
@@ -43,6 +45,9 @@ export function BoardScreen({
   const deleteTask = useDeleteTask(projectId, userId);
   const [dialog, setDialog] = useState<DialogState>({ kind: "closed" });
   const [pendingDelete, setPendingDelete] = useState<Task | null>(null);
+  const editTaskId = dialog.kind === "edit" ? dialog.task.id : undefined;
+  const comments = useComments(editTaskId, userId, dialog.kind === "edit");
+  const createComment = useCreateComment(editTaskId ?? "", userId);
 
   if (board.isPending) {
     return (
@@ -51,6 +56,8 @@ export function BoardScreen({
           <Button type="button" variant="outline" size="sm" onClick={onBack}>
             Workspaces
           </Button>
+          <span className="flex-1" />
+          <NotificationBell userId={userId} />
         </header>
         <div className="flex gap-3 overflow-x-auto p-4">
           <Skeleton className="h-64 w-72 shrink-0" />
@@ -79,6 +86,7 @@ export function BoardScreen({
           Workspaces
         </Button>
         <h1 className="flex-1 text-lg font-medium">{board.data.project.name}</h1>
+        <NotificationBell userId={userId} />
         <Button
           type="button"
           variant="outline"
@@ -158,6 +166,12 @@ export function BoardScreen({
             if (dialog.kind === "edit") {
               setPendingDelete(dialog.task);
             }
+          }}
+          comments={comments.data}
+          commentsPending={comments.isPending}
+          commentsError={comments.isError}
+          onCreateComment={async (body) => {
+            await createComment.mutateAsync({ body });
           }}
         />
       ) : null}

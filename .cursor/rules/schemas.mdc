@@ -29,14 +29,22 @@ export interface HealthResponse { status: string }
   applied to `/api/auth/*`.
 - Workspace/project GET contracts live in `src/workspace.ts`
   (`workspaceListResponseSchema`, `projectSchema`, `projectIdParamSchema`,
-  `workspacesQuerySchema`). Board/move contracts live in `src/board.ts`.
+  `workspacesQuerySchema`).   Board/move contracts live in `src/board.ts`.
+  Comment contracts live in `src/comment.ts` (`commentSchema` with
+  `authorName`, `createCommentBodySchema`, `commentListResponseSchema`).
+  `@Nombre` tokens: `extractMentionNames` in `src/mention.ts` (unique,
+  no member resolution). Notification inbox contracts live in
+  `src/notification.ts` (`notificationSchema` with `actorName`,
+  `taskTitle`, `bodyPreview`, nullable `readAt`).
   Board announcement events live in `src/events.ts` (`boardEventSchema`,
-  discriminated on `type`: task.created / updated / deleted / moved;
-  `applyBoardEvent` patches a `Board` snapshot; `boardEventToastMessage`
-  is the in-app sonner copy). HTTP remains the write
-  path.
+  discriminated on `type`: task.created / updated / deleted / moved /
+  comment.created; `applyBoardEvent` patches a `Board` snapshot and is a
+  no-op for comments; `boardEventToastMessage` is the in-app sonner copy).
+  HTTP remains the write path.
   The API parses responses with the same schemas.
   `workspaceId` in JSON is data, not permission.
-- Tests: `import { describe, expect, it } from "vite-plus/test"`. Cover a
+-   Tests: `import { describe, expect, it } from "vite-plus/test"`. Cover a
   valid parse and a reject path (see `src/health.test.ts`, `src/auth.test.ts`,
-  `src/workspace.test.ts`, `src/board.test.ts`, `src/events.test.ts`).
+  `src/workspace.test.ts`, `src/board.test.ts`, `src/events.test.ts`,
+  `src/comment.test.ts`, `src/mention.test.ts`,
+  `src/notification.test.ts`).

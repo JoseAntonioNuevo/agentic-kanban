@@ -48,7 +48,17 @@ GET /api/projects/:projectId
 
 Workspace/project HTTP writes still do not exist. Board HTTP exists
 (`GET /api/projects/:projectId/board`, task create/update/delete, and
-`POST /api/tasks/:taskId/move`). Classroom seed:
+`POST /api/tasks/:taskId/move`). Comment HTTP exists
+(`GET` / `POST /api/tasks/:taskId/comments`). POST
+parses `@Nombre` against workspace member `user.name` (case-insensitive),
+inserts `notification` kind `mention` (skip self and non-members),
+appends a JSON line to `data/outbox.jsonl` (same directory as the `.db`)
+then sets `emailed_at`, and publishes `comment.created` on the project
+SSE hub. A failed POST does not publish. No Resend, SMTP, or extra
+container. The edit-task dialog shows the thread. Notification HTTP
+exists (`GET /api/notifications`, `POST /api/notifications/:id/read`).
+The dashboard and board header show the in-app bell.
+Classroom seed:
 
 ```text
 bun run db:seed
@@ -64,7 +74,9 @@ After login the dashboard lists `GET /api/workspaces` (TanStack Query +
 the same Zod schema; each workspace includes its projects). Opening a
 workspace loads the Kanban board (`GET /api/projects/:projectId/board`).
 Cards move with `@dnd-kit/react` and an optimistic TanStack Query
-mutation to `POST /api/tasks/:taskId/move`. The open board also
+mutation to `POST /api/tasks/:taskId/move`. Editing a card lists and
+creates comments (`useComments` / `useCreateComment`); creating a card
+does not. The open board also
 subscribes to SSE via `useBoardEvents` and patches that query cache.
 Swatch color is a function
 of `workspace.id`, never of the signed-in user. Ana sees two workspaces;
@@ -72,33 +84,48 @@ Luis sees the shared one.
 
 The shared Zod contract for board announcements lives in
 `@agentic-kanban/schemas` (`boardEventSchema`: `task.created`,
-`task.updated`, `task.deleted`, `task.moved`; `applyBoardEvent` patches
-a board snapshot; `boardEventToastMessage` is the in-app copy). HTTP remains the write path.
+`task.updated`, `task.deleted`, `task.moved`, `comment.created`;
+`applyBoardEvent` patches a board snapshot and is a no-op for comments;
+`boardEventToastMessage` is the in-app copy).
+`extractMentionNames` pulls unique `@Nombre` tokens from a comment body
+(resolution is membership, not the parser). HTTP remains the write path.
 `GET /api/projects/:projectId/events` is an authenticated SSE
 stream (Hono `streamSSE`) with an in-process hub (`subscribe` /
 `publish` in `src/realtime/`, keyed by `projectId`). Each frame is
 data-only: JSON of `boardEventSchema` in `data` (no `event:` field).
-Board writes publish after a successful row (`actorUserId` from the
-session). A 404 or validation failure does not publish. `useBoardEvents`
+Board writes and comment creates publish after a successful row
+(`actorUserId` from the session). A 404 or validation failure does not
+publish. `useBoardEvents`
 opens `EventSource` on the relative `/api/projects/:projectId/events`
 (`onmessage`, same-origin cookie), parses with `boardEventSchema`, skips
 the current user's `actorUserId` (no cache patch and no toast), then
-`toast.info` for the other user's event and patches the TanStack Query
-board cache with `applyBoardEvent`. Close on unmount. In-app sonner
-toasts only; no persisted notifications, bell, or email.
+`toast.info` for the other user's event. Task events patch the board
+cache with `applyBoardEvent`. `comment.created` invalidates the comments
+query for that task and the notifications query (bell). Close on unmount.
+In-app sonner toasts only. One EventSource; no second stream.
+Comment HTTP lists and creates on a task. The edit-task
+dialog lists the thread (`useComments`) and posts one (`useCreateComment`);
+the create-task dialog does not. Mentions persist a `notification` and
+a file-outbox line. `GET /api/notifications` lists the session user's
+rows (`recipient_user_id` + membership on the row's `workspace_id`).
+`POST /api/notifications/:notificationId/read` sets `read_at` (404 if
+not the recipient). The dashboard and board header show
+`NotificationBell` (unread badge, popover: quién / tarea / extracto).
+No mention highlighting.
 
 The API does **not** seed on boot. After deleting `data/*.db*`: `db:migrate` then `db:seed`. Never run the Mac API (or seed) while Compose uses the same `.db`.
 
 Tenant tables also include `column` and `task` (Drizzle + migrations
-`0002_board` and `0003` for `task.description`). Classroom seed upserts
-the three demo columns and six cards on `proj_agentic_kanban`.
+`0002_board` and `0003` for `task.description`) and `comment` /
+`notification` (`0004_grey_joshua_kane`). Classroom seed upserts the three demo columns
+and six cards on `proj_agentic_kanban`. No comment/notification/outbox seed.
 
 **Not implemented yet (do not invent):** workspace/project HTTP writes,
-comments, mentions, email, deploy, session git tags.
+mention highlighting, `sesion-*` git tags.
 
-Finished product (later, still small): one demo workspace, one board, three
-columns, cards, two demo users, comments, `@mentions`, realtime in the Hono
-process, notification toast/bell.
+Sesión 4 product is complete: comments, `@mentions`, file outbox (no Resend),
+notification toast/bell, `comment.created` on the project SSE hub, classroom
+deploy via `docker compose up --build` (two services: `web`, `api`).
 
 **Out of scope forever:** billing, RBAC, attachments, mobile, SSO, automations,
 microservices, queues, extra cloud.
@@ -179,7 +206,7 @@ only.
 | shadcn 4.18.0                                                            | Pinned CLI. Components in `src/components/ui`. No `form` (no RHF).                              |
 | radix-ui, cva, clsx, tailwind-merge, lucide-react, tw-animate-css, geist | Pulled in by shadcn. Keep exact pins.                                                           |
 | sonner + next-themes                                                     | In-app toasts (other users' board events, mutation errors). `next-themes` is **not** Next.js.   |
-| TanStack Query 5.101.4                                                   | One `QueryClient`. Health, workspaces, board, optimistic move, SSE cache patch.                 |
+| TanStack Query 5.101.4                                                   | One `QueryClient`. Health, workspaces, board, comments, notifications, optimistic move, SSE cache patch. |
 | better-auth 1.7.1                                                        | React client (`createAuthClient`, `useSession`). No `baseURL`; fetch is relative `/api/auth/*`. |
 | Zod 4.4.3                                                                | Runtime-parse API JSON with `@agentic-kanban/schemas`. Client-side sign-up/sign-in validation.  |
 | `@dnd-kit/react` 0.5.0                                                   | Drag-and-drop. Do **not** add `@dnd-kit/core` / `sortable` as the API.                          |
@@ -194,8 +221,8 @@ only.
 | `@hono/zod-validator` 0.9.0 | Query/param on workspace + project GET; responses via schema.parse.           |
 | Zod 4.4.3                   | Same major as schemas.                                                        |
 | Better Auth 1.7.1           | `betterAuth` with `drizzleAdapter` + `provider: "sqlite"` on this libSQL.     |
-| `@agentic-kanban/db`        | Only database access (reads, board writes, seed). Never drizzle from the API. |
-| `@agentic-kanban/schemas`   | Shared Zod (auth, workspace/project GET, board, move, board events).          |
+| `@agentic-kanban/db`        | Only database access (reads, board/comment/mention writes, seed). Never drizzle from the API. |
+| `@agentic-kanban/schemas`   | Shared Zod (auth, workspace/project GET, board, move, comments, mentions, notifications, board events). |
 
 `src/auth/index.ts` exports the `auth` instance (Better Auth + drizzleAdapter).
 `src/routes/auth.ts` mounts `/api/auth/*` via `auth.handler`. `src/middleware/
@@ -203,6 +230,17 @@ rate-limit.ts` is an in-memory rate limiter for POST sign-up / sign-in only
 (not get-session). `src/middleware/session.ts` requires a session (`401`).
 `src/routes/workspaces.ts` and `src/routes/projects.ts` are GET-only.
 `src/routes/board.ts` serves the board and task move/CRUD.
+`src/routes/comments.ts` serves `GET` / `POST /api/tasks/:taskId/comments`.
+POST parses `@Nombre` (`extractMentionNames`), inserts
+mention notifications, writes `src/mail/outbox.ts` (`outbox.jsonl`
+next to the sqlite file), then `publish`es `comment.created` on the
+project hub. A failed outbox write logs and leaves
+`emailed_at` null; the comment still returns 201 and still publishes.
+A 404 or validation failure does not publish.
+`src/routes/notifications.ts` serves `GET /api/notifications` and
+`POST /api/notifications/:notificationId/read` (`requireSession` → 401;
+only `recipient_user_id` of the session user, plus membership on the
+row's `workspace_id`; 404 if missing/not the recipient; never 403).
 `src/routes/events.ts` serves `GET /api/projects/:projectId/events`
 (SSE; `data` is JSON of `boardEventSchema`, no named `event:`).
 Authz matches board GET: session → `401`;
@@ -212,13 +250,19 @@ not imported by the server. `src/realtime/index.ts` is the in-process
 hub (`Map` of `projectId` → subscribers; `subscribe` / `publish`).
 Board routes call `publish` after a successful write (create →
 `task.created`, update → `task.updated`, delete → `task.deleted`,
-move → `task.moved`). Failed writes (404, validation) do not publish.
+move → `task.moved`). Comment POST publishes `comment.created` after
+persist + outbox. Failed writes (404, validation) do not publish.
 The web client connects with `EventSource` (relative URL, `onmessage`)
 and patches Query cache; it does not copy the board into `useState`.
 After skip-self, `useBoardEvents` shows a sonner `toast.info` for the
 other user's event (title from the payload or the board cache) then
-applies the patch. No persisted notifications. No Socket.IO, Redis,
-WebSocket upgrade, or extra service.
+applies the board patch, or for `comment.created` invalidates comments
+and notifications. POST resolves `@mentions` (members only,
+not self) and writes the file outbox. The edit dialog
+fetches comments only while open. The bell uses HTTP + TanStack Query
+(`useNotifications`, refetch on focus and every 4s) and also refreshes
+when `comment.created` arrives on the open board. No mention highlighting.
+No Socket.IO, Redis, WebSocket upgrade, Resend, SMTP, or extra service.
 
 Listen `0.0.0.0:${API_PORT:-3000}`. Hot reload: `bun run --hot`.
 
@@ -251,14 +295,26 @@ Schema folder:
 - Better Auth: `user`, `session`, `account`, `verification` in `schema/auth.ts`.
 - Tenant: `workspace`, `workspace_member` in `schema/workspace.ts`;
   `project` in `schema/project.ts`; `column` / `task` in `schema/column.ts`
-  and `schema/task.ts`. Reads: `listWorkspacesForUser`, `getProjectForMember`,
+  and `schema/task.ts`; `comment` / `notification` in `schema/comment.ts`
+  and `schema/notification.ts`. Reads: `listWorkspacesForUser`, `getProjectForMember`,
   `getBoardForMember`. Writes: `moveTaskForMember` and task
-  create/update/delete. Seed also upserts `column` / `task` by id.
-  `workspace_member` is unique on `(workspace_id, user_id)`
-  and FKs `user.id`. No `role`, slug, or owner. Every tenant row has
-  `workspace_id`. Indexes: `project.workspace_id`, `workspace_member.user_id`,
+  create/update/delete.   Comment helpers: `listCommentsForMember`,
+  `createCommentForMember` (via `getTaskForMember`; comment queries also
+  filter the task's `workspace_id`; create inserts mention notifications
+  in the same transaction).   Notification helpers:
+  `listNotificationsForRecipient`, `listNotificationsForUser` (inbox join:
+  actor name, task title, comment body, membership),
+  `markNotificationReadForUser`, `markNotificationsEmailed`.
+  Seed also upserts `column` / `task` by id.
+  `workspace_member` is unique
+  on `(workspace_id, user_id)` and FKs `user.id`. Comment `author_id` and
+  notification `recipient_user_id` / `actor_user_id` FK `user.id`.
+  No `role`, slug, or owner. Every tenant row has `workspace_id`.
+  Indexes: `project.workspace_id`, `workspace_member.user_id`,
   `column.workspace_id`, `(column.project_id, position)`, `task.workspace_id`,
-  `task.project_id`, `(task.column_id, position)`.
+  `task.project_id`, `(task.column_id, position)`, `comment.workspace_id`,
+  `(comment.task_id, created_at)`, `notification.workspace_id`,
+  `notification.recipient_user_id`.
 
 Use `sqliteTable` / `text` / `integer` from `drizzle-orm/sqlite-core`. Tenant
 reads go through `listWorkspacesForUser` / `getProjectForMember` (membership +
@@ -281,8 +337,10 @@ Two services only: `web`, `api`. No database container.
 - DB is **`./data` → `/data`**, not `/app/data`. A volume under the source
   mount plus `bun --hot` caused `SQLITE_READONLY_DBMOVED`.
 
-Classroom command: `docker compose up --build`. Students should not need a
-local Bun/Node/Turso account. If host 3000 is taken: `API_HOST_PORT=3002`.
+Classroom deploy: `docker compose up --build` (two services only). Students
+should not need a local Bun/Node/Turso account. If host 3000 is taken:
+`API_HOST_PORT=3002`. The same `./data` mount holds `agentic-kanban.db` and
+`outbox.jsonl` (gitignored). No Fly, Vercel, Resend, or mail container.
 
 ## Commands
 

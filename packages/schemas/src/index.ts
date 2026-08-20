@@ -48,13 +48,35 @@ export {
   applyBoardEvent,
   boardEventSchema,
   boardEventToastMessage,
+  commentCreatedEventSchema,
   taskCreatedEventSchema,
   taskDeletedEventSchema,
   taskMovedEventSchema,
   taskUpdatedEventSchema,
   type BoardEvent,
+  type CommentCreatedEvent,
   type TaskCreatedEvent,
   type TaskDeletedEvent,
   type TaskMovedEvent,
   type TaskUpdatedEvent,
 } from "./events.ts";
+
+export {
+  commentListResponseSchema,
+  commentSchema,
+  createCommentBodySchema,
+  type Comment,
+  type CommentListResponse,
+  type CreateCommentBody,
+} from "./comment.ts";
+
+export { extractMentionNames } from "./mention.ts";
+
+export {
+  notificationIdParamSchema,
+  notificationListResponseSchema,
+  notificationSchema,
+  type Notification,
+  type NotificationIdParam,
+  type NotificationListResponse,
+} from "./notification.ts";

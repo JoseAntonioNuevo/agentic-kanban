@@ -1,15 +1,20 @@
 /**
  * Acceso a tenant. La API no importa drizzle-orm: lecturas, mutaciones
- * de tablero y upserts del seed. Toda query de project/column/task pasa
- * por membership (`workspace_member.user_id`) y el `workspace_id` de la
- * fila, nunca de un argumento que el cliente haya elegido como permiso.
+ * de tablero, comentarios, menciones y upserts del seed. Toda query de
+ * project/column/task/comment/notification pasa por membership
+ * (`workspace_member.user_id`) y el `workspace_id` de la fila, nunca de
+ * un argumento que el cliente haya elegido como permiso.
  * Nunca DELETE masivo.
  */
-import { and, eq, inArray, max } from "drizzle-orm";
+import { randomUUID } from "node:crypto";
+
+import { and, asc, desc, eq, inArray, max } from "drizzle-orm";
 
 import { getDb } from "./client.ts";
 import { user } from "./schema/auth.ts";
 import { column } from "./schema/column.ts";
+import { comment } from "./schema/comment.ts";
+import { notification } from "./schema/notification.ts";
 import { project } from "./schema/project.ts";
 import { task } from "./schema/task.ts";
 import { workspace, workspaceMember } from "./schema/workspace.ts";
@@ -59,6 +64,89 @@ export type TaskRow = {
 export type BoardRow = {
   project: ProjectRow;
   columns: Array<ColumnRow & { tasks: TaskRow[] }>;
+};
+
+export type CommentRow = {
+  id: string;
+  workspaceId: string;
+  projectId: string;
+  taskId: string;
+  authorId: string;
+  authorName: string;
+  body: string;
+  createdAt: Date;
+};
+
+export type NotificationRow = {
+  id: string;
+  workspaceId: string;
+  recipientUserId: string;
+  actorUserId: string;
+  taskId: string;
+  commentId: string;
+  kind: string;
+  readAt: Date | null;
+  emailTo: string;
+  emailSubject: string;
+  emailBody: string;
+  emailedAt: Date | null;
+  createdAt: Date;
+};
+
+export type CreateCommentResult = {
+  comment: CommentRow;
+  notifications: NotificationRow[];
+};
+
+export type NotificationInboxRow = {
+  id: string;
+  workspaceId: string;
+  actorUserId: string;
+  actorName: string;
+  taskId: string;
+  taskTitle: string;
+  commentId: string;
+  kind: string;
+  bodyPreview: string;
+  readAt: Date | null;
+  createdAt: Date;
+};
+
+const BODY_PREVIEW_MAX = 80;
+
+function previewBody(body: string): string {
+  if (body.length <= BODY_PREVIEW_MAX) {
+    return body;
+  }
+
+  return `${body.slice(0, BODY_PREVIEW_MAX).trimEnd()}…`;
+}
+
+const commentSelect = {
+  id: comment.id,
+  workspaceId: comment.workspaceId,
+  projectId: comment.projectId,
+  taskId: comment.taskId,
+  authorId: comment.authorId,
+  authorName: user.name,
+  body: comment.body,
+  createdAt: comment.createdAt,
+};
+
+const notificationSelect = {
+  id: notification.id,
+  workspaceId: notification.workspaceId,
+  recipientUserId: notification.recipientUserId,
+  actorUserId: notification.actorUserId,
+  taskId: notification.taskId,
+  commentId: notification.commentId,
+  kind: notification.kind,
+  readAt: notification.readAt,
+  emailTo: notification.emailTo,
+  emailSubject: notification.emailSubject,
+  emailBody: notification.emailBody,
+  emailedAt: notification.emailedAt,
+  createdAt: notification.createdAt,
 };
 
 function sortByPositionThenId<T extends { position: number; id: string }>(rows: T[]): T[] {
@@ -234,6 +322,308 @@ export async function getTaskForMember(
     .limit(1);
 
   return rows[0];
+}
+
+/** Comentarios del task si el usuario es miembro del workspace de esa fila. */
+export async function listCommentsForMember(
+  taskId: string,
+  userId: string,
+): Promise<CommentRow[] | undefined> {
+  const taskRow = await getTaskForMember(taskId, userId);
+  if (!taskRow) {
+    return undefined;
+  }
+
+  return getDb()
+    .select(commentSelect)
+    .from(comment)
+    .innerJoin(user, eq(comment.authorId, user.id))
+    .where(and(eq(comment.taskId, taskRow.id), eq(comment.workspaceId, taskRow.workspaceId)))
+    .orderBy(asc(comment.createdAt), asc(comment.id));
+}
+
+export async function createCommentForMember(values: {
+  id: string;
+  taskId: string;
+  userId: string;
+  body: string;
+  mentionNames?: string[];
+}): Promise<CreateCommentResult | undefined> {
+  const taskRow = await getTaskForMember(values.taskId, values.userId);
+  if (!taskRow) {
+    return undefined;
+  }
+
+  const body = values.body.trim();
+  if (body.length < 1) {
+    return undefined;
+  }
+
+  return getDb().transaction(async (tx) => {
+    await tx.insert(comment).values({
+      id: values.id,
+      workspaceId: taskRow.workspaceId,
+      projectId: taskRow.projectId,
+      taskId: taskRow.id,
+      authorId: values.userId,
+      body,
+    });
+
+    const commentRows = await tx
+      .select(commentSelect)
+      .from(comment)
+      .innerJoin(user, eq(comment.authorId, user.id))
+      .where(
+        and(
+          eq(comment.id, values.id),
+          eq(comment.taskId, taskRow.id),
+          eq(comment.workspaceId, taskRow.workspaceId),
+        ),
+      )
+      .limit(1);
+
+    const commentRow = commentRows[0];
+    if (!commentRow) {
+      return undefined;
+    }
+
+    const mentionNames = values.mentionNames ?? [];
+    if (mentionNames.length === 0) {
+      return { comment: commentRow, notifications: [] };
+    }
+
+    const members = await tx
+      .select({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+      })
+      .from(workspaceMember)
+      .innerJoin(user, eq(workspaceMember.userId, user.id))
+      .where(eq(workspaceMember.workspaceId, taskRow.workspaceId));
+
+    const memberByName = new Map<string, (typeof members)[number]>();
+    for (const member of members) {
+      const key = member.name.toLowerCase();
+      if (!memberByName.has(key)) {
+        memberByName.set(key, member);
+      }
+    }
+
+    const seenRecipients = new Set<string>();
+    const toInsert: Array<{
+      id: string;
+      workspaceId: string;
+      recipientUserId: string;
+      actorUserId: string;
+      taskId: string;
+      commentId: string;
+      kind: "mention";
+      emailTo: string;
+      emailSubject: string;
+      emailBody: string;
+    }> = [];
+
+    for (const rawName of mentionNames) {
+      const member = memberByName.get(rawName.toLowerCase());
+      if (!member || member.id === values.userId || seenRecipients.has(member.id)) {
+        continue;
+      }
+
+      seenRecipients.add(member.id);
+      toInsert.push({
+        id: `notification_${randomUUID()}`,
+        workspaceId: taskRow.workspaceId,
+        recipientUserId: member.id,
+        actorUserId: values.userId,
+        taskId: taskRow.id,
+        commentId: values.id,
+        kind: "mention",
+        emailTo: member.email,
+        emailSubject: `${commentRow.authorName} te mencionó en una tarea`,
+        emailBody: `${commentRow.authorName} te mencionó en "${taskRow.title}":\n\n${body}`,
+      });
+    }
+
+    if (toInsert.length === 0) {
+      return { comment: commentRow, notifications: [] };
+    }
+
+    await tx.insert(notification).values(toInsert);
+
+    const notifications = await tx
+      .select(notificationSelect)
+      .from(notification)
+      .where(
+        and(
+          inArray(
+            notification.id,
+            toInsert.map((row) => row.id),
+          ),
+          eq(notification.workspaceId, taskRow.workspaceId),
+        ),
+      );
+
+    return { comment: commentRow, notifications };
+  });
+}
+
+/** Notifications cuyo `recipient_user_id` es el usuario (para tests y el outbox). */
+export async function listNotificationsForRecipient(
+  userId: string,
+): Promise<NotificationRow[]> {
+  return getDb()
+    .select(notificationSelect)
+    .from(notification)
+    .where(eq(notification.recipientUserId, userId))
+    .orderBy(asc(notification.createdAt), asc(notification.id));
+}
+
+const notificationInboxSelect = {
+  id: notification.id,
+  workspaceId: notification.workspaceId,
+  actorUserId: notification.actorUserId,
+  actorName: user.name,
+  taskId: notification.taskId,
+  taskTitle: task.title,
+  commentId: notification.commentId,
+  kind: notification.kind,
+  body: comment.body,
+  readAt: notification.readAt,
+  createdAt: notification.createdAt,
+};
+
+function toInboxRow(row: {
+  id: string;
+  workspaceId: string;
+  actorUserId: string;
+  actorName: string;
+  taskId: string;
+  taskTitle: string;
+  commentId: string;
+  kind: string;
+  body: string;
+  readAt: Date | null;
+  createdAt: Date;
+}): NotificationInboxRow {
+  return {
+    id: row.id,
+    workspaceId: row.workspaceId,
+    actorUserId: row.actorUserId,
+    actorName: row.actorName,
+    taskId: row.taskId,
+    taskTitle: row.taskTitle,
+    commentId: row.commentId,
+    kind: row.kind,
+    bodyPreview: previewBody(row.body),
+    readAt: row.readAt,
+    createdAt: row.createdAt,
+  };
+}
+
+/**
+ * Campana: filas del usuario de la sesión. `recipient_user_id` y join
+ * a `workspace_member` en el `workspace_id` de la fila (un stray no filtra).
+ */
+export async function listNotificationsForUser(userId: string): Promise<NotificationInboxRow[]> {
+  const rows = await getDb()
+    .select(notificationInboxSelect)
+    .from(notification)
+    .innerJoin(user, eq(notification.actorUserId, user.id))
+    .innerJoin(
+      task,
+      and(eq(notification.taskId, task.id), eq(task.workspaceId, notification.workspaceId)),
+    )
+    .innerJoin(
+      comment,
+      and(eq(notification.commentId, comment.id), eq(comment.workspaceId, notification.workspaceId)),
+    )
+    .innerJoin(
+      workspaceMember,
+      and(
+        eq(workspaceMember.workspaceId, notification.workspaceId),
+        eq(workspaceMember.userId, notification.recipientUserId),
+      ),
+    )
+    .where(
+      and(eq(notification.recipientUserId, userId), eq(workspaceMember.userId, userId)),
+    )
+    .orderBy(desc(notification.createdAt), desc(notification.id));
+
+  return rows.map(toInboxRow);
+}
+
+async function getNotificationInboxForUser(
+  notificationId: string,
+  userId: string,
+): Promise<NotificationInboxRow | undefined> {
+  const rows = await getDb()
+    .select(notificationInboxSelect)
+    .from(notification)
+    .innerJoin(user, eq(notification.actorUserId, user.id))
+    .innerJoin(
+      task,
+      and(eq(notification.taskId, task.id), eq(task.workspaceId, notification.workspaceId)),
+    )
+    .innerJoin(
+      comment,
+      and(eq(notification.commentId, comment.id), eq(comment.workspaceId, notification.workspaceId)),
+    )
+    .innerJoin(
+      workspaceMember,
+      and(
+        eq(workspaceMember.workspaceId, notification.workspaceId),
+        eq(workspaceMember.userId, notification.recipientUserId),
+      ),
+    )
+    .where(
+      and(
+        eq(notification.id, notificationId),
+        eq(notification.recipientUserId, userId),
+        eq(workspaceMember.userId, userId),
+      ),
+    )
+    .limit(1);
+
+  const row = rows[0];
+  return row ? toInboxRow(row) : undefined;
+}
+
+/** Marca leída solo si el recipient es el usuario y es miembro del workspace de la fila. */
+export async function markNotificationReadForUser(
+  notificationId: string,
+  userId: string,
+): Promise<NotificationInboxRow | undefined> {
+  const existing = await getNotificationInboxForUser(notificationId, userId);
+  if (!existing) {
+    return undefined;
+  }
+
+  if (existing.readAt === null) {
+    await getDb()
+      .update(notification)
+      .set({ readAt: new Date() })
+      .where(
+        and(
+          eq(notification.id, notificationId),
+          eq(notification.recipientUserId, userId),
+          eq(notification.workspaceId, existing.workspaceId),
+        ),
+      );
+  }
+
+  return getNotificationInboxForUser(notificationId, userId);
+}
+
+export async function markNotificationsEmailed(
+  ids: string[],
+  emailedAt: Date,
+): Promise<void> {
+  if (ids.length === 0) {
+    return;
+  }
+
+  await getDb().update(notification).set({ emailedAt }).where(inArray(notification.id, ids));
 }
 
 export async function createTaskForMember(values: {

@@ -3,8 +3,9 @@
  * La API Hono solo entra a la base por aquí: no importes `@libsql/client`
  * ni `drizzle-orm` desde `apps/api`.
  */
-export { db, getDb, getLibsql, libsql, pingDatabase } from "./client.ts";
+export { db, getDb, getLibsql, libsql, pingDatabase, resolveDatabaseUrl } from "./client.ts";
 export {
+  createCommentForMember,
   createTaskForMember,
   deleteTaskForMember,
   findUserIdByEmail,
@@ -17,7 +18,12 @@ export {
   insertTask,
   insertWorkspace,
   insertWorkspaceMember,
+  listCommentsForMember,
+  listNotificationsForRecipient,
+  listNotificationsForUser,
   listWorkspacesForUser,
+  markNotificationReadForUser,
+  markNotificationsEmailed,
   moveTaskForMember,
   updateTaskForMember,
   upsertColumn,
@@ -26,5 +32,15 @@ export {
   upsertWorkspace,
   upsertWorkspaceMember,
 } from "./queries.ts";
-export type { BoardRow, ColumnRow, ProjectRow, TaskRow, WorkspaceRow } from "./queries.ts";
+export type {
+  BoardRow,
+  ColumnRow,
+  CommentRow,
+  CreateCommentResult,
+  NotificationInboxRow,
+  NotificationRow,
+  ProjectRow,
+  TaskRow,
+  WorkspaceRow,
+} from "./queries.ts";
 export { authSchema } from "./schema/index.ts";

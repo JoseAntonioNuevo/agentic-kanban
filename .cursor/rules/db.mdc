@@ -21,13 +21,22 @@ Hono → drizzle-orm/libsql → @libsql/client → file:…/agentic-kanban.db
 - Schema folder: Better Auth tables in `schema/auth.ts` (`authSchema` for the
   `drizzleAdapter`). Tenant tables in `schema/workspace.ts` (`workspace`,
   `workspace_member`), `schema/project.ts` (`project`), `schema/column.ts`
-  (`column`), and `schema/task.ts` (`task`). No `role`, slug, or owner.
+  (`column`), `schema/task.ts` (`task`), `schema/comment.ts` (`comment`),
+  and `schema/notification.ts` (`notification`). No `role`, slug, or owner.
+  Comment helpers: `listCommentsForMember`, `createCommentForMember`
+  (create inserts mention notifications).   Notification helpers:
+  `listNotificationsForRecipient`, `listNotificationsForUser`
+  (inbox: actor/task/comment join + membership on the row's
+  `workspace_id`), `markNotificationReadForUser`,
+  `markNotificationsEmailed`.
 - Reads: `listWorkspacesForUser`, `getProjectForMember` in `src/queries.ts`
   (membership + the row's `workspace_id`). Insert helpers are for tests.
   Seed upserts: `upsertWorkspace`, `upsertProject`, `upsertWorkspaceMember`,
   `upsertColumn`, `upsertTask`, plus `findUserIdByEmail` (select only).
   Board helpers: `getBoardForMember`, `moveTaskForMember`, task
-  create/update/delete. Never mass DELETE.
+  create/update/delete. Comment helpers load the task via
+  `getTaskForMember` and also filter `comment.workspace_id` +
+  `comment.task_id`. Never mass DELETE.
 - Migrations: `bun run db:generate` then `bun run db:migrate` (once). After
   deleting `data/*.db*`, run `db:migrate` again. Never auto-run migrations.
   Never point the Mac API and Compose at the same `.db`.
