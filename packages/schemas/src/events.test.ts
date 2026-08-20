@@ -4,6 +4,7 @@
 import { describe, expect, it } from "vite-plus/test";
 
 import type { Board, Task } from "./board.ts";
+import type { Comment } from "./comment.ts";
 import { applyBoardEvent, boardEventSchema, boardEventToastMessage, type BoardEvent } from "./events.ts";
 
 const createdAt = "2026-08-19T15:00:00.000Z";
@@ -49,6 +50,24 @@ const moved: BoardEvent = {
   position: 0,
 };
 
+const comment: Comment = {
+  id: "comment_1",
+  workspaceId: "ws_1",
+  projectId: "proj_1",
+  taskId: "t1",
+  authorId: "user_ana",
+  authorName: "Ana",
+  body: "@Luis mira esto",
+  createdAt,
+};
+
+const commentCreated: BoardEvent = {
+  type: "comment.created",
+  projectId: "proj_1",
+  actorUserId: "user_ana",
+  comment,
+};
+
 describe("boardEventSchema", () => {
   it("acepta task.created con la tarea resultante", () => {
     expect(boardEventSchema.parse(created)).toEqual(created);
@@ -64,6 +83,10 @@ describe("boardEventSchema", () => {
 
   it("acepta task.moved con los ids de move", () => {
     expect(boardEventSchema.parse(moved)).toEqual(moved);
+  });
+
+  it("acepta comment.created con el comentario resultante", () => {
+    expect(boardEventSchema.parse(commentCreated)).toEqual(commentCreated);
   });
 
   it("rechaza un type desconocido", () => {
@@ -104,6 +127,16 @@ describe("boardEventSchema", () => {
     expect(() =>
       boardEventSchema.parse({
         type: "task.deleted",
+        projectId: "proj_1",
+        actorUserId: "user_ana",
+      }),
+    ).toThrow();
+  });
+
+  it("rechaza comment.created sin comment", () => {
+    expect(() =>
+      boardEventSchema.parse({
+        type: "comment.created",
         projectId: "proj_1",
         actorUserId: "user_ana",
       }),
@@ -158,6 +191,10 @@ describe("boardEventToastMessage", () => {
     expect(boardEventToastMessage(deleted, undefined)).toBe("Tarea eliminada");
     expect(boardEventToastMessage(moved, undefined)).toBe("Tarea movida");
   });
+
+  it("usa el authorName en comment.created", () => {
+    expect(boardEventToastMessage(commentCreated, undefined)).toBe("Nuevo comentario de Ana");
+  });
 });
 
 describe("applyBoardEvent", () => {
@@ -204,5 +241,9 @@ describe("applyBoardEvent", () => {
   it("ignora un evento de otro project", () => {
     const next = applyBoardEvent(board, { ...moved, projectId: "proj_other" });
     expect(next).toBe(board);
+  });
+
+  it("deja el board igual en comment.created", () => {
+    expect(applyBoardEvent(board, commentCreated)).toBe(board);
   });
 });

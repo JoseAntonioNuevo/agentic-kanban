@@ -1,0 +1,88 @@
+/**
+ * Comentarios de un task. Sesión → 401; no miembro / no existe → 404.
+ * `workspace_id` sale de la fila del task, nunca del body.
+ * POST parsea `@Nombre` (extractMentionNames) y, en la misma transacción,
+ * inserta notifications kind `mention` para miembros del workspace.
+ * Después escribe el outbox; si falla, log y `emailed_at` queda null.
+ * El contrato HTTP no cambia. Campana por HTTP aparte.
+ * Tras persistir y el outbox, publica `comment.created` en el hub del project.
+ */
+import { createCommentForMember, listCommentsForMember, type CommentRow } from "@agentic-kanban/db";
+import {
+  commentListResponseSchema,
+  commentSchema,
+  createCommentBodySchema,
+  extractMentionNames,
+  taskIdParamSchema,
+} from "@agentic-kanban/schemas";
+import { zValidator } from "@hono/zod-validator";
+import { Hono } from "hono";
+
+import { writeMentionOutbox } from "../mail/outbox.ts";
+import { requireSession, type SessionEnv } from "../middleware/session.ts";
+import { publish } from "../realtime/index.ts";
+
+export const commentRoutes = new Hono<SessionEnv>();
+
+function toCommentJson(row: CommentRow) {
+  return commentSchema.parse({
+    id: row.id,
+    workspaceId: row.workspaceId,
+    projectId: row.projectId,
+    taskId: row.taskId,
+    authorId: row.authorId,
+    authorName: row.authorName,
+    body: row.body,
+    createdAt: row.createdAt.toISOString(),
+  });
+}
+
+commentRoutes.get(
+  "/api/tasks/:taskId/comments",
+  requireSession,
+  zValidator("param", taskIdParamSchema),
+  async (c) => {
+    const { taskId } = c.req.valid("param");
+    const rows = await listCommentsForMember(taskId, c.get("userId"));
+
+    if (!rows) {
+      return c.json({ error: "Not found" }, 404);
+    }
+
+    return c.json(commentListResponseSchema.parse(rows.map(toCommentJson)));
+  },
+);
+
+commentRoutes.post(
+  "/api/tasks/:taskId/comments",
+  requireSession,
+  zValidator("param", taskIdParamSchema),
+  zValidator("json", createCommentBodySchema),
+  async (c) => {
+    const { taskId } = c.req.valid("param");
+    const body = c.req.valid("json");
+    const created = await createCommentForMember({
+      id: `comment_${crypto.randomUUID()}`,
+      taskId,
+      userId: c.get("userId"),
+      body: body.body,
+      mentionNames: extractMentionNames(body.body),
+    });
+
+    if (!created) {
+      return c.json({ error: "Not found" }, 404);
+    }
+
+    await writeMentionOutbox(created.notifications);
+
+    const commentJson = toCommentJson(created.comment);
+    publish({
+      type: "comment.created",
+      projectId: created.comment.projectId,
+      actorUserId: c.get("userId"),
+      comment: commentJson,
+    });
+
+    return c.json(commentJson, 201);
+  },
+);

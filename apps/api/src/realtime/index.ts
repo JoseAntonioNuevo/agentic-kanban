@@ -3,7 +3,8 @@
  *
  * `subscribe` registra un listener por `projectId`. `publish` parsea con
  * `boardEventSchema` y fanea a esos listeners; si no hay suscriptores, no-op.
- * Las rutas de board publican tras un write HTTP exitoso (fila persistida).
+ * Las rutas de board y el POST de comentarios publican tras un write HTTP
+ * exitoso (fila persistida; comentarios también tras el outbox).
  */
 import { boardEventSchema, type BoardEvent } from "@agentic-kanban/schemas";
 

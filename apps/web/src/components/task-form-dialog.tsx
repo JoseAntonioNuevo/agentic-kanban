@@ -1,6 +1,8 @@
 /**
  * Crear o editar título y descripción. Estado local del form, no del board.
+ * El hilo de comentarios (si hay taskId) vive fuera del <form>.
  */
+import { TaskComments } from "@/components/task-comments.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import {
   Dialog,
@@ -12,7 +14,9 @@ import {
 } from "@/components/ui/dialog.tsx";
 import { Input } from "@/components/ui/input.tsx";
 import { Label } from "@/components/ui/label.tsx";
+import { Separator } from "@/components/ui/separator.tsx";
 import { Textarea } from "@/components/ui/textarea.tsx";
+import { cn } from "@/lib/utils.ts";
 import { useState } from "react";
 
 type TaskFormDialogProps = {
@@ -24,6 +28,8 @@ type TaskFormDialogProps = {
   onOpenChange: (open: boolean) => void;
   onSubmit: (values: { title: string; description: string }) => Promise<void>;
   onDelete?: () => void;
+  taskId?: string;
+  userId?: string;
 };
 
 export function TaskFormDialog({
@@ -35,6 +41,8 @@ export function TaskFormDialog({
   onOpenChange,
   onSubmit,
   onDelete,
+  taskId,
+  userId,
 }: TaskFormDialogProps) {
   const [title, setTitle] = useState(initialTitle);
   const [description, setDescription] = useState(initialDescription);
@@ -50,7 +58,7 @@ export function TaskFormDialog({
       }}
     >
       <DialogContent
-        className="sm:max-w-md"
+        className="max-h-[90vh] overflow-y-auto sm:max-w-md"
         onOpenAutoFocus={() => {
           setTitle(initialTitle);
           setDescription(initialDescription);
@@ -94,7 +102,12 @@ export function TaskFormDialog({
               rows={4}
             />
           </div>
-          <DialogFooter className={onDelete ? "sm:justify-between" : undefined}>
+          <DialogFooter
+            className={cn(
+              onDelete ? "sm:justify-between" : undefined,
+              taskId ? "mb-0 rounded-none" : undefined,
+            )}
+          >
             {onDelete ? (
               <Button type="button" variant="destructive" onClick={onDelete}>
                 Eliminar
@@ -110,6 +123,12 @@ export function TaskFormDialog({
             </div>
           </DialogFooter>
         </form>
+        {taskId ? (
+          <>
+            <Separator />
+            <TaskComments taskId={taskId} userId={userId} open={open} />
+          </>
+        ) : null}
       </DialogContent>
     </Dialog>
   );

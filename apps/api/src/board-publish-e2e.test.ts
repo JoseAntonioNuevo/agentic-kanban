@@ -9,7 +9,7 @@ import {
   insertWorkspace,
   insertWorkspaceMember,
 } from "@agentic-kanban/db";
-import { boardEventSchema, taskSchema, type BoardEvent } from "@agentic-kanban/schemas";
+import { boardEventSchema, commentSchema, taskSchema, type BoardEvent } from "@agentic-kanban/schemas";
 import { afterEach, describe, expect, it } from "vite-plus/test";
 
 import { app } from "./index.ts";
@@ -160,6 +160,47 @@ describe("board writes publican al hub", () => {
       jsonRequest("POST", `/api/tasks/${seedTaskId}/move`, luis.cookie, {
         columnId: colDone,
         position: 0,
+      }),
+    );
+
+    expect(res.status).toBe(404);
+    expect(res.status).not.toBe(403);
+    expect(received).toHaveLength(0);
+  });
+
+  it("POST comment miembro → listener recibe comment.created parseable", async () => {
+    const received: BoardEvent[] = [];
+    unsubscribe = subscribe(projectId, (event) => {
+      received.push(event);
+    });
+
+    const res = await app.fetch(
+      jsonRequest("POST", `/api/tasks/${seedTaskId}/comments`, ana.cookie, {
+        body: "@Luis mira esto",
+      }),
+    );
+    const created = commentSchema.parse(await res.json());
+
+    expect(res.status).toBe(201);
+    expect(received).toHaveLength(1);
+    const event = boardEventSchema.parse(received[0]);
+    expect(event).toEqual({
+      type: "comment.created",
+      projectId,
+      actorUserId: ana.userId,
+      comment: created,
+    });
+  });
+
+  it("Luis comenta una tarea de Ana → 404 y no publica", async () => {
+    const received: BoardEvent[] = [];
+    unsubscribe = subscribe(projectId, (event) => {
+      received.push(event);
+    });
+
+    const res = await app.fetch(
+      jsonRequest("POST", `/api/tasks/${seedTaskId}/comments`, luis.cookie, {
+        body: "No",
       }),
     );
 

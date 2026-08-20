@@ -1,19 +1,22 @@
 /**
- * SSE del project abierto. Parchea la cache de TanStack Query y tostea
- * eventos de otros usuarios. Se cierra al desmontar. Ignora eventos del
- * propio usuario (ni cache ni toast).
+ * SSE del project abierto. Un solo EventSource. Parchea / invalida cache
+ * y tostea solo eventos de otros usuarios. Se cierra al desmontar.
+ * Skip-self es solo el toast: el actor (otra pestaña) sí actualiza cache.
  */
 import {
   applyBoardEvent,
   boardEventSchema,
   boardEventToastMessage,
   type Board,
+  type BoardEvent,
 } from "@agentic-kanban/schemas";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { toast } from "sonner";
 
-import { boardQueryKey } from "@/hooks/use-board.ts";
+import { boardQueryKey } from "./use-board.ts";
+import { commentsQueryKey } from "./use-comments.ts";
+import { notificationsQueryKey } from "./use-notifications.ts";
 
 function taskTitleFromBoard(board: Board | undefined, taskId: string): string | undefined {
   if (!board) {
@@ -30,6 +33,46 @@ function taskTitleFromBoard(board: Board | undefined, taskId: string): string | 
   return undefined;
 }
 
+export function handleIncomingBoardEvent(
+  event: BoardEvent,
+  options: {
+    userId: string;
+    projectId: string;
+    queryClient: QueryClient;
+    notify: (message: string) => void;
+  },
+): void {
+  const { userId, projectId, queryClient, notify } = options;
+  const isSelf = event.actorUserId === userId;
+
+  if (event.type === "comment.created") {
+    void queryClient.invalidateQueries({
+      queryKey: commentsQueryKey(event.comment.taskId, userId),
+    });
+    void queryClient.invalidateQueries({
+      queryKey: notificationsQueryKey(userId),
+    });
+    if (!isSelf) {
+      notify(boardEventToastMessage(event, undefined));
+    }
+    return;
+  }
+
+  const queryKey = boardQueryKey(projectId, userId);
+  const title =
+    event.type === "task.created" || event.type === "task.updated"
+      ? event.task.title
+      : taskTitleFromBoard(queryClient.getQueryData<Board>(queryKey), event.taskId);
+
+  if (!isSelf) {
+    notify(boardEventToastMessage(event, title));
+  }
+
+  queryClient.setQueryData<Board>(queryKey, (current) =>
+    current ? applyBoardEvent(current, event) : current,
+  );
+}
+
 export function useBoardEvents(projectId: string, userId: string | undefined) {
   const queryClient = useQueryClient();
 
@@ -39,7 +82,6 @@ export function useBoardEvents(projectId: string, userId: string | undefined) {
     }
 
     const source = new EventSource(`/api/projects/${projectId}/events`);
-    const queryKey = boardQueryKey(projectId, userId);
 
     source.onmessage = (message) => {
       let payload: unknown;
@@ -54,21 +96,14 @@ export function useBoardEvents(projectId: string, userId: string | undefined) {
         return;
       }
 
-      const event = parsed.data;
-      if (event.actorUserId === userId) {
-        return;
-      }
-
-      const title =
-        event.type === "task.created" || event.type === "task.updated"
-          ? event.task.title
-          : taskTitleFromBoard(queryClient.getQueryData<Board>(queryKey), event.taskId);
-
-      toast.info(boardEventToastMessage(event, title));
-
-      queryClient.setQueryData<Board>(queryKey, (current) =>
-        current ? applyBoardEvent(current, event) : current,
-      );
+      handleIncomingBoardEvent(parsed.data, {
+        userId,
+        projectId,
+        queryClient,
+        notify: (text) => {
+          toast.info(text);
+        },
+      });
     };
 
     return () => {

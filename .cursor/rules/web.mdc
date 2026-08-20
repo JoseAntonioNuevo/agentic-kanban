@@ -30,12 +30,24 @@ Parse with `workspaceListResponseSchema`. Opening a project loads
 `useBoardEvents` opens `EventSource` on the relative
 `/api/projects/:projectId/events` while the board is mounted. Frames
 are data-only (`onmessage`); parse `event.data` with `boardEventSchema`.
-Skip when `actorUserId` is the current user (no cache patch, no toast;
-the optimistic path owns it). For another user, `toast.info` via sonner
-(in-app only; no table, bell, or email) then patch the query cache with
-`applyBoardEvent`. Read the title from the event or the current cache
-before applying a delete. Close on unmount. Do not copy the board into
-`useState`. No Socket.IO.
+Skip-self is toast-only: `toast.info` via sonner when `actorUserId` is
+not the current user. Task events still patch the board cache (including
+the actor's other tab) with `applyBoardEvent`. `comment.created`
+invalidates that task's comments query and the notifications query
+even for the actor; it does not change the board snapshot. The toast
+is not the bell. Close on unmount. Do not copy the board into
+`useState`. No second EventSource. No Socket.IO.
+The edit-task dialog (`task-form-dialog.tsx`) shows the comment thread
+via `useComments` / `useCreateComment` (`GET`/`POST /api/tasks/:taskId/comments`,
+same Zod as the API, `credentials: "include"`). Fetch only while the
+edit dialog is open (`enabled: Boolean(taskId && userId && open)`).
+Composer draft is local React state. Create-task dialog has no comments.
+**Comentar** is `type="button"` and lives outside the title/description
+`<form>` so Guardar (PATCH) cannot insert a comment. Mentions are
+server-side only. The dashboard and board header mount `NotificationBell`
+(`useNotifications` / `useMarkNotificationRead`; refetch on focus and
+every 4s). Parse with `notificationListResponseSchema`. The popover
+paints those GET rows. No mention highlighting.
 Accent classes come from `workspace.id` (`src/lib/workspace-accent.ts`),
 never from the user.
 Better Auth is wired: the React client lives in `src/lib/auth-client.ts`

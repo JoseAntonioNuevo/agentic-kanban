@@ -1,4 +1,4 @@
-/** Textarea de shadcn/ui. Reservado para comentarios en sesiones posteriores. */
+/** Textarea de shadcn/ui. Título/descripción de tarea y compositor de comentarios. */
 import * as React from "react";
 
 import { cn } from "@/lib/utils";

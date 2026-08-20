@@ -2,6 +2,7 @@
  * Pantalla del tablero: query, loading/error, diálogos y columnas.
  */
 import { KanbanBoard } from "@/components/kanban-board.tsx";
+import { NotificationBell } from "@/components/notification-bell.tsx";
 import { TaskFormDialog } from "@/components/task-form-dialog.tsx";
 import {
   AlertDialog,
@@ -51,6 +52,8 @@ export function BoardScreen({
           <Button type="button" variant="outline" size="sm" onClick={onBack}>
             Workspaces
           </Button>
+          <span className="flex-1" />
+          <NotificationBell userId={userId} />
         </header>
         <div className="flex gap-3 overflow-x-auto p-4">
           <Skeleton className="h-64 w-72 shrink-0" />
@@ -79,6 +82,7 @@ export function BoardScreen({
           Workspaces
         </Button>
         <h1 className="flex-1 text-lg font-medium">{board.data.project.name}</h1>
+        <NotificationBell userId={userId} />
         <Button
           type="button"
           variant="outline"
@@ -145,6 +149,8 @@ export function BoardScreen({
               setDialog({ kind: "closed" });
             }
           }}
+          taskId={dialog.task.id}
+          userId={userId}
           onSubmit={async (values) => {
             if (dialog.kind !== "edit") {
               return;

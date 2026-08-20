@@ -18,7 +18,7 @@ app.route("/", projectRoutes);
 - One Hono app per route file (`new Hono()`), then `app.route("/", …)`.
 - Validate responses (and later inputs) with `@agentic-kanban/schemas`.
 - Database access only through `@agentic-kanban/db` (workspace/project/board
-  helpers). Never import `@libsql/client` or `drizzle-orm` from the API.
+  /comment/notification helpers). Never import `@libsql/client` or `drizzle-orm` from the API.
 - Better Auth is wired in `src/auth/index.ts` (`betterAuth` + `drizzleAdapter`
   with `provider: "sqlite"`). `src/routes/auth.ts` mounts `/api/auth/*` via
   `auth.handler`. Do not wrap `/api/auth/*` with `@hono/zod-validator`: Better
@@ -31,7 +31,20 @@ app.route("/", projectRoutes);
 - `GET /api/workspaces` and `GET /api/projects/:projectId` use
   `@hono/zod-validator` (query/param) and `.parse()` the response schema.
   Board: `GET /api/projects/:projectId/board`, task create/update/delete,
-  `POST /api/tasks/:taskId/move`. No workspace/project HTTP writes.
+  `POST /api/tasks/:taskId/move`. `src/routes/comments.ts` serves
+  `GET` / `POST /api/tasks/:taskId/comments` (`requireSession` → 401;
+  `getTaskForMember` → 404; `workspace_id` / `project_id` from the task
+  row). POST parses `@Nombre` (`extractMentionNames`) and inserts mention
+  notifications in the same transaction; `src/mail/outbox.ts` appends
+  `outbox.jsonl` (sibling of the `.db`) then sets `emailed_at`. A failed
+  outbox write logs and leaves `emailed_at` null. Notifications:
+  `GET /api/notifications` and `POST /api/notifications/:notificationId/read`
+  (`src/routes/notifications.ts`; session → 401; only the session
+  user's `recipient_user_id` + membership on the row's `workspace_id`;
+  404 if missing/not the recipient; never 403). Comment POST publishes
+  `comment.created` after persist + outbox. A 404 or validation failure
+  does not publish. No second stream, Resend, or SMTP. No
+  workspace/project HTTP writes.
 - Seed is `src/seed.ts` via `bun run db:seed`. Do not import it from the
   server. Users: `auth.api.signUpEmail` (reuse `user.id` if the email exists).
   Tenant rows: upsert by id / unique `(workspace_id, user_id)`. Never mass
@@ -47,8 +60,9 @@ app.route("/", projectRoutes);
 - `src/realtime/index.ts` is the in-process hub: `Map` of `projectId` →
   subscribers, `subscribe` / `publish`. Parse outgoing events with
   `boardEventSchema`. `publish` is a no-op with zero subscribers. Board
-  writes call `publish` after a successful row (`actorUserId` from the
-  session). A 404 or validation failure does not publish. No Socket.IO,
+  writes and comment POST call `publish` after a successful row
+  (`actorUserId` from the session; comments after outbox). A 404 or
+  validation failure does not publish. No Socket.IO,
   Redis, WebSocket upgrade (`ws: true`), or extra service.
 - Do not auto-run migrations. Dev: `bun run --hot`. Listen
   `0.0.0.0:${API_PORT:-3000}`. Never run this API on the Mac while Compose

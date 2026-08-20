@@ -14,6 +14,7 @@ import {
   type Board,
   type Task,
 } from "./board.ts";
+import { commentSchema } from "./comment.ts";
 
 const boardEventBaseSchema = z.object({
   projectId: z.string().min(1),
@@ -42,17 +43,24 @@ export const taskMovedEventSchema = boardEventBaseSchema.extend({
   position: moveTaskBodySchema.shape.position,
 });
 
+export const commentCreatedEventSchema = boardEventBaseSchema.extend({
+  type: z.literal("comment.created"),
+  comment: commentSchema,
+});
+
 export const boardEventSchema = z.discriminatedUnion("type", [
   taskCreatedEventSchema,
   taskUpdatedEventSchema,
   taskDeletedEventSchema,
   taskMovedEventSchema,
+  commentCreatedEventSchema,
 ]);
 
 export type TaskCreatedEvent = z.infer<typeof taskCreatedEventSchema>;
 export type TaskUpdatedEvent = z.infer<typeof taskUpdatedEventSchema>;
 export type TaskDeletedEvent = z.infer<typeof taskDeletedEventSchema>;
 export type TaskMovedEvent = z.infer<typeof taskMovedEventSchema>;
+export type CommentCreatedEvent = z.infer<typeof commentCreatedEventSchema>;
 export type BoardEvent = z.infer<typeof boardEventSchema>;
 
 function reindexTasks(board: Board): Board {
@@ -137,6 +145,8 @@ export function boardEventToastMessage(event: BoardEvent, title: string | undefi
       return title ? `Tarea eliminada: ${title}` : "Tarea eliminada";
     case "task.moved":
       return title ? `Tarea movida: ${title}` : "Tarea movida";
+    case "comment.created":
+      return `Nuevo comentario de ${event.comment.authorName}`;
   }
 }
 
@@ -155,5 +165,7 @@ export function applyBoardEvent(board: Board, event: BoardEvent): Board {
       return replaceUpdatedTask(board, event.task);
     case "task.deleted":
       return removeDeletedTask(board, event.taskId);
+    case "comment.created":
+      return board;
   }
 }

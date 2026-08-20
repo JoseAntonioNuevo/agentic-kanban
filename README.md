@@ -2,9 +2,12 @@
 
 Proyecto starter del curso **thePower — Desarrollo Agéntico**.
 
-Esqueleto técnico listo (Bun, Vite+, React, Hono, Drizzle, libSQL) con
-autenticación email + contraseña (Better Auth), workspaces de lectura y
-un seed de aula. El tablero Kanban se construye en las sesiones en vivo.
+Kanban multi-tenant de aula (Bun, Vite+, React, Hono, Drizzle, libSQL):
+auth email + contraseña (Better Auth), tablero, comentarios, `@menciones`,
+SSE en el proceso Hono, campana in-app y outbox de fichero.
+
+**Deploy de aula** = `docker compose up --build` (dos servicios: `web` y
+`api`). No Fly, no Vercel, no Resend, no contenedor de correo.
 
 ## Requisitos
 
@@ -46,11 +49,15 @@ seed bloquearía el mismo `.db`).
 
 ```bash
 docker compose down
-rm -f data/*.db data/*.db-*
+rm -f data/*.db data/*.db-* data/outbox.jsonl
 bun run db:migrate
 bun run db:seed
 docker compose up --build
 ```
+
+`data/outbox.jsonl` vive en el mismo volumen `./data` que el `.db` y no
+se commitea (`.gitignore`). Borrarlo en el reset deja el outbox limpio
+para la demo.
 
 ## Seed del aula
 
@@ -76,6 +83,19 @@ docker compose start api
 
 El seed es idempotente: se puede repetir. No se ejecuta al arrancar la API.
 Tras borrar `data/*.db*` hay que `db:migrate` y luego `db:seed`.
+
+## Guion de demo (Sesión 4)
+
+Contraseña de Ana y Luis: `Demo1234!`. App: http://localhost:5173
+
+```text
+Dos navegadores (Luis en incógnito; si no, es la misma cookie).
+Ana y Luis en ws_thepower_demo / proj_agentic_kanban.
+Ana edita una tarjeta, escribe `@Luis mira esto`, pulsa Comentar (no Guardar).
+Luis: hilo, toast, campana con badge (recipient = Luis). Ana: campana vacía.
+(opcional) data/outbox.jsonl → to luis@demo.test
+Luis no ve comentarios ni notificaciones de proj_ana_notes.
+```
 
 ## Cómo está conectado
 

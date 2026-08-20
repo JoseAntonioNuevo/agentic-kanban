@@ -9,9 +9,11 @@ Deploy de aula = `docker compose up --build` (siguen **dos** servicios: web, api
 README: pasos de reset/migrate/seed/compose y un guion de demo:
 
 ```text
-Dos navegadores. Ana y Luis en ws_thepower_demo.
-Ana abre una tarjeta, comenta `@Luis …`.
-Luis ve el comentario en vivo, toast, campana y (opcional) la línea nueva en data/outbox.jsonl.
+Dos navegadores (Luis en incógnito; si no, es la misma cookie).
+Ana y Luis en ws_thepower_demo / proj_agentic_kanban.
+Ana edita una tarjeta, escribe `@Luis mira esto`, pulsa Comentar (no Guardar).
+Luis: hilo, toast, campana con badge (recipient = Luis). Ana: campana vacía (“No hay menciones.”, no “No se pudieron cargar”). Si Luis GET 200 tiene filas y la UI dice que no cargó, es parse/sesión, no Ana.
+(opcional) data/outbox.jsonl → to luis@demo.test
 Luis no ve comentarios ni notificaciones de proj_ana_notes.
 ```
 

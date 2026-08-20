@@ -5,6 +5,7 @@
  * No hay React Router: el cambio de vista es estado local.
  */
 import { BoardScreen } from "@/components/board-screen.tsx";
+import { NotificationBell } from "@/components/notification-bell.tsx";
 import { SignInForm } from "@/components/sign-in-form.tsx";
 import { SignUpForm } from "@/components/sign-up-form.tsx";
 import { Badge } from "@/components/ui/badge.tsx";
@@ -80,8 +81,13 @@ export default function App() {
     <main className="flex min-h-svh items-center justify-center bg-background p-6">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-2xl">Agentic Kanban</CardTitle>
-          <CardDescription>Hola, {session.data.user.name}</CardDescription>
+          <div className="flex items-start justify-between gap-3">
+            <div className="space-y-1.5">
+              <CardTitle className="text-2xl">Agentic Kanban</CardTitle>
+              <CardDescription>Hola, {session.data.user.name}</CardDescription>
+            </div>
+            <NotificationBell userId={session.data.user.id} />
+          </div>
         </CardHeader>
         <CardContent>
           <dl className="space-y-3">

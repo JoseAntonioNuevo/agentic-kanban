@@ -241,4 +241,89 @@ describe("SSE /api/projects/:projectId/events", () => {
       await reader.cancel();
     }
   });
+
+  it("Luis recibe comment.created de Ana en el body SSE", async () => {
+    const sharedWorkspaceId = `ws_sse_cmt_${suffix}`;
+    const sharedProjectId = `proj_sse_cmt_${suffix}`;
+    const colTodo = `col_todo_sse_cmt_${suffix}`;
+    const taskId = `task_sse_cmt_${suffix}`;
+
+    await insertWorkspace({ id: sharedWorkspaceId, name: "Shared SSE comments" });
+    await insertWorkspaceMember({ workspaceId: sharedWorkspaceId, userId: ana.userId });
+    await insertWorkspaceMember({ workspaceId: sharedWorkspaceId, userId: luis.userId });
+    await insertProject({ id: sharedProjectId, workspaceId: sharedWorkspaceId, name: "Shared" });
+    await insertColumn({
+      id: colTodo,
+      workspaceId: sharedWorkspaceId,
+      projectId: sharedProjectId,
+      name: "To Do",
+      position: 0,
+    });
+    await insertTask({
+      id: taskId,
+      workspaceId: sharedWorkspaceId,
+      projectId: sharedProjectId,
+      columnId: colTodo,
+      title: "Carta",
+      position: 0,
+    });
+
+    const streamRes = await app.fetch(
+      new Request(`http://localhost:3000/api/projects/${sharedProjectId}/events`, {
+        headers: { cookie: luis.cookie, origin: "http://localhost:5173" },
+      }),
+    );
+
+    expect(streamRes.status).toBe(200);
+    expect(streamRes.body).toBeTruthy();
+
+    const reader = streamRes.body!.getReader();
+    const decoder = new TextDecoder();
+    let buf = "";
+
+    const waitFor = async (needle: string, timeoutMs = 4000) => {
+      const deadline = Date.now() + timeoutMs;
+      while (!buf.includes(needle)) {
+        const remaining = deadline - Date.now();
+        if (remaining <= 0) {
+          throw new Error(`SSE timeout waiting for ${needle}: ${buf}`);
+        }
+        const chunk = await Promise.race([
+          reader.read(),
+          new Promise<never>((_, reject) => {
+            setTimeout(() => {
+              reject(new Error(`SSE timeout waiting for ${needle}: ${buf}`));
+            }, remaining);
+          }),
+        ]);
+        if (chunk.done) {
+          throw new Error(`SSE ended before ${needle}: ${buf}`);
+        }
+        buf += decoder.decode(chunk.value, { stream: true });
+      }
+    };
+
+    try {
+      await waitFor("keepalive");
+
+      const commentRes = await app.fetch(
+        new Request(`http://localhost:3000/api/tasks/${taskId}/comments`, {
+          method: "POST",
+          headers: {
+            cookie: ana.cookie,
+            origin: "http://localhost:5173",
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({ body: "Hilo en vivo" }),
+        }),
+      );
+      expect(commentRes.status).toBe(201);
+
+      await waitFor("comment.created");
+      expect(buf).toContain(taskId);
+      expect(buf).toContain("Hilo en vivo");
+    } finally {
+      await reader.cancel();
+    }
+  });
 });

@@ -21,7 +21,7 @@ services:
     volumes:
       - .:/app
       - /app/node_modules # anónimo: el node_modules de Linux no lo pisa el Mac
-      - ./data:/data # mismo fichero que TablePlus en el host
+      - ./data:/data # .db + outbox.jsonl (host TablePlus); outbox no se commitea
     healthcheck:
       test:
         [

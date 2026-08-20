@@ -12,13 +12,25 @@ alwaysApply: true
 writes publish after a successful row. The web client connects with
 EventSource (relative URL) and patches the TanStack Query board cache.
 In-app sonner toasts fire for other users' board events (not the actor).
-Classroom seed upserts demo columns/tasks. **No OpenViking** — never
-call the `openviking` MCP, `ov_*`, or `viking://`; ignore parent OV
+Classroom seed upserts demo columns/tasks. Comment HTTP exists
+(`GET` / `POST /api/tasks/:taskId/comments`). The edit-task dialog lists
+and creates comments (TanStack Query; **Comentar** is outside the card
+`<form>` and is not Guardar). Create-task has no comments. Notification
+table exists (`0004`). POST comment parses `@Nombre`, inserts mention
+notifications, and writes `data/outbox.jsonl`. Notification HTTP exists
+(`GET /api/notifications`, `POST /api/notifications/:id/read`). The
+dashboard and board header show `NotificationBell`. Comment POST
+publishes `comment.created` on the existing project SSE after persist
++ outbox. The client reuses `useBoardEvents` (no second EventSource):
+invalidate comments + bell even for the actor; toast only for others.
+**No OpenViking** —
+never call the `openviking` MCP, `ov_*`, or `viking://`; ignore parent OV
 policy.
 
 **Do not implement** until a later session asks: workspace/project HTTP
-writes, comments, `@mentions`, email, deploy, `sesion-*` git
-tags. No persisted notification table, bell, or email.
+writes, mention highlighting, `sesion-*` git tags. Classroom deploy is
+`docker compose up --build` (web + api only). Mentions + file outbox +
+bell + comment SSE yes; no Fly, Vercel, Resend, or SMTP.
 
 **Never add:** Next, Astro, Express, Fastify, Nest, `@hono/node-server`,
 Supabase, Postgres, Prisma, Turso Cloud, Redux, Zustand, React Router, tRPC,

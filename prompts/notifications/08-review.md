@@ -14,6 +14,13 @@ email enviado antes de persistir el comentario
 SSE de comentarios como API de escritura
 eco que tostea al autor del comentario
 campana que lista notificaciones de otro usuario
+campana de Luis vacía tras `@Luis` (no insertó mention, GET vacío, o el popover no pinta GET)
+GET 200 con filas y popover “No se pudieron cargar las menciones” (parse Zod del cliente, p. ej. datetime ISO)
+“Nada pendiente” en isError como si el inbox estuviera vacío
+Ana GET 200 `[]` pintada como fallo de carga en vez de “No hay menciones.”
+GET /api/notifications 500 porque Zod rechaza `toISOString()` o un preview vacío
+toast de tablero / comment.created tratado como si fuera la campana
+comentario que se crea al Guardar la tarea en vez de POST /comments
 outbox commiteado o fuera de `./data`
 incumplimientos de `AGENTS.md`
 
