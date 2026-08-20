@@ -9,7 +9,7 @@
  *
  * No añadir `workspace_id` aquí: estas tablas son de Better Auth y no son
  * de tenant. El aislamiento vive en `workspace` / `workspace_member` /
- * `project` / `column` / `task` / `comment` / `notification`.
+ * `project` / `column` / `task`.
  */
 import { sql } from "drizzle-orm";
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";

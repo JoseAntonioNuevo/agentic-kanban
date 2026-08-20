@@ -2,10 +2,9 @@
 
 Proyecto starter del curso **thePower — Desarrollo Agéntico**.
 
-Kanban multi-tenant de aula (Bun, Vite+, React, Hono, Drizzle, libSQL):
-auth, tablero, comentarios, `@menciones`, campana y SSE. Deploy de aula =
-`docker compose up --build` (dos servicios: `web`, `api`). No Fly, no
-Vercel, no Resend, no contenedor de correo.
+Esqueleto técnico listo (Bun, Vite+, React, Hono, Drizzle, libSQL) con
+autenticación email + contraseña (Better Auth), workspaces de lectura y
+un seed de aula. El tablero Kanban se construye en las sesiones en vivo.
 
 ## Requisitos
 
@@ -27,10 +26,9 @@ Si el puerto 3000 del Mac ya está ocupado:
 API_HOST_PORT=3002 docker compose up --build
 ```
 
-Compose y el Mac comparten el mismo volumen `./data` → `/data`: el `.db`
-(`data/agentic-kanban.db`) y el outbox (`data/outbox.jsonl`, gitignored).
-Ábrelo en TablePlus como **SQLite**. No arranques la API del Mac mientras
-Compose esté arriba: los dos bloquearían el mismo `.db`.
+Compose y el Mac comparten el mismo fichero `data/agentic-kanban.db`
+(`./data` → `/data`). Ábrelo en TablePlus como **SQLite**. No arranques la API
+del Mac mientras Compose esté arriba: los dos bloquearían el mismo `.db`.
 
 ## Parar
 
@@ -48,7 +46,7 @@ seed bloquearía el mismo `.db`).
 
 ```bash
 docker compose down
-rm -f data/*.db data/*.db-* data/outbox.jsonl
+rm -f data/*.db data/*.db-*
 bun run db:migrate
 bun run db:seed
 docker compose up --build
@@ -77,32 +75,7 @@ docker compose start api
 ```
 
 El seed es idempotente: se puede repetir. No se ejecuta al arrancar la API.
-Tras borrar `data/*.db*` hay que `db:migrate` y luego `db:seed`. El seed no
-crea comentarios, notificaciones ni líneas de outbox.
-
-## Sesión 4 — Demo en vivo
-
-Dos servicios solamente (`web`, `api`). El outbox es un fichero en el mismo
-volumen `./data` (Compose: `/data/outbox.jsonl` → `data/outbox.jsonl` en el
-host). No se commitea.
-
-```text
-Dos navegadores. Ana y Luis en ws_thepower_demo.
-Ana abre una tarjeta, comenta `@Luis …`.
-Luis ve el comentario en vivo, toast, campana y (opcional) la línea nueva en data/outbox.jsonl.
-Luis no ve comentarios ni notificaciones de proj_ana_notes.
-```
-
-1. `docker compose up --build` (si 3000 está ocupado: `API_HOST_PORT=3002`).
-2. Navegador A: entra como Ana (`ana@demo.test` / `Demo1234!`) y abre
-   `thePower Demo` → `Agentic Kanban`.
-3. Navegador B (ventana privada): entra como Luis (`luis@demo.test` / `Demo1234!`)
-   y abre el mismo tablero. Luis no ve `Espacio de Ana`.
-4. Ana abre una tarjeta, escribe un comentario con `@Luis …` y envía.
-5. En el navegador de Luis: el hilo se actualiza, un toast, la campana, y
-   (opcional) una línea nueva en `data/outbox.jsonl`.
-6. Comprueba el aislamiento: comentarios y notificaciones de `proj_ana_notes`
-   no aparecen para Luis.
+Tras borrar `data/*.db*` hay que `db:migrate` y luego `db:seed`.
 
 ## Cómo está conectado
 

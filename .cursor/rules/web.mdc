@@ -27,27 +27,15 @@ The dashboard is health (`useHealth`) plus the workspace list
 Parse with `workspaceListResponseSchema`. Opening a project loads
 `useBoard` (`GET /api/projects/:projectId/board`). Card moves use
 `useMoveTask` (optimistic cache + `POST /api/tasks/:taskId/move`).
-The edit-task dialog lists comments with `useComments` (`GET
-/api/tasks/:taskId/comments`) and posts with `useCreateComment`
-(invalidate that query). Fetch only while the dialog is open
-(`enabled: Boolean(taskId && userId && open)`). Parse with
-`commentListResponseSchema` / `commentSchema`. Local state is only
-the new-comment textarea. The create-task dialog has no thread.
-The dashboard and board header mount `NotificationBell`
-(`useNotifications` / `useMarkNotificationRead`; refetch on focus and
-every 4s). Parse with `notificationListResponseSchema`. No mention
-highlighting or email. Comments reuse the project SSE (`comment.created`).
 `useBoardEvents` opens `EventSource` on the relative
 `/api/projects/:projectId/events` while the board is mounted. Frames
 are data-only (`onmessage`); parse `event.data` with `boardEventSchema`.
-Patch the query cache with `applyBoardEvent` even when `actorUserId` is
-the current user (idempotent; a second tab of the same account must
-sync). Skip only the toast for self. For another user, `toast.info` via
-sonner (in-app only; no email). `comment.created` invalidates
-`commentsQueryKey` for that task and `notificationsQueryKey` (no second
-EventSource). Read the title from the event or the current cache before
-applying a delete.
-Close on unmount. Do not copy the board into `useState`. No Socket.IO.
+Skip when `actorUserId` is the current user (no cache patch, no toast;
+the optimistic path owns it). For another user, `toast.info` via sonner
+(in-app only; no table, bell, or email) then patch the query cache with
+`applyBoardEvent`. Read the title from the event or the current cache
+before applying a delete. Close on unmount. Do not copy the board into
+`useState`. No Socket.IO.
 Accent classes come from `workspace.id` (`src/lib/workspace-accent.ts`),
 never from the user.
 Better Auth is wired: the React client lives in `src/lib/auth-client.ts`

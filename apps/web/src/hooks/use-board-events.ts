@@ -1,10 +1,7 @@
 /**
  * SSE del project abierto. Parchea la cache de TanStack Query y tostea
- * eventos de otros usuarios. `comment.created` invalida comentarios y
- * notificaciones (no muta el snapshot del board). Se cierra al desmontar.
- * El propio actor no recibe toast (el optimistic ya pintó); sí se aplica
- * la cache para que otra pestaña de la misma cuenta se sincronice.
- * Un solo EventSource.
+ * eventos de otros usuarios. Se cierra al desmontar. Ignora eventos del
+ * propio usuario (ni cache ni toast).
  */
 import {
   applyBoardEvent,
@@ -17,8 +14,6 @@ import { useEffect } from "react";
 import { toast } from "sonner";
 
 import { boardQueryKey } from "@/hooks/use-board.ts";
-import { commentsQueryKey } from "@/hooks/use-comments.ts";
-import { notificationsQueryKey } from "@/hooks/use-notifications.ts";
 
 function taskTitleFromBoard(board: Board | undefined, taskId: string): string | undefined {
   if (!board) {
@@ -43,9 +38,7 @@ export function useBoardEvents(projectId: string, userId: string | undefined) {
       return;
     }
 
-    const source = new EventSource(`/api/projects/${projectId}/events`, {
-      withCredentials: true,
-    });
+    const source = new EventSource(`/api/projects/${projectId}/events`);
     const queryKey = boardQueryKey(projectId, userId);
 
     source.onmessage = (message) => {
@@ -62,29 +55,16 @@ export function useBoardEvents(projectId: string, userId: string | undefined) {
       }
 
       const event = parsed.data;
-      const isSelf = event.actorUserId === userId;
-
-      if (event.type === "comment.created") {
-        if (!isSelf) {
-          toast.info(boardEventToastMessage(event, undefined));
-        }
-        void queryClient.invalidateQueries({
-          queryKey: commentsQueryKey(event.comment.taskId, userId),
-        });
-        void queryClient.invalidateQueries({
-          queryKey: notificationsQueryKey(userId),
-        });
+      if (event.actorUserId === userId) {
         return;
       }
 
-      if (!isSelf) {
-        const title =
-          event.type === "task.created" || event.type === "task.updated"
-            ? event.task.title
-            : taskTitleFromBoard(queryClient.getQueryData<Board>(queryKey), event.taskId);
+      const title =
+        event.type === "task.created" || event.type === "task.updated"
+          ? event.task.title
+          : taskTitleFromBoard(queryClient.getQueryData<Board>(queryKey), event.taskId);
 
-        toast.info(boardEventToastMessage(event, title));
-      }
+      toast.info(boardEventToastMessage(event, title));
 
       queryClient.setQueryData<Board>(queryKey, (current) =>
         current ? applyBoardEvent(current, event) : current,

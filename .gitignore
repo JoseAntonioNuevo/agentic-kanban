@@ -17,7 +17,6 @@ pnpm-debug.log*
 
 data/*.db
 data/*.db-*
-data/outbox.jsonl
 *.db
 *.db-shm
 *.db-wal

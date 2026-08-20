@@ -19,7 +19,7 @@ import { fileURLToPath } from "node:url";
  * En Compose: `DATABASE_URL=file:/data/agentic-kanban.db`.
  * En el Mac: `file:<repo>/data/agentic-kanban.db` (el mismo path que TablePlus).
  */
-export function resolveDatabaseUrl(): string {
+function resolveDatabaseUrl(): string {
   if (process.env.DATABASE_URL) {
     return process.env.DATABASE_URL;
   }

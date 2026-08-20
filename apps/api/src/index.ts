@@ -1,8 +1,7 @@
 /**
  * Servidor HTTP de la API: Hono sobre Bun (no Node).
  *
- * Monta health, Better Auth, workspace/project, el tablero, comentarios,
- * la campana y el SSE.
+ * Monta health, Better Auth, workspace/project, el tablero y el SSE.
  * Bun usa este `export default` (`port`, `hostname`, `fetch`) para escuchar.
  */
 import { Hono } from "hono";
@@ -10,9 +9,7 @@ import { Hono } from "hono";
 import { authRoutes } from "./routes/auth.ts";
 import { healthRoutes } from "./routes/health.ts";
 import { boardRoutes } from "./routes/board.ts";
-import { commentRoutes } from "./routes/comments.ts";
 import { eventRoutes } from "./routes/events.ts";
-import { notificationRoutes } from "./routes/notifications.ts";
 import { projectRoutes } from "./routes/projects.ts";
 import { workspaceRoutes } from "./routes/workspaces.ts";
 
@@ -26,26 +23,12 @@ app.route("/", healthRoutes);
 app.route("/", workspaceRoutes);
 app.route("/", projectRoutes);
 app.route("/", boardRoutes);
-app.route("/", commentRoutes);
-app.route("/", notificationRoutes);
 app.route("/", eventRoutes);
 
 const port = Number(process.env.API_PORT ?? 3000);
 
-type ServeTimeout = {
-  timeout: (request: Request, seconds: number) => void;
-};
-
-// Bun cierra peticiones idle a los 10s por defecto. `idleTimeout: 0` no
-// basta para SSE: hay que desactivar el timeout de esa petición.
 export default {
   port,
   hostname: "0.0.0.0",
-  idleTimeout: 0,
-  fetch(req: Request, server: ServeTimeout) {
-    if (new URL(req.url).pathname.endsWith("/events")) {
-      server.timeout(req, 0);
-    }
-    return app.fetch(req);
-  },
+  fetch: app.fetch,
 };
