@@ -76,8 +76,8 @@ Do not add Turborepo, Nx, Lerna, or extra architecture packages.
 
 ## Runtime and toolchain
 
-**Bun 1.3.14** is the API runtime **and** the package manager
-(`packageManager: bun@1.3.14`). Do not run the API on Node. Do not add
+**Bun 1.4.0** is the API runtime **and** the package manager
+(`packageManager: bun@1.4.0`). Do not run the API on Node. Do not add
 `@hono/node-server`, Express, Fastify, Nest, `tsx`, `ts-node`.
 
 **Vite+ 0.2.9** owns the frontend toolchain (not standalone Vite / ESLint /
@@ -87,8 +87,9 @@ Prettier / a second Vitest). Import config from `vite-plus`
 Overrides (required):
 
 ```text
-vite   → npm:@voidzero-dev/vite-plus-core@0.2.9
-vitest → 4.1.10
+vite      → npm:@voidzero-dev/vite-plus-core@0.2.9
+vitest    → 4.1.10
+bun-types → 1.4.0
 ```
 
 Bundled: Vite 8.2.1, Vitest 4.1.10, Rolldown 1.2.3, Oxlint 1.77.0, Oxfmt 0.62.0.
@@ -163,8 +164,8 @@ must be scoped by an authorized `workspace_id`.
 
 Two services only: `web`, `api`. No database container.
 
-- API image: `oven/bun:1.3.14`.
-- Web image: also `oven/bun:1.3.14` + workspace `vite-plus@0.2.9`. Official
+- API image: `oven/bun:1.4.0`.
+- Web image: also `oven/bun:1.4.0` + workspace `vite-plus@0.2.9`. Official
   `ghcr.io/voidzero-dev/vite-plus:0.2.9` denies unauthenticated pulls.
 - Bind-mount source; anonymous `/app/node_modules` so the host does not
   overwrite Linux deps.

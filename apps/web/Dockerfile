@@ -1,6 +1,6 @@
 # Imagen oficial de Vite+ deniega pulls sin auth.
-# Bun 1.3.14 + vite-plus@0.2.9 del workspace: el frontend sigue yendo por Vite+.
-FROM oven/bun:1.3.14
+# Bun 1.4.0 + vite-plus@0.2.9 del workspace: el frontend sigue yendo por Vite+.
+FROM oven/bun:1.4.0
 
 WORKDIR /app
 

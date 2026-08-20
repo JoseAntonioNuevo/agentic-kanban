@@ -19,7 +19,7 @@ flowchart TB
   api --> db
 ```
 
-- Workspaces: `apps/*` + `packages/*`. Gestor y runtime de la API: **Bun 1.3.14**.
+- Workspaces: `apps/*` + `packages/*`. Gestor y runtime de la API: **Bun 1.4.0**.
 - Interno: `"@agentic-kanban/schemas": "workspace:*"` (nunca una versión publicada).
 - Externo: pin exacto (`"hono": "4.13.3"`). Un solo `bun.lock` en la raíz.
 - `web` **no** importa `db`. El navegador no habla con libSQL.

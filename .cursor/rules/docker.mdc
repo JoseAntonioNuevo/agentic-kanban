@@ -8,7 +8,7 @@ alwaysApply: false
 
 Two services only: `web` and `api`. No database container.
 
-- Images: `oven/bun:1.3.14`. Do not use
+- Images: `oven/bun:1.4.0`. Do not use
   `ghcr.io/voidzero-dev/vite-plus:0.2.9` (unauthenticated pulls are denied).
 - Bind-mount source plus anonymous `/app/node_modules` so the host does not
   overwrite Linux deps.

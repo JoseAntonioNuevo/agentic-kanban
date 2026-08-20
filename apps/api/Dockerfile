@@ -1,5 +1,5 @@
-# API: Bun 1.3.14. Instala el monorepo y arranca Hono con --hot.
-FROM oven/bun:1.3.14
+# API: Bun 1.4.0. Instala el monorepo y arranca Hono con --hot.
+FROM oven/bun:1.4.0
 
 WORKDIR /app
 

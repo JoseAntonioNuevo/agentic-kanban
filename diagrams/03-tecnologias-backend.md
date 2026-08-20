@@ -4,7 +4,7 @@ API en `apps/api`: **Hono sobre Bun**. Un proceso, un puerto, cero CORS. Hoy sol
 
 ```mermaid
 flowchart TB
-  bun["Bun 1.3.14 — 0.0.0.0:3000"]
+  bun["Bun 1.4.0 — 0.0.0.0:3000"]
   hono["Hono 4.13.3"]
   health["GET /api/health"]
   ping["pingDatabase"]
