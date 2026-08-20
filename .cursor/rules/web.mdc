@@ -40,12 +40,13 @@ highlighting or email. Comments reuse the project SSE (`comment.created`).
 `useBoardEvents` opens `EventSource` on the relative
 `/api/projects/:projectId/events` while the board is mounted. Frames
 are data-only (`onmessage`); parse `event.data` with `boardEventSchema`.
-Skip when `actorUserId` is the current user (no cache patch, no toast;
-the optimistic path owns it). For another user, `toast.info` via sonner
-(in-app only; no email) then patch the query cache with
-`applyBoardEvent`. `comment.created` invalidates `commentsQueryKey` for
-that task and `notificationsQueryKey` (no second EventSource). Read the
-title from the event or the current cache before applying a delete.
+Patch the query cache with `applyBoardEvent` even when `actorUserId` is
+the current user (idempotent; a second tab of the same account must
+sync). Skip only the toast for self. For another user, `toast.info` via
+sonner (in-app only; no email). `comment.created` invalidates
+`commentsQueryKey` for that task and `notificationsQueryKey` (no second
+EventSource). Read the title from the event or the current cache before
+applying a delete.
 Close on unmount. Do not copy the board into `useState`. No Socket.IO.
 Accent classes come from `workspace.id` (`src/lib/workspace-accent.ts`),
 never from the user.

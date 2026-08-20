@@ -32,21 +32,62 @@ eventRoutes.get(
       return c.json({ error: "Not found" }, 404);
     }
 
+    // El proxy de Vite no debe bufferizar el stream.
+    c.header("Cache-Control", "no-cache, no-transform");
+    c.header("X-Accel-Buffering", "no");
+
     return streamSSE(c, async (stream) => {
+      const pending: string[] = [];
+      let wake: (() => void) | undefined;
+
+      const poke = () => {
+        const resolve = wake;
+        wake = undefined;
+        resolve?.();
+      };
+
+      const enqueue = (data: string) => {
+        pending.push(data);
+        poke();
+      };
+
+      // Escribe solo dentro de este loop: un writeSSE desde el POST de
+      // otro request no flushes de forma fiable en Bun.
       const unsubscribe = subscribe(projectId, (event) => {
-        void stream.writeSSE({ data: JSON.stringify(event) });
+        enqueue(JSON.stringify(event));
       });
 
-      await new Promise<void>((resolve) => {
-        const done = () => {
-          unsubscribe();
-          resolve();
-        };
-        stream.onAbort(done);
-        if (stream.aborted) {
-          done();
+      stream.onAbort(poke);
+
+      // Primer byte para que EventSource pase a OPEN. `keepalive` no es
+      // un boardEvent: el cliente lo ignora en el safeParse.
+      enqueue("keepalive");
+
+      const heartbeat = setInterval(() => {
+        enqueue("keepalive");
+      }, 15_000);
+      heartbeat.unref();
+
+      try {
+        while (!stream.aborted) {
+          const data = pending.shift();
+          if (data === undefined) {
+            await new Promise<void>((resolve) => {
+              wake = resolve;
+              if (stream.aborted) {
+                poke();
+              }
+            });
+            continue;
+          }
+          await stream.writeSSE({ data });
         }
-      });
+      } catch {
+        // El cliente cerró a mitad de un write.
+      } finally {
+        clearInterval(heartbeat);
+        unsubscribe();
+      }
     });
   },
 );

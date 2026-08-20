@@ -2,7 +2,13 @@
  * Authz del stream SSE: 401 sin cookie, 404 si no es miembro (nunca 403),
  * miembro → 200 text/event-stream. Cancela el body para no colgar el test.
  */
-import { insertProject, insertWorkspace, insertWorkspaceMember } from "@agentic-kanban/db";
+import {
+  insertColumn,
+  insertProject,
+  insertTask,
+  insertWorkspace,
+  insertWorkspaceMember,
+} from "@agentic-kanban/db";
 import { describe, expect, it } from "vite-plus/test";
 
 import { app } from "./index.ts";
@@ -141,5 +147,98 @@ describe("SSE /api/projects/:projectId/events", () => {
     expect(res.status).toBe(200);
     expect(res.headers.get("content-type")).toContain("text/event-stream");
     await res.body?.cancel();
+  });
+
+  it("Luis recibe task.moved de Ana en el body SSE", async () => {
+    const sharedWorkspaceId = `ws_sse_${suffix}`;
+    const sharedProjectId = `proj_sse_${suffix}`;
+    const colTodo = `col_todo_sse_${suffix}`;
+    const colDone = `col_done_sse_${suffix}`;
+    const taskId = `task_sse_${suffix}`;
+
+    await insertWorkspace({ id: sharedWorkspaceId, name: "Shared SSE" });
+    await insertWorkspaceMember({ workspaceId: sharedWorkspaceId, userId: ana.userId });
+    await insertWorkspaceMember({ workspaceId: sharedWorkspaceId, userId: luis.userId });
+    await insertProject({ id: sharedProjectId, workspaceId: sharedWorkspaceId, name: "Shared" });
+    await insertColumn({
+      id: colTodo,
+      workspaceId: sharedWorkspaceId,
+      projectId: sharedProjectId,
+      name: "To Do",
+      position: 0,
+    });
+    await insertColumn({
+      id: colDone,
+      workspaceId: sharedWorkspaceId,
+      projectId: sharedProjectId,
+      name: "Done",
+      position: 1,
+    });
+    await insertTask({
+      id: taskId,
+      workspaceId: sharedWorkspaceId,
+      projectId: sharedProjectId,
+      columnId: colTodo,
+      title: "Carta",
+      position: 0,
+    });
+
+    const streamRes = await app.fetch(
+      new Request(`http://localhost:3000/api/projects/${sharedProjectId}/events`, {
+        headers: { cookie: luis.cookie, origin: "http://localhost:5173" },
+      }),
+    );
+
+    expect(streamRes.status).toBe(200);
+    expect(streamRes.body).toBeTruthy();
+
+    const reader = streamRes.body!.getReader();
+    const decoder = new TextDecoder();
+    let buf = "";
+
+    const waitFor = async (needle: string, timeoutMs = 4000) => {
+      const deadline = Date.now() + timeoutMs;
+      while (!buf.includes(needle)) {
+        const remaining = deadline - Date.now();
+        if (remaining <= 0) {
+          throw new Error(`SSE timeout waiting for ${needle}: ${buf}`);
+        }
+        const chunk = await Promise.race([
+          reader.read(),
+          new Promise<never>((_, reject) => {
+            setTimeout(() => {
+              reject(new Error(`SSE timeout waiting for ${needle}: ${buf}`));
+            }, remaining);
+          }),
+        ]);
+        if (chunk.done) {
+          throw new Error(`SSE ended before ${needle}: ${buf}`);
+        }
+        buf += decoder.decode(chunk.value, { stream: true });
+      }
+    };
+
+    try {
+      await waitFor("keepalive");
+
+      const moveRes = await app.fetch(
+        new Request(`http://localhost:3000/api/tasks/${taskId}/move`, {
+          method: "POST",
+          headers: {
+            cookie: ana.cookie,
+            origin: "http://localhost:5173",
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({ columnId: colDone, position: 0 }),
+        }),
+      );
+      expect(moveRes.status).toBe(200);
+
+      await waitFor("task.moved");
+      expect(buf).toContain(taskId);
+      expect(buf).toContain(colDone);
+    } finally {
+      await reader.cancel();
+    }
   });
 });

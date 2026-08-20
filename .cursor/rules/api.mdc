@@ -54,6 +54,11 @@ app.route("/", projectRoutes);
   `requireSession` → 401; `getProjectForMember` → 404 (never 403).
   `workspace_id` comes from the project row. On client abort, unsubscribe.
   Frames are data-only: JSON of `boardEventSchema` in `data` (no `event:`).
+  Writes happen inside the `streamSSE` loop (queue + wakeup), not from
+  the POST handler. Bun's default idle timeout is 10s and kills quiet
+  SSE; `export default` sets `idleTimeout: 0` and calls
+  `server.timeout(req, 0)` on `/events`. The route sends a keepalive
+  the client ignores.
 - `src/realtime/index.ts` is the in-process hub: `Map` of `projectId` →
   subscribers, `subscribe` / `publish`. Parse outgoing events with
   `boardEventSchema`. `publish` is a no-op with zero subscribers. Board

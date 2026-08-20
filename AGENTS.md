@@ -97,11 +97,12 @@ Board writes and comment creates publish after a successful row
 (`actorUserId` from the session). A 404 or validation failure does not
 publish. `useBoardEvents`
 opens `EventSource` on the relative `/api/projects/:projectId/events`
-(`onmessage`, same-origin cookie), parses with `boardEventSchema`, skips
-the current user's `actorUserId` (no cache patch and no toast), then
-`toast.info` for the other user's event. Task events patch the board
-cache with `applyBoardEvent`. `comment.created` invalidates the comments
-query for that task and the notifications query (bell). Close on unmount.
+(`onmessage`, same-origin cookie), parses with `boardEventSchema`, then
+patches the board cache with `applyBoardEvent` even when `actorUserId`
+is the current user (idempotent; another tab of the same account must
+sync). Skip only the toast for self. `toast.info` for another user's
+event. `comment.created` invalidates the comments query for that task
+and the notifications query (bell). Close on unmount.
 In-app sonner toasts only. One EventSource; no second stream.
 Comment HTTP lists and creates on a task. The edit-task
 dialog lists the thread (`useComments`) and posts one (`useCreateComment`);
@@ -198,30 +199,30 @@ only.
 
 ## Frontend (`apps/web`)
 
-| Dep                                                                      | Why                                                                                             |
-| ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------- |
-| React 19.2.8                                                             | SPA. No Next, Astro, React Router (until routing is real).                                      |
-| Vite+ + `@vitejs/plugin-react` 6.0.5                                     | Dev/build. Import plugins via `vite-plus`.                                                      |
-| Tailwind 4.3.3 + `@tailwindcss/vite`                                     | CSS via Vite plugin. `@import "tailwindcss"` — no v3 config.                                    |
-| shadcn 4.18.0                                                            | Pinned CLI. Components in `src/components/ui`. No `form` (no RHF).                              |
-| radix-ui, cva, clsx, tailwind-merge, lucide-react, tw-animate-css, geist | Pulled in by shadcn. Keep exact pins.                                                           |
-| sonner + next-themes                                                     | In-app toasts (other users' board events, mutation errors). `next-themes` is **not** Next.js.   |
+| Dep                                                                      | Why                                                                                                      |
+| ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------- |
+| React 19.2.8                                                             | SPA. No Next, Astro, React Router (until routing is real).                                               |
+| Vite+ + `@vitejs/plugin-react` 6.0.5                                     | Dev/build. Import plugins via `vite-plus`.                                                               |
+| Tailwind 4.3.3 + `@tailwindcss/vite`                                     | CSS via Vite plugin. `@import "tailwindcss"` — no v3 config.                                             |
+| shadcn 4.18.0                                                            | Pinned CLI. Components in `src/components/ui`. No `form` (no RHF).                                       |
+| radix-ui, cva, clsx, tailwind-merge, lucide-react, tw-animate-css, geist | Pulled in by shadcn. Keep exact pins.                                                                    |
+| sonner + next-themes                                                     | In-app toasts (other users' board events, mutation errors). `next-themes` is **not** Next.js.            |
 | TanStack Query 5.101.4                                                   | One `QueryClient`. Health, workspaces, board, comments, notifications, optimistic move, SSE cache patch. |
-| better-auth 1.7.1                                                        | React client (`createAuthClient`, `useSession`). No `baseURL`; fetch is relative `/api/auth/*`. |
-| Zod 4.4.3                                                                | Runtime-parse API JSON with `@agentic-kanban/schemas`. Client-side sign-up/sign-in validation.  |
-| `@dnd-kit/react` 0.5.0                                                   | Drag-and-drop. Do **not** add `@dnd-kit/core` / `sortable` as the API.                          |
+| better-auth 1.7.1                                                        | React client (`createAuthClient`, `useSession`). No `baseURL`; fetch is relative `/api/auth/*`.          |
+| Zod 4.4.3                                                                | Runtime-parse API JSON with `@agentic-kanban/schemas`. Client-side sign-up/sign-in validation.           |
+| `@dnd-kit/react` 0.5.0                                                   | Drag-and-drop. Do **not** add `@dnd-kit/core` / `sortable` as the API.                                   |
 
 `vp dev apps/web` / `vp build apps/web`. Dev server `0.0.0.0:5173`.
 
 ## Backend (`apps/api`)
 
-| Dep                         | Why                                                                           |
-| --------------------------- | ----------------------------------------------------------------------------- |
-| Hono 4.13.3                 | HTTP. Bun-native `export default { port, hostname: "0.0.0.0", fetch }`.       |
-| `@hono/zod-validator` 0.9.0 | Query/param on workspace + project GET; responses via schema.parse.           |
-| Zod 4.4.3                   | Same major as schemas.                                                        |
-| Better Auth 1.7.1           | `betterAuth` with `drizzleAdapter` + `provider: "sqlite"` on this libSQL.     |
-| `@agentic-kanban/db`        | Only database access (reads, board/comment/mention writes, seed). Never drizzle from the API. |
+| Dep                         | Why                                                                                                     |
+| --------------------------- | ------------------------------------------------------------------------------------------------------- |
+| Hono 4.13.3                 | HTTP. Bun-native `export default { port, hostname: "0.0.0.0", fetch }`.                                 |
+| `@hono/zod-validator` 0.9.0 | Query/param on workspace + project GET; responses via schema.parse.                                     |
+| Zod 4.4.3                   | Same major as schemas.                                                                                  |
+| Better Auth 1.7.1           | `betterAuth` with `drizzleAdapter` + `provider: "sqlite"` on this libSQL.                               |
+| `@agentic-kanban/db`        | Only database access (reads, board/comment/mention writes, seed). Never drizzle from the API.           |
 | `@agentic-kanban/schemas`   | Shared Zod (auth, workspace/project GET, board, move, comments, mentions, notifications, board events). |
 
 `src/auth/index.ts` exports the `auth` instance (Better Auth + drizzleAdapter).
@@ -254,9 +255,10 @@ move → `task.moved`). Comment POST publishes `comment.created` after
 persist + outbox. Failed writes (404, validation) do not publish.
 The web client connects with `EventSource` (relative URL, `onmessage`)
 and patches Query cache; it does not copy the board into `useState`.
-After skip-self, `useBoardEvents` shows a sonner `toast.info` for the
-other user's event (title from the payload or the board cache) then
-applies the board patch, or for `comment.created` invalidates comments
+`useBoardEvents` applies `applyBoardEvent` even for the current user
+(so a second tab stays in sync) and shows a sonner `toast.info` only
+for another user's event (title from the payload or the board cache),
+or for `comment.created` invalidates comments
 and notifications. POST resolves `@mentions` (members only,
 not self) and writes the file outbox. The edit dialog
 fetches comments only while open. The bell uses HTTP + TanStack Query
@@ -264,7 +266,9 @@ fetches comments only while open. The bell uses HTTP + TanStack Query
 when `comment.created` arrives on the open board. No mention highlighting.
 No Socket.IO, Redis, WebSocket upgrade, Resend, SMTP, or extra service.
 
-Listen `0.0.0.0:${API_PORT:-3000}`. Hot reload: `bun run --hot`.
+Listen `0.0.0.0:${API_PORT:-3000}`. `idleTimeout: 0` plus
+`server.timeout(req, 0)` on `/events` so quiet SSE is not killed
+(Bun default is 10s). Hot reload: `bun run --hot`.
 
 ## Database (`packages/db`)
 
@@ -298,10 +302,10 @@ Schema folder:
   and `schema/task.ts`; `comment` / `notification` in `schema/comment.ts`
   and `schema/notification.ts`. Reads: `listWorkspacesForUser`, `getProjectForMember`,
   `getBoardForMember`. Writes: `moveTaskForMember` and task
-  create/update/delete.   Comment helpers: `listCommentsForMember`,
+  create/update/delete. Comment helpers: `listCommentsForMember`,
   `createCommentForMember` (via `getTaskForMember`; comment queries also
   filter the task's `workspace_id`; create inserts mention notifications
-  in the same transaction).   Notification helpers:
+  in the same transaction). Notification helpers:
   `listNotificationsForRecipient`, `listNotificationsForUser` (inbox join:
   actor name, task title, comment body, membership),
   `markNotificationReadForUser`, `markNotificationsEmailed`.

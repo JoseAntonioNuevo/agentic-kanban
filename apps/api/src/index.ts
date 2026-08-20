@@ -32,8 +32,20 @@ app.route("/", eventRoutes);
 
 const port = Number(process.env.API_PORT ?? 3000);
 
+type ServeTimeout = {
+  timeout: (request: Request, seconds: number) => void;
+};
+
+// Bun cierra peticiones idle a los 10s por defecto. `idleTimeout: 0` no
+// basta para SSE: hay que desactivar el timeout de esa petición.
 export default {
   port,
   hostname: "0.0.0.0",
-  fetch: app.fetch,
+  idleTimeout: 0,
+  fetch(req: Request, server: ServeTimeout) {
+    if (new URL(req.url).pathname.endsWith("/events")) {
+      server.timeout(req, 0);
+    }
+    return app.fetch(req);
+  },
 };

@@ -12,6 +12,7 @@ Debe permitir:
 Requisitos:
 
 Usa `streamSSE` de `hono/streaming`. El proxy Vite de `/api` actual vale; no actives `ws`.
+En el `export default` de Bun pon `idleTimeout: 0` y `server.timeout(req, 0)` en `/events` (si no, mata el SSE a los 10s de silencio).
 El frame SSE lleva el JSON de `boardEventSchema` en `data`. No uses un `event:` distinto por tipo: `EventSource.onmessage` debe bastar.
 No Socket.IO, Redis ni un servicio aparte.
 No publiques todavía desde create/update/delete/move.
