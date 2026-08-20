@@ -43,3 +43,18 @@ export {
   type TaskIdParam,
   type UpdateTaskBody,
 } from "./board.ts";
+
+export {
+  applyBoardEvent,
+  boardEventSchema,
+  boardEventToastMessage,
+  taskCreatedEventSchema,
+  taskDeletedEventSchema,
+  taskMovedEventSchema,
+  taskUpdatedEventSchema,
+  type BoardEvent,
+  type TaskCreatedEvent,
+  type TaskDeletedEvent,
+  type TaskMovedEvent,
+  type TaskUpdatedEvent,
+} from "./events.ts";

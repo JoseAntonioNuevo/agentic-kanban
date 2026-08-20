@@ -1,6 +1,6 @@
 /**
  * Toaster de sonner, alineado con el tema (`next-themes` no es Next.js).
- * Montado en main.tsx; las notificaciones de la Sesión 4 lo usarán.
+ * Montado en main.tsx; toasts in-app (eventos de otros usuarios, errores).
  */
 import { useTheme } from "next-themes";
 import { Toaster as Sonner, type ToasterProps } from "sonner";

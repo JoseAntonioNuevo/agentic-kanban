@@ -64,9 +64,28 @@ After login the dashboard lists `GET /api/workspaces` (TanStack Query +
 the same Zod schema; each workspace includes its projects). Opening a
 workspace loads the Kanban board (`GET /api/projects/:projectId/board`).
 Cards move with `@dnd-kit/react` and an optimistic TanStack Query
-mutation to `POST /api/tasks/:taskId/move`. Swatch color is a function
+mutation to `POST /api/tasks/:taskId/move`. The open board also
+subscribes to SSE via `useBoardEvents` and patches that query cache.
+Swatch color is a function
 of `workspace.id`, never of the signed-in user. Ana sees two workspaces;
 Luis sees the shared one.
+
+The shared Zod contract for board announcements lives in
+`@agentic-kanban/schemas` (`boardEventSchema`: `task.created`,
+`task.updated`, `task.deleted`, `task.moved`; `applyBoardEvent` patches
+a board snapshot; `boardEventToastMessage` is the in-app copy). HTTP remains the write path.
+`GET /api/projects/:projectId/events` is an authenticated SSE
+stream (Hono `streamSSE`) with an in-process hub (`subscribe` /
+`publish` in `src/realtime/`, keyed by `projectId`). Each frame is
+data-only: JSON of `boardEventSchema` in `data` (no `event:` field).
+Board writes publish after a successful row (`actorUserId` from the
+session). A 404 or validation failure does not publish. `useBoardEvents`
+opens `EventSource` on the relative `/api/projects/:projectId/events`
+(`onmessage`, same-origin cookie), parses with `boardEventSchema`, skips
+the current user's `actorUserId` (no cache patch and no toast), then
+`toast.info` for the other user's event and patches the TanStack Query
+board cache with `applyBoardEvent`. Close on unmount. In-app sonner
+toasts only; no persisted notifications, bell, or email.
 
 The API does **not** seed on boot. After deleting `data/*.db*`: `db:migrate` then `db:seed`. Never run the Mac API (or seed) while Compose uses the same `.db`.
 
@@ -75,7 +94,7 @@ Tenant tables also include `column` and `task` (Drizzle + migrations
 the three demo columns and six cards on `proj_agentic_kanban`.
 
 **Not implemented yet (do not invent):** workspace/project HTTP writes,
-realtime, comments, mentions, email, deploy, session git tags.
+comments, mentions, email, deploy, session git tags.
 
 Finished product (later, still small): one demo workspace, one board, three
 columns, cards, two demo users, comments, `@mentions`, realtime in the Hono
@@ -159,8 +178,8 @@ only.
 | Tailwind 4.3.3 + `@tailwindcss/vite`                                     | CSS via Vite plugin. `@import "tailwindcss"` — no v3 config.                                    |
 | shadcn 4.18.0                                                            | Pinned CLI. Components in `src/components/ui`. No `form` (no RHF).                              |
 | radix-ui, cva, clsx, tailwind-merge, lucide-react, tw-animate-css, geist | Pulled in by shadcn. Keep exact pins.                                                           |
-| sonner + next-themes                                                     | Toasts. `next-themes` is **not** Next.js.                                                       |
-| TanStack Query 5.101.4                                                   | One `QueryClient`. Health, workspaces, board, optimistic move.                                  |
+| sonner + next-themes                                                     | In-app toasts (other users' board events, mutation errors). `next-themes` is **not** Next.js.   |
+| TanStack Query 5.101.4                                                   | One `QueryClient`. Health, workspaces, board, optimistic move, SSE cache patch.                 |
 | better-auth 1.7.1                                                        | React client (`createAuthClient`, `useSession`). No `baseURL`; fetch is relative `/api/auth/*`. |
 | Zod 4.4.3                                                                | Runtime-parse API JSON with `@agentic-kanban/schemas`. Client-side sign-up/sign-in validation.  |
 | `@dnd-kit/react` 0.5.0                                                   | Drag-and-drop. Do **not** add `@dnd-kit/core` / `sortable` as the API.                          |
@@ -176,7 +195,7 @@ only.
 | Zod 4.4.3                   | Same major as schemas.                                                        |
 | Better Auth 1.7.1           | `betterAuth` with `drizzleAdapter` + `provider: "sqlite"` on this libSQL.     |
 | `@agentic-kanban/db`        | Only database access (reads, board writes, seed). Never drizzle from the API. |
-| `@agentic-kanban/schemas`   | Shared Zod (auth, workspace/project GET, board, move).                        |
+| `@agentic-kanban/schemas`   | Shared Zod (auth, workspace/project GET, board, move, board events).          |
 
 `src/auth/index.ts` exports the `auth` instance (Better Auth + drizzleAdapter).
 `src/routes/auth.ts` mounts `/api/auth/*` via `auth.handler`. `src/middleware/
@@ -184,11 +203,22 @@ rate-limit.ts` is an in-memory rate limiter for POST sign-up / sign-in only
 (not get-session). `src/middleware/session.ts` requires a session (`401`).
 `src/routes/workspaces.ts` and `src/routes/projects.ts` are GET-only.
 `src/routes/board.ts` serves the board and task move/CRUD.
-Membership: not a member or missing row → `404` (never `403`). The client
-does not authorize: `workspace_id` comes from the project row. Seed lives in
-`src/seed.ts` (`bun run db:seed`); it is not imported by the server.
-`src/realtime/index.ts` stays a placeholder. Realtime must stay inside this
-process (SSE or WebSocket). No Socket.IO, Redis, extra service.
+`src/routes/events.ts` serves `GET /api/projects/:projectId/events`
+(SSE; `data` is JSON of `boardEventSchema`, no named `event:`).
+Authz matches board GET: session → `401`;
+`getProjectForMember` → `404` (never `403`). `workspace_id` comes from
+the project row. Seed lives in `src/seed.ts` (`bun run db:seed`); it is
+not imported by the server. `src/realtime/index.ts` is the in-process
+hub (`Map` of `projectId` → subscribers; `subscribe` / `publish`).
+Board routes call `publish` after a successful write (create →
+`task.created`, update → `task.updated`, delete → `task.deleted`,
+move → `task.moved`). Failed writes (404, validation) do not publish.
+The web client connects with `EventSource` (relative URL, `onmessage`)
+and patches Query cache; it does not copy the board into `useState`.
+After skip-self, `useBoardEvents` shows a sonner `toast.info` for the
+other user's event (title from the payload or the board cache) then
+applies the patch. No persisted notifications. No Socket.IO, Redis,
+WebSocket upgrade, or extra service.
 
 Listen `0.0.0.0:${API_PORT:-3000}`. Hot reload: `bun run --hot`.
 

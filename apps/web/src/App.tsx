@@ -67,20 +67,6 @@ export default function App() {
   }
 
   if (projectId) {
-    // #region agent log
-    fetch("http://127.0.0.1:7647/ingest/ba5bd8d3-f312-4898-9461-0e2daa745a39", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "81244b" },
-      body: JSON.stringify({
-        sessionId: "81244b",
-        hypothesisId: "E",
-        location: "App.tsx:projectId",
-        message: "showing board screen",
-        data: { projectId, userId: session.data.user.id },
-        timestamp: Date.now(),
-      }),
-    }).catch(() => {});
-    // #endregion
     return (
       <BoardScreen
         projectId={projectId}

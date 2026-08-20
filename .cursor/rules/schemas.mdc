@@ -30,8 +30,13 @@ export interface HealthResponse { status: string }
 - Workspace/project GET contracts live in `src/workspace.ts`
   (`workspaceListResponseSchema`, `projectSchema`, `projectIdParamSchema`,
   `workspacesQuerySchema`). Board/move contracts live in `src/board.ts`.
+  Board announcement events live in `src/events.ts` (`boardEventSchema`,
+  discriminated on `type`: task.created / updated / deleted / moved;
+  `applyBoardEvent` patches a `Board` snapshot; `boardEventToastMessage`
+  is the in-app sonner copy). HTTP remains the write
+  path.
   The API parses responses with the same schemas.
   `workspaceId` in JSON is data, not permission.
 - Tests: `import { describe, expect, it } from "vite-plus/test"`. Cover a
   valid parse and a reject path (see `src/health.test.ts`, `src/auth.test.ts`,
-  `src/workspace.test.ts`, `src/board.test.ts`).
+  `src/workspace.test.ts`, `src/board.test.ts`, `src/events.test.ts`).

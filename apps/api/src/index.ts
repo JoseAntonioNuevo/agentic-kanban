@@ -1,7 +1,7 @@
 /**
  * Servidor HTTP de la API: Hono sobre Bun (no Node).
  *
- * Monta health, Better Auth, workspace/project y el tablero.
+ * Monta health, Better Auth, workspace/project, el tablero y el SSE.
  * Bun usa este `export default` (`port`, `hostname`, `fetch`) para escuchar.
  */
 import { Hono } from "hono";
@@ -9,6 +9,7 @@ import { Hono } from "hono";
 import { authRoutes } from "./routes/auth.ts";
 import { healthRoutes } from "./routes/health.ts";
 import { boardRoutes } from "./routes/board.ts";
+import { eventRoutes } from "./routes/events.ts";
 import { projectRoutes } from "./routes/projects.ts";
 import { workspaceRoutes } from "./routes/workspaces.ts";
 
@@ -22,6 +23,7 @@ app.route("/", healthRoutes);
 app.route("/", workspaceRoutes);
 app.route("/", projectRoutes);
 app.route("/", boardRoutes);
+app.route("/", eventRoutes);
 
 const port = Number(process.env.API_PORT ?? 3000);
 

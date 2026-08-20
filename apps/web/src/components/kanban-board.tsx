@@ -39,40 +39,14 @@ export function KanbanBoard({
         }
 
         const taskId = String(source.id);
-        const targetIsItem = Boolean(target && isSortable(target));
         const columnId = String(
-          targetIsItem && target
+          target && isSortable(target)
             ? (target.group ?? source.group ?? "")
             : (target?.id ?? source.group ?? ""),
         );
         const position = source.index;
         const unchanged =
           String(source.initialGroup) === columnId && source.initialIndex === position;
-        // #region agent log
-        fetch("http://127.0.0.1:7647/ingest/ba5bd8d3-f312-4898-9461-0e2daa745a39", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "81244b" },
-          body: JSON.stringify({
-            sessionId: "81244b",
-            hypothesisId: "C",
-            runId: "post-fix",
-            location: "kanban-board.tsx:onDragEnd",
-            message: "drop resolved",
-            data: {
-              taskId,
-              columnId,
-              position,
-              sourceGroup: source.group,
-              initialGroup: source.initialGroup,
-              targetId: target ? String(target.id) : null,
-              targetIsItem,
-              unchanged,
-              canceled: event.canceled,
-            },
-            timestamp: Date.now(),
-          }),
-        }).catch(() => {});
-        // #endregion
 
         if (!columnId || unchanged) {
           return;

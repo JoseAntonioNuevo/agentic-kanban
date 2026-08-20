@@ -39,8 +39,17 @@ app.route("/", projectRoutes);
 - `src/middleware/rate-limit.ts` is an in-memory rate limiter for POST
   sign-up / sign-in only (not get-session). `src/middleware/session.ts`
   requires a session.
-- `src/realtime/index.ts` stays a placeholder. Realtime must stay in this
-  process (SSE or WebSocket). No Socket.IO, Redis, or extra service.
+- `GET /api/projects/:projectId/events` (`src/routes/events.ts`) is
+  authenticated SSE via Hono `streamSSE`. Authz matches board GET:
+  `requireSession` → 401; `getProjectForMember` → 404 (never 403).
+  `workspace_id` comes from the project row. On client abort, unsubscribe.
+  Frames are data-only: JSON of `boardEventSchema` in `data` (no `event:`).
+- `src/realtime/index.ts` is the in-process hub: `Map` of `projectId` →
+  subscribers, `subscribe` / `publish`. Parse outgoing events with
+  `boardEventSchema`. `publish` is a no-op with zero subscribers. Board
+  writes call `publish` after a successful row (`actorUserId` from the
+  session). A 404 or validation failure does not publish. No Socket.IO,
+  Redis, WebSocket upgrade (`ws: true`), or extra service.
 - Do not auto-run migrations. Dev: `bun run --hot`. Listen
   `0.0.0.0:${API_PORT:-3000}`. Never run this API on the Mac while Compose
   is using the same `.db`.

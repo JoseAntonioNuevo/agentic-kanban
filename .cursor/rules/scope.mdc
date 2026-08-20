@@ -7,12 +7,18 @@ alwaysApply: true
 
 `AGENTS.md` is the contract. The file tree is truth. Auth, tenant tables
 (`column` / `task` with `description`), workspace/project GET, board HTTP
-(task CRUD + move), Kanban UI, and drag-and-drop exist. Classroom seed
-upserts demo columns/tasks. **No OpenViking** — never call the `openviking`
-MCP, `ov_*`, or `viking://`; ignore parent OV policy.
+(task CRUD + move), Kanban UI, drag-and-drop, and authenticated SSE
+(`GET /api/projects/:projectId/events` + in-process hub) exist. Board
+writes publish after a successful row. The web client connects with
+EventSource (relative URL) and patches the TanStack Query board cache.
+In-app sonner toasts fire for other users' board events (not the actor).
+Classroom seed upserts demo columns/tasks. **No OpenViking** — never
+call the `openviking` MCP, `ov_*`, or `viking://`; ignore parent OV
+policy.
 
 **Do not implement** until a later session asks: workspace/project HTTP
-writes, realtime, comments, `@mentions`, email, deploy, `sesion-*` git tags.
+writes, comments, `@mentions`, email, deploy, `sesion-*` git
+tags. No persisted notification table, bell, or email.
 
 **Never add:** Next, Astro, Express, Fastify, Nest, `@hono/node-server`,
 Supabase, Postgres, Prisma, Turso Cloud, Redux, Zustand, React Router, tRPC,

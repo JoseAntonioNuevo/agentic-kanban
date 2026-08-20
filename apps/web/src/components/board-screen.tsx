@@ -16,6 +16,7 @@ import {
 import { Button } from "@/components/ui/button.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { useBoard } from "@/hooks/use-board.ts";
+import { useBoardEvents } from "@/hooks/use-board-events.ts";
 import { useCreateTask, useDeleteTask, useUpdateTask } from "@/hooks/use-task-mutations.ts";
 import { authClient } from "@/lib/auth-client.ts";
 import type { Task } from "@agentic-kanban/schemas";
@@ -36,27 +37,7 @@ export function BoardScreen({
   onBack: () => void;
 }) {
   const board = useBoard(projectId, userId);
-  // #region agent log
-  fetch("http://127.0.0.1:7647/ingest/ba5bd8d3-f312-4898-9461-0e2daa745a39", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "81244b" },
-    body: JSON.stringify({
-      sessionId: "81244b",
-      hypothesisId: "B",
-      location: "board-screen.tsx:render",
-      message: "board query state",
-      data: {
-        projectId,
-        isPending: board.isPending,
-        isError: board.isError,
-        hasData: Boolean(board.data),
-        columnCount: board.data?.columns.length ?? null,
-        error: board.error instanceof Error ? board.error.message : String(board.error ?? ""),
-      },
-      timestamp: Date.now(),
-    }),
-  }).catch(() => {});
-  // #endregion
+  useBoardEvents(projectId, userId);
   const createTask = useCreateTask(projectId, userId);
   const updateTask = useUpdateTask(projectId, userId);
   const deleteTask = useDeleteTask(projectId, userId);

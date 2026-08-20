@@ -46,25 +46,6 @@ export function useMoveTask(projectId: string, userId: string | undefined) {
       const next = previous
         ? applyBoardMove(previous, input.taskId, input.columnId, input.position)
         : undefined;
-      // #region agent log
-      fetch("http://127.0.0.1:7647/ingest/ba5bd8d3-f312-4898-9461-0e2daa745a39", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "81244b" },
-        body: JSON.stringify({
-          sessionId: "81244b",
-          hypothesisId: "B",
-          location: "use-move-task.ts:onMutate",
-          message: "optimistic move",
-          data: {
-            input,
-            hadPrevious: Boolean(previous),
-            prevColumns: previous?.columns.map((c) => ({ id: c.id, n: c.tasks.length })),
-            nextColumns: next?.columns.map((c) => ({ id: c.id, n: c.tasks.length })),
-          },
-          timestamp: Date.now(),
-        }),
-      }).catch(() => {});
-      // #endregion
 
       if (next) {
         queryClient.setQueryData(queryKey, next);
@@ -72,25 +53,7 @@ export function useMoveTask(projectId: string, userId: string | undefined) {
 
       return { previous };
     },
-    onError: (error, input, context) => {
-      // #region agent log
-      fetch("http://127.0.0.1:7647/ingest/ba5bd8d3-f312-4898-9461-0e2daa745a39", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "81244b" },
-        body: JSON.stringify({
-          sessionId: "81244b",
-          hypothesisId: "C",
-          location: "use-move-task.ts:onError",
-          message: "move failed",
-          data: {
-            input,
-            error: error instanceof Error ? error.message : String(error),
-            restored: Boolean(context?.previous),
-          },
-          timestamp: Date.now(),
-        }),
-      }).catch(() => {});
-      // #endregion
+    onError: (_error, _input, context) => {
       if (context?.previous) {
         queryClient.setQueryData(queryKey, context.previous);
       }

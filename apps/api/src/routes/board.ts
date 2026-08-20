@@ -23,6 +23,7 @@ import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 
 import { requireSession, type SessionEnv } from "../middleware/session.ts";
+import { publish } from "../realtime/index.ts";
 
 export const boardRoutes = new Hono<SessionEnv>();
 
@@ -94,7 +95,15 @@ boardRoutes.post(
       return c.json({ error: "Not found" }, 404);
     }
 
-    return c.json(toTaskJson(row), 201);
+    const task = toTaskJson(row);
+    publish({
+      type: "task.created",
+      projectId: row.projectId,
+      actorUserId: c.get("userId"),
+      task,
+    });
+
+    return c.json(task, 201);
   },
 );
 
@@ -117,7 +126,15 @@ boardRoutes.patch(
       return c.json({ error: "Not found" }, 404);
     }
 
-    return c.json(toTaskJson(row));
+    const task = toTaskJson(row);
+    publish({
+      type: "task.updated",
+      projectId: row.projectId,
+      actorUserId: c.get("userId"),
+      task,
+    });
+
+    return c.json(task);
   },
 );
 
@@ -132,6 +149,13 @@ boardRoutes.delete(
     if (!row) {
       return c.json({ error: "Not found" }, 404);
     }
+
+    publish({
+      type: "task.deleted",
+      projectId: row.projectId,
+      actorUserId: c.get("userId"),
+      taskId: row.id,
+    });
 
     return c.json(toTaskJson(row));
   },
@@ -155,6 +179,15 @@ boardRoutes.post(
     if (!row) {
       return c.json({ error: "Not found" }, 404);
     }
+
+    publish({
+      type: "task.moved",
+      projectId: row.projectId,
+      actorUserId: c.get("userId"),
+      taskId: row.id,
+      columnId: row.columnId,
+      position: row.position,
+    });
 
     return c.json(toTaskJson(row));
   },

@@ -27,6 +27,15 @@ The dashboard is health (`useHealth`) plus the workspace list
 Parse with `workspaceListResponseSchema`. Opening a project loads
 `useBoard` (`GET /api/projects/:projectId/board`). Card moves use
 `useMoveTask` (optimistic cache + `POST /api/tasks/:taskId/move`).
+`useBoardEvents` opens `EventSource` on the relative
+`/api/projects/:projectId/events` while the board is mounted. Frames
+are data-only (`onmessage`); parse `event.data` with `boardEventSchema`.
+Skip when `actorUserId` is the current user (no cache patch, no toast;
+the optimistic path owns it). For another user, `toast.info` via sonner
+(in-app only; no table, bell, or email) then patch the query cache with
+`applyBoardEvent`. Read the title from the event or the current cache
+before applying a delete. Close on unmount. Do not copy the board into
+`useState`. No Socket.IO.
 Accent classes come from `workspace.id` (`src/lib/workspace-accent.ts`),
 never from the user.
 Better Auth is wired: the React client lives in `src/lib/auth-client.ts`
