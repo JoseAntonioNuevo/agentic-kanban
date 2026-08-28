@@ -167,8 +167,9 @@ Two services only: `web`, `api`. No database container.
 - API image: `oven/bun:1.4.0`.
 - Web image: also `oven/bun:1.4.0` + workspace `vite-plus@0.2.9`. Official
   `ghcr.io/voidzero-dev/vite-plus:0.2.9` denies unauthenticated pulls.
-- Bind-mount source; anonymous `/app/node_modules` so the host does not
-  overwrite Linux deps.
+- Bind-mount source; anonymous `/app/node_modules` plus each workspace
+  package `node_modules` so the host does not overwrite Linux deps or leak
+  Bun isolated `.bun` symlinks.
 - DB is **`./data` → `/data`**, not `/app/data`. A volume under the source
   mount plus `bun --hot` caused `SQLITE_READONLY_DBMOVED`.
 
