@@ -22,11 +22,25 @@ const data = (await res.json()) as HealthResponse;
 await fetch("http://localhost:3000/api/health");
 ```
 
-The UI is the auth form, the health card (`useHealth`) and the user's
-workspace list (`useWorkspaces`). `authClient`
+The UI is the auth form, the health card (`useHealth`), the user's workspace
+list (`useWorkspaces`) and the project board. `authClient`
 (`src/lib/auth-client.ts`) is the only `createAuthClient()`, without `baseURL`
 (same origin through the proxy). Form state is local React state, validated
-with the shared sign-up/sign-in schemas. No React Router.
+with the shared sign-up/sign-in schemas. No React Router: `App.tsx` keeps
+`selectedProjectId` as local state; the dashboard opens a project's board and
+`BoardScreen` has a back button.
+
+Board: `useBoard(projectId, userId)` (`boardQueryKey(projectId, userId)` →
+`["board", projectId, userId]`) is the single source of the board; a 404 throws
+`BoardNotFoundError` (no retry, "not found" state with a back button). Never
+copy the board into `useState`; React state is only for the open dialog and
+form text. `useTaskMutations(projectId, userId)` returns `createTask`,
+`updateTask` and `deleteTask`; each `mutationKey` starts with
+`boardMutationKey(projectId)` (`["board", projectId, …]`), which Session 3 uses
+with `useIsMutating`. After each mutation update the cache and invalidate the
+board query. Components in `src/components/`: `board-screen`, `kanban-board`,
+`kanban-column`, `kanban-card` and `task-form-dialog` (one dialog, create and
+edit modes). Moving tasks and drag-and-drop are not implemented.
 
 Cache convention: every query of user data puts the `userId` in its queryKey
 (`workspacesQueryKey(userId)` → `["workspaces", userId]`), and sign-out calls

@@ -2,11 +2,15 @@
  * Pantalla raíz: acceso con Better Auth y, con sesión, el estado del sistema.
  *
  * `authClient.useSession()` decide entre skeleton, formulario de acceso o
- * cabecera con usuario + card de health + lista de workspaces del usuario.
+ * cabecera con usuario y, según `selectedProjectId` (estado local, sin router),
+ * el tablero del project o la card de health + lista de workspaces.
  * `useHealth()` pide GET /api/health y Zod valida la respuesta. Frontend se
  * marca OK si el JS ha cargado; API y Database salen del JSON parseado.
  */
+import { useState } from "react";
+
 import { AuthForm } from "@/components/auth-form.tsx";
+import { BoardScreen } from "@/components/board-screen.tsx";
 import { Badge } from "@/components/ui/badge.tsx";
 import {
   Card,
@@ -21,10 +25,12 @@ import { WorkspaceList } from "@/components/workspace-list.tsx";
 import { useHealth } from "@/hooks/use-health.ts";
 import { authClient } from "@/lib/auth-client.ts";
 import { queryClient } from "@/lib/query-client.ts";
+import { cn } from "@/lib/utils.ts";
 
 /** Componente raíz: elige pantalla según el estado de la sesión. */
 export default function App() {
   const session = authClient.useSession();
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
 
   if (session.isPending) {
     return (
@@ -43,8 +49,18 @@ export default function App() {
   }
 
   return (
-    <main className="flex min-h-svh flex-col items-center justify-center gap-4 bg-background p-6">
-      <header className="flex w-full max-w-md items-center justify-between">
+    <main
+      className={cn(
+        "flex min-h-svh flex-col items-center gap-4 bg-background p-6",
+        selectedProjectId === null && "justify-center",
+      )}
+    >
+      <header
+        className={cn(
+          "flex w-full items-center justify-between",
+          selectedProjectId === null && "max-w-md",
+        )}
+      >
         <span className="text-sm font-medium">{session.data.user.name}</span>
         {/* Convención: queryKey con userId + `queryClient.clear()` al salir, para
             que el siguiente usuario de la pestaña no vea datos del anterior. */}
@@ -53,13 +69,24 @@ export default function App() {
           onClick={async () => {
             await authClient.signOut();
             queryClient.clear();
+            setSelectedProjectId(null);
           }}
         >
           Cerrar sesión
         </Button>
       </header>
-      <HealthCard />
-      <WorkspaceList userId={session.data.user.id} />
+      {selectedProjectId !== null ? (
+        <BoardScreen
+          projectId={selectedProjectId}
+          userId={session.data.user.id}
+          onBack={() => setSelectedProjectId(null)}
+        />
+      ) : (
+        <>
+          <HealthCard />
+          <WorkspaceList userId={session.data.user.id} onOpenProject={setSelectedProjectId} />
+        </>
+      )}
     </main>
   );
 }

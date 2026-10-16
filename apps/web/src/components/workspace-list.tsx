@@ -1,5 +1,6 @@
 /**
- * Lista de workspaces del usuario con sus projects (sin enlaces todavía).
+ * Lista de workspaces del usuario con sus projects. Cada project es un botón
+ * que llama a `onOpenProject(projectId)` para abrir su tablero.
  *
  * Tres estados con mensaje propio: cargando (skeleton), error y lista vacía
  * (que es un resultado válido). El swatch usa `workspaceAccent(w.id)`: el
@@ -11,7 +12,13 @@ import { useWorkspaces } from "@/hooks/use-workspaces.ts";
 import { workspaceAccent } from "@/lib/workspace-accent.ts";
 
 /** Pinta los espacios del usuario identificado por `userId`. */
-export function WorkspaceList({ userId }: { userId: string }) {
+export function WorkspaceList({
+  userId,
+  onOpenProject,
+}: {
+  userId: string;
+  onOpenProject: (projectId: string) => void;
+}) {
   const workspaces = useWorkspaces(userId);
 
   if (workspaces.isPending) {
@@ -63,7 +70,15 @@ export function WorkspaceList({ userId }: { userId: string }) {
                 ) : (
                   <ul className="space-y-1 text-sm">
                     {workspace.projects.map((project) => (
-                      <li key={project.id}>{project.name}</li>
+                      <li key={project.id}>
+                        <button
+                          type="button"
+                          onClick={() => onOpenProject(project.id)}
+                          className="w-full cursor-pointer rounded-md px-2 py-1 text-left outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50"
+                        >
+                          {project.name}
+                        </button>
+                      </li>
                     ))}
                   </ul>
                 )}
