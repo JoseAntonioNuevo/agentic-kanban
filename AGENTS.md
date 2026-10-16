@@ -11,10 +11,12 @@ repository documentation are authoritative.
 
 ## Current scope
 
-Implemented: health, email/password auth (Better Auth, httpOnly cookie), the
-multi-tenant model, authorized reads, the board API, the board UI with task
-CRUD and optimistic drag-and-drop, live board events over SSE with toasts,
-the classroom seed and a Postman collection.
+The product is complete for the course block: email/password auth (Better
+Auth, httpOnly cookie), multi-tenant workspaces and projects, a board with task
+CRUD and optimistic drag-and-drop, live board events over SSE with toasts, task
+comments, `@mentions` with a local outbox and an in-app notification bell, the
+classroom seed and a Postman collection. The classroom deploy is
+`docker compose up --build` (`web` and `api`).
 
 ```text
 React → TanStack Query / authClient → /api/* → Vite+ proxy
@@ -23,65 +25,37 @@ React → TanStack Query / authClient → /api/* → Vite+ proxy
 
 - Tables: Better Auth (`user`, `session`, `account`, `verification`), tenant
   (`workspace`, `workspace_member` unique per workspace and user, no role,
-  `project`), board (`column`, `task`, each with its own `workspace_id`,
-  `position` without UNIQUE), `comment` and `notification` (own `workspace_id`;
-  `notification.comment_id` NOT NULL, `kind` only `mention`). Foreign keys
-  cascade: deleting a task deletes its comments and notifications. Comments have
-  HTTP (`GET`/`POST /api/tasks/:taskId/comments`) and a thread in the edit task
-  dialog (`TaskComments`, plain text). Mentions and classroom email exist:
-  `extractMentionTokens` (`@agentic-kanban/schemas`, `@\p{L}+`, not after a
-  letter/digit, case-insensitive, deduped) feeds `createCommentForMember`,
-  which resolves names against the members of the task's workspace and inserts
-  the comment plus one `notification` per mentioned member (no unknown names,
-  no self-mention) in the same transaction. After the commit the API appends
-  one JSON line per email to the local outbox (`OUTBOX_PATH`, else
-  `outbox.jsonl` next to the database file) and sets `emailed_at`; if that
-  fails the error is logged, `emailed_at` stays empty and the POST still
-  answers 201. The notification bell exists (`NotificationBell` in the app header, visible on the dashboard and the board,
-  `useNotifications`/`useMarkNotificationRead`, polling every ~5 s):
-  `GET /api/notifications` (recipient = session user, newest first, max 50,
-  still a member of the row's workspace) and `POST /api/notifications/:notificationId/read`
-  (idempotent; other user's or unknown id → 404). A new comment is also
-  announced over SSE as `comment.created` (see Events); the bell still polls.
-- Routes: `GET /api/workspaces`, `GET /api/projects/:projectId`,
-  `GET /api/projects/:projectId/board`, `POST /api/projects/:projectId/tasks`,
-  `PATCH`/`DELETE /api/tasks/:taskId`, `POST /api/tasks/:taskId/move`,
-  `GET /api/projects/:projectId/events` (SSE),
-  `GET`/`POST /api/tasks/:taskId/comments`, `GET /api/notifications`,
-  `POST /api/notifications/:notificationId/read`. No
-  session → 401; not a member or not found → 404, never 403; invalid input → 400. Client ids only identify rows (details in `.cursor/rules/api.mdc` and
-  `db.mdc`).
-- Web: dashboard → board (`selectedProjectId`, no router). Server state only in
-  TanStack Query: queryKeys include `userId`, board mutations use
-  `mutationKey: ["board", projectId, …]`, sign-out calls `queryClient.clear()`.
-  `applyBoardMove` (in `@agentic-kanban/schemas`) and `useMoveTask` are the
-  optimistic move (details in `.cursor/rules/web.mdc`). The edit dialog shows
-  the task's comment thread (`useComments`, `commentsQueryKey(taskId, userId)`),
-  outside the `<form>`; the create dialog has none.
-- Events: `boardEventSchema` (`packages/schemas/src/events.ts`, 5 types) is
-  announced over `GET /api/projects/:projectId/events` (SSE, in-memory hub in
-  `apps/api/src/realtime/index.ts`). Writes stay HTTP and publish only after
-  persisting; `comment.created` is published by the comments `POST` after the
-  comment, notifications and outbox are persisted (never on 404/400), with the
-  response's comment and the session user as `actorUserId`. `useBoardEvents` patches the board cache with `applyBoardEvent`
-  and toasts changes made by others (details in `api.mdc` and `web.mdc`).
+  `project`), board (`column`, `task`; `position` without UNIQUE), `comment`
+  and `notification` (`kind` only `mention`); every tenant table has its own
+  `workspace_id`. Foreign keys cascade (a task takes its comments with it).
+- Routes live under `/api` (workspaces, projects, board, tasks, move, SSE
+  events, comments, notifications). No session → 401; not a member or not
+  found → 404, never 403; invalid input → 400. Client ids only identify rows
+  (route list and details in `.cursor/rules/api.mdc` and `db.mdc`).
+- Mentions: `createCommentForMember` resolves `@names` against the task's
+  workspace members and inserts the comment plus one `notification` per
+  mentioned member (no unknown names, no self-mention) in one transaction.
+  After the commit the API appends one JSON line per email to the local outbox
+  (`OUTBOX_PATH`, else `outbox.jsonl` next to the database file) and sets
+  `emailed_at`; if that fails the POST still answers 201. No real email.
+- Web: dashboard → board (`selectedProjectId`, no router). queryKeys include
+  `userId`; sign-out calls `queryClient.clear()`. The edit dialog shows the
+  comment thread; `NotificationBell` (app header) polls every ~5 s (details in
+  `.cursor/rules/web.mdc`).
+- Events: `boardEventSchema` (`packages/schemas/src/events.ts`) over SSE from
+  an in-memory hub. Writes stay HTTP and publish only after persisting,
+  including `comment.created`; `useBoardEvents` toasts changes made by others.
 - Seed: `bun run db:seed`, idempotent upserts by fixed id, never on API start.
   Ana (`ana@demo.test`) and Luis (`luis@demo.test`), fictitious password
   `Demo1234!`; `ws_thepower_demo`/`proj_agentic_kanban` has both,
-  `ws_ana_demo`/`proj_ana_notes` only Ana; demo columns `col_kanban_*`,
-  `col_ana_*`, tasks `task_kanban_1..5`, `task_ana_1`. Run it before class:
-  re-seeding restores the demo rows but not tasks created in class.
-- Postman: import `postman/agentic-kanban-session2.postman_collection.json`
-  and `postman/agentic-kanban-local.postman_environment.json`; `Origin:
-  {{origin}}` is mandatory on `/api/auth/*`.
-
-Do not invent other product tables, demo users,
-real email (Resend, SMTP, a mail container), deployment or session tags before
-the course asks for them.
+  `ws_ana_demo`/`proj_ana_notes` only Ana. The README has the reset and the
+  demo script.
+- Postman: import both files in `postman/`; `Origin: {{origin}}` is mandatory
+  on `/api/auth/*`.
 
 Out of scope: billing, RBAC, attachments, mobile, SSO, automations,
-microservices, queues, Redis, extra cloud services, and additional architecture
-or state-management frameworks.
+microservices, queues, Redis, public deployment, real email, extra cloud
+services, and additional architecture or state-management frameworks.
 
 ## Invariants
 
@@ -101,12 +75,13 @@ or state-management frameworks.
   libSQL. Do not add Prisma, Postgres, Supabase, Turso Cloud, or a database
   container.
 - Keep exactly the `web` and `api` Docker services. The shared database file is
-  `./data/agentic-kanban.db`; never commit database files.
+  `./data/agentic-kanban.db`; never commit database files or
+  `data/outbox.jsonl`.
 - Pin direct third-party dependencies exactly. Preserve the overrides in the
   root `package.json`.
 
 Layer-specific instructions live in `.cursor/rules/`; keep them scoped and do
-not duplicate them here. `README.md` contains the classroom and Docker workflow.
+not duplicate them here. `README.md` has the classroom and Docker workflow.
 
 ## Agent workflow
 
@@ -169,11 +144,6 @@ vp build apps/web
 docker compose up --build
 ```
 
-API tests: `vp test`. They use their own temporary database and a test
-`BETTER_AUTH_SECRET`, configured in `vite.config.ts` (`test`) and
-`apps/api/src/test/setup.ts` (which also points `OUTBOX_PATH` at a temporary
-file); they never touch `data/`.
-
-Migrations: `bun run db:generate` on the host, apply with
-`docker compose exec api bun run db:migrate`. Do not add dependencies or
-implement future course sessions as cleanup.
+API tests use a temporary database, `BETTER_AUTH_SECRET` and `OUTBOX_PATH`
+(`vite.config.ts`, `apps/api/src/test/setup.ts`) and never touch `data/`. Do not
+add dependencies or implement work outside the current step as cleanup.

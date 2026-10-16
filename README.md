@@ -7,13 +7,16 @@ y un dashboard con los espacios del usuario: Ana ve dos (`thePower Demo` y
 `Espacio de Ana`) y Luis uno (`thePower Demo`, con el mismo color). Cada
 proyecto abre su tablero: crear, editar, borrar y mover tareas con
 drag-and-drop. Los cambios de un usuario llegan en vivo a los demás (SSE) con
-un aviso.
+un aviso. Cada tarea tiene comentarios; `@Nombre` menciona a un miembro del
+espacio, que recibe una notificación en la campana y un correo de aula.
 
 ## Requisitos
 
 - Docker Desktop
 
 ## Arrancar
+
+El deploy de aula es solo esto (dos servicios, `web` y `api`):
 
 ```bash
 docker compose up --build
@@ -59,15 +62,39 @@ También crea el tablero demo: columnas `To Do`, `In Progress` y `Done` en
 y en `proj_ana_notes` (`col_ana_*`, tarea `task_ana_1`). Volver a ejecutar el
 seed restaura esas filas a su estado inicial.
 
-## Resetear la base de datos
+Solo si cambias el esquema, genera la migración en el host (nunca dentro de
+Compose): `bun run db:generate`.
+
+## Resetear los datos
+
+Hazlo antes de clase, nunca en mitad de una demo:
 
 ```bash
 docker compose down
-rm -f data/*.db data/*.db-*
-docker compose up --build
+rm -f data/*.db data/*.db-* data/outbox.jsonl
+docker compose up --build -d
+docker compose exec api bun run db:migrate
+docker compose exec api bun run db:seed
 ```
 
-Tras un reset: migrar y luego seedear (los dos comandos de arriba).
+## Correo de aula
+
+No hay Resend, SMTP ni contenedor de correo. Cada mención añade una línea JSON
+a `data/outbox.jsonl` (`/data/outbox.jsonl` en el contenedor). El fichero no se
+versiona.
+
+## Guion de la demo
+
+```text
+Dos navegadores: Luis en una ventana privada (si no, comparten cookie).
+Ana y Luis entran en thePower Demo → Agentic Kanban.
+Ana mueve una tarjeta: Luis la ve moverse y recibe un toast.
+Ana edita una tarjeta, escribe "@Luis mira esto" y pulsa Comentar (no Guardar).
+Luis: hilo actualizado, toast y campana con badge.
+Ana: su campana dice "No hay menciones." (no "No se pudieron cargar").
+Opcional: la última línea de data/outbox.jsonl va a luis@demo.test.
+Luis no ve tableros, comentarios ni notificaciones de proj_ana_notes.
+```
 
 ## Cómo está conectado
 
@@ -76,15 +103,17 @@ Navegador (React)
   → authClient → /api/auth/* (Better Auth, cookie httpOnly)
   → TanStack Query pide /api/health, /api/workspaces y el tablero (URL relativa)
   → EventSource escucha /api/projects/:id/events (SSE, mismo proxy)
+  → comentarios: /api/tasks/:id/comments; la campana consulta /api/notifications
   → Vite+ reenvía /api al contenedor api
   → Hono comprueba sesión y membresía
-  → Drizzle consulta libSQL
+  → Drizzle consulta libSQL (y cada mención añade una línea a data/outbox.jsonl)
   → Zod valida el JSON en la API y otra vez en el frontend
 ```
 
 Sin sesión se ve el formulario de acceso. Tras iniciar sesión: el estado de
 Frontend, API y Database, y los espacios del usuario con sus proyectos; cada
-proyecto abre su tablero.
+proyecto abre su tablero, con comentarios en el diálogo de edición y la campana
+de menciones en la cabecera.
 
 Para probar la API desde fuera, importa en Postman los dos ficheros de
 `postman/` (colección y entorno).
