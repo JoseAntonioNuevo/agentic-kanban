@@ -86,13 +86,13 @@ export async function getBoardForMember(
     .select()
     .from(column)
     .where(and(eq(column.projectId, projectRow.id), eq(column.workspaceId, projectRow.workspaceId)))
-    .orderBy(asc(column.position));
+    .orderBy(asc(column.position), asc(column.id));
 
   const tasks = await db
     .select()
     .from(task)
     .where(and(eq(task.projectId, projectRow.id), eq(task.workspaceId, projectRow.workspaceId)))
-    .orderBy(asc(task.position));
+    .orderBy(asc(task.position), asc(task.id));
 
   return {
     project: projectRow,
@@ -101,21 +101,6 @@ export async function getBoardForMember(
       tasks: tasks.filter((item) => item.columnId === col.id),
     })),
   };
-}
-
-/** Tarea por id si el usuario es miembro de su workspace; si no, `null`. */
-export async function getTaskForMember(taskId: string, userId: string): Promise<TaskRow | null> {
-  const rows = await getDb()
-    .select({ task })
-    .from(task)
-    .innerJoin(
-      workspaceMember,
-      and(eq(workspaceMember.workspaceId, task.workspaceId), eq(workspaceMember.userId, userId)),
-    )
-    .where(eq(task.id, taskId))
-    .limit(1);
-
-  return rows[0]?.task ?? null;
 }
 
 /**

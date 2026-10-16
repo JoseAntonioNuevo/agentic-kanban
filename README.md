@@ -4,8 +4,9 @@ Proyecto starter del curso **thePower — Desarrollo Agéntico**.
 
 Esqueleto técnico listo (Bun, Vite+, React, Hono, Drizzle, libSQL). Hay login
 y un dashboard con los espacios del usuario: Ana ve dos (`thePower Demo` y
-`Espacio de Ana`) y Luis uno (`thePower Demo`, con el mismo color). La interfaz
-del tablero Kanban se construye en las sesiones en vivo.
+`Espacio de Ana`) y Luis uno (`thePower Demo`, con el mismo color). Cada
+proyecto abre su tablero: crear, editar, borrar y mover tareas con
+drag-and-drop.
 
 ## Requisitos
 
@@ -72,7 +73,7 @@ Tras un reset: migrar y luego seedear (los dos comandos de arriba).
 ```text
 Navegador (React)
   → authClient → /api/auth/* (Better Auth, cookie httpOnly)
-  → TanStack Query pide /api/health y /api/workspaces (URL relativa)
+  → TanStack Query pide /api/health, /api/workspaces y el tablero (URL relativa)
   → Vite+ reenvía /api al contenedor api
   → Hono comprueba sesión y membresía
   → Drizzle consulta libSQL
@@ -80,4 +81,8 @@ Navegador (React)
 ```
 
 Sin sesión se ve el formulario de acceso. Tras iniciar sesión: el estado de
-Frontend, API y Database, y los espacios del usuario con sus proyectos.
+Frontend, API y Database, y los espacios del usuario con sus proyectos; cada
+proyecto abre su tablero.
+
+Para probar la API desde fuera, importa en Postman los dos ficheros de
+`postman/` (colección y entorno).

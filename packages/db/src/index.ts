@@ -22,7 +22,6 @@ export {
   createTaskForMember,
   deleteTaskForMember,
   getBoardForMember,
-  getTaskForMember,
   moveTaskForMember,
   updateTaskForMember,
 } from "./queries/board.ts";

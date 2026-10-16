@@ -269,6 +269,50 @@
           "response": []
         },
         {
+          "name": "Move Task",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test(\"tarea movida al principio de la columna\", () => {",
+                  "  pm.expect(json.id).to.eql(pm.collectionVariables.get(\"taskId\"));",
+                  "  pm.expect(json.columnId).to.eql(pm.collectionVariables.get(\"columnId\"));",
+                  "  pm.expect(json.position).to.eql(0);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"columnId\": \"{{columnId}}\",\n  \"position\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks/{{taskId}}/move",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tasks", "{{taskId}}", "move"]
+            }
+          },
+          "response": []
+        },
+        {
           "name": "Delete Task",
           "event": [
             {

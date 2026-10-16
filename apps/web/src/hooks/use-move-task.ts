@@ -54,6 +54,11 @@ export function useMoveTask(projectId: string, userId: string) {
 
       toast.error("No se pudo mover la tarea");
     },
-    onSettled: () => queryClient.invalidateQueries({ queryKey: key }),
+    // Solo el último movimiento en vuelo relee el board: un refetch intermedio
+    // pisaría el cambio optimista de los que aún no han terminado.
+    onSettled: () =>
+      queryClient.isMutating({ mutationKey: boardMutationKey(projectId) }) === 1
+        ? queryClient.invalidateQueries({ queryKey: key })
+        : undefined,
   });
 }

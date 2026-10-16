@@ -47,12 +47,16 @@ Drag-and-drop uses `@dnd-kit/react` 0.5.1 only (`DragDropProvider`,
 `useSortable` from `@dnd-kit/react/sortable` in the card with
 `group = column.id`); never `@dnd-kit/helpers`, `@dnd-kit/core` or
 `@dnd-kit/sortable`, and do not import from `@dnd-kit/dom`. `onDragEnd` ignores
-canceled operations, derives column and position from `operation.source`
-/`target` and skips the API when nothing changed. `useMoveTask(projectId,
+canceled operations; a drop on the free area of a column other than
+`source.group` appends at its end; otherwise, if the optimistic sorting plugin
+already moved the source (group or index changed), it persists
+`source.group`/`source.index`; nothing changed → no API call. `useMoveTask(projectId,
 userId)` (`mutationKey: ["board", projectId, "move"]`) is optimistic:
 `onMutate` cancels the board query, snapshots it and applies the pure
 `applyBoardMove` from `@agentic-kanban/schemas`; `onError` restores the
-snapshot and calls `toast.error`; `onSettled` invalidates the board. dnd-kit
+snapshot and calls `toast.error`; `onSettled` invalidates the board only
+when it is the last board mutation in flight. A failed refetch with cached
+data keeps the board on screen (full-screen error only without data). dnd-kit
 reorders DOM nodes while dragging, so `KanbanBoard` remounts the provider with a
 `key` derived from the board's order. Never keep a copy of the board in state.
 

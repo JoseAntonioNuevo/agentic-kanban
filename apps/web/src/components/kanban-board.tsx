@@ -41,25 +41,27 @@ export function KanbanBoard({
 
     const { source, target } = event.operation;
 
-    if (!isSortable(source) || !target) {
+    if (!isSortable(source)) {
       return;
     }
 
+    const initialGroup = String(source.initialGroup);
     let columnId: string;
     let position: number;
 
-    if (isSortable(target) || target.id === source.id) {
-      // Sobre otra tarjeta, el plugin optimista ya actualizó grupo e índice de la fuente.
-      columnId = String(source.group);
-      position = source.index;
-    } else {
-      // Soltada sobre una columna: al final de sus tareas (sin contar la propia).
+    if (target && !isSortable(target) && String(target.id) !== String(source.group)) {
+      // Soltada sobre el hueco de otra columna (o una vacía): al final de sus
+      // tareas, aunque por el camino el plugin la metiera en otra columna.
       columnId = String(target.id);
       const destination = board.columns.find((column) => column.id === columnId);
       position = (destination?.tasks ?? []).filter((task) => task.id !== source.id).length;
-    }
-
-    if (columnId === String(source.initialGroup) && position === source.initialIndex) {
+    } else if (String(source.group) !== initialGroup || source.index !== source.initialIndex) {
+      // Al pasar sobre otra tarjeta, el plugin optimista ya movió la fuente (DOM,
+      // grupo e índice) y no lo revierte: se persiste ese sitio aunque al soltar
+      // el puntero esté en la cabecera de esa columna o fuera de todo.
+      columnId = String(source.group);
+      position = source.index;
+    } else {
       return;
     }
 

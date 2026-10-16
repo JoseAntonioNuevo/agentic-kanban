@@ -11,67 +11,41 @@ repository documentation are authoritative.
 
 ## Current scope
 
-Implemented: the health path, email/password authentication, the two authorized read endpoints and the board API.
+Implemented: health, email/password auth (Better Auth, httpOnly cookie), the
+multi-tenant model, authorized reads, the board API, the board UI with task
+CRUD and optimistic drag-and-drop, the classroom seed and a Postman collection.
 
 ```text
-React → TanStack Query → /api/health → Vite+ proxy
-  → Hono on Bun → Drizzle → local libSQL
-React → authClient → /api/auth/* → Vite+ proxy → Better Auth (httpOnly cookie)
+React → TanStack Query / authClient → /api/* → Vite+ proxy
+  → Hono on Bun (requireSession → membership) → Drizzle → local libSQL
 ```
 
-Better Auth owns the `user`, `session`, `account` and `verification` tables.
-The workspace is the tenant: the `workspace`, `workspace_member` (unique per
-workspace and user, no role) and `project` tables exist with cascading foreign
-keys. The board tables `column` and `task` also exist (each row carries its own
-`workspace_id`, cascading foreign keys, `position` with no UNIQUE so reordering
-in a transaction works). Workspace contracts (all routes require a session,
-`requireSession`):
-`GET /api/workspaces` (the user's workspaces, each with `projects: [{ id,
-name }]`, `[]` if none) and `GET /api/projects/:projectId` (the project if the
-user is a member of its workspace); not a member or not found → 404, never
-403 (authorization order in `.cursor/rules/api.mdc`). The web dashboard lists the user's workspaces and projects
-(`useWorkspaces`, cache convention in `.cursor/rules/web.mdc`).
-A deterministic, idempotent seed (`bun run db:seed`, upserts only, never run
-on API start) creates the classroom accounts through Better Auth's
-`signUpEmail`: Ana (`ana@demo.test`) and Luis (`luis@demo.test`), fictitious
-password `Demo1234!`. `ws_thepower_demo` (project `proj_agentic_kanban`) has
-Ana and Luis; `ws_ana_demo` (project `proj_ana_notes`) only Ana. Demo board:
-columns `To Do`, `In Progress`, `Done` (`col_kanban_*`, `col_ana_*`), tasks
-`task_kanban_1..5` and `task_ana_1`; re-seeding restores those rows.
-Board contract (`boardRoutes`, queries `*ForMember` in `@agentic-kanban/db`):
-`GET /api/projects/:projectId/board` (200 `{ project, columns: [{ …, tasks }] }`
-by `position`), `POST /api/projects/:projectId/tasks` (`{ columnId, title,
-description? }` → 201 task), `PATCH /api/tasks/:taskId` (`{ title?,
-description? }`, at least one → 200 task), `DELETE /api/tasks/:taskId`
-(→ 204) and `POST /api/tasks/:taskId/move` (`{ columnId, position }`, position
-an integer ≥ 0 clamped to `0..n` → 200 moved task). No session → 401; not a member or not found → 404, never 403; invalid
-input → 400. Client ids (`projectId`, `columnId`, `taskId`) only identify rows:
-membership is checked with the row's `workspace_id`, and on create `columnId`
-must belong to the same project (else 404); on move the target column must
-belong to the task's own project and workspace (else 404, so no cross-project
-or cross-workspace moves). Create appends at the end of the column; delete
-compacts the column's positions (0..n-1) in a transaction; move takes the task
-out, inserts it at `position` and renumbers the affected columns 0..n-1 in one
-transaction.
-Board UI: the dashboard opens each project in its board (columns and tasks in
-order) and the user can create, edit and delete tasks (`useBoard`,
-`useTaskMutations`; layer detail in `.cursor/rules/web.mdc`). Every board
-mutation uses a `mutationKey` that starts with `["board", projectId, …]`.
-Tasks move by drag-and-drop (`@dnd-kit/react` 0.5.1, no `@dnd-kit/helpers`, no
-legacy `@dnd-kit/core`/`sortable`) within a column, across columns or into an
-empty one. The move is optimistic: the pure `applyBoardMove(board, { taskId,
-columnId, position })` in `@agentic-kanban/schemas` (same order as the server)
-updates the board cache in `useMoveTask(projectId, userId)`
-(`mutationKey: ["board", projectId, "move"]`); on error the snapshot is
-restored with a `toast.error`, and on settle the board query is invalidated.
-The cache stays the only source of the board, never copied into `useState`.
-Postman: `postman/agentic-kanban-session2.postman_collection.json` and
-`postman/agentic-kanban-local.postman_environment.json` (import both; `baseUrl`
-defaults to `http://localhost:3000`, session cookie only, `Origin: {{origin}}`
-is mandatory on every `/api/auth/*` request).
-Do not invent other product tables, other demo users, other CRUD,
-realtime, comments, mentions, email, deployment,
-or session tags before the course work asks for them.
+- Tables: Better Auth (`user`, `session`, `account`, `verification`), tenant
+  (`workspace`, `workspace_member` unique per workspace and user, no role,
+  `project`) and board (`column`, `task`, each with its own `workspace_id`,
+  `position` without UNIQUE). Foreign keys cascade.
+- Routes: `GET /api/workspaces`, `GET /api/projects/:projectId`,
+  `GET /api/projects/:projectId/board`, `POST /api/projects/:projectId/tasks`,
+  `PATCH`/`DELETE /api/tasks/:taskId`, `POST /api/tasks/:taskId/move`. No
+  session → 401; not a member or not found → 404, never 403; invalid input → 400. Client ids only identify rows (details in `.cursor/rules/api.mdc` and
+  `db.mdc`).
+- Web: dashboard → board (`selectedProjectId`, no router). Server state only in
+  TanStack Query: queryKeys include `userId`, board mutations use
+  `mutationKey: ["board", projectId, …]`, sign-out calls `queryClient.clear()`.
+  `applyBoardMove` (in `@agentic-kanban/schemas`) and `useMoveTask` are the
+  optimistic move (details in `.cursor/rules/web.mdc`).
+- Seed: `bun run db:seed`, idempotent upserts by fixed id, never on API start.
+  Ana (`ana@demo.test`) and Luis (`luis@demo.test`), fictitious password
+  `Demo1234!`; `ws_thepower_demo`/`proj_agentic_kanban` has both,
+  `ws_ana_demo`/`proj_ana_notes` only Ana; demo columns `col_kanban_*`,
+  `col_ana_*`, tasks `task_kanban_1..5`, `task_ana_1`. Run it before class:
+  re-seeding restores the demo rows but not tasks created in class.
+- Postman: import `postman/agentic-kanban-session2.postman_collection.json`
+  and `postman/agentic-kanban-local.postman_environment.json`; `Origin:
+  {{origin}}` is mandatory on `/api/auth/*`.
+
+Do not invent other product tables, demo users, CRUD, realtime, comments,
+mentions, email, deployment or session tags before the course asks for them.
 
 Out of scope: billing, RBAC, attachments, mobile, SSO, automations,
 microservices, queues, Redis, extra cloud services, and additional architecture
@@ -132,7 +106,7 @@ subagents, do the same stages yourself in order.
    what is wrong and polish what is unfinished yourself. Run
    `kanban-verifier` again after your changes.
 
-Review steps (`06`/`08`) use parallel `kanban-reviewer` (Sonnet, read-only,
+Review steps (the last `*-review.md` of each session) use parallel `kanban-reviewer` (Sonnet, read-only,
 one dimension each) plus `kanban-verifier`; the main agent confirms each
 finding in the code and, once the teacher approves the plan, applies the
 fixes itself.

@@ -24,6 +24,9 @@ export default defineConfig({
 });
 ```
 
+- `apps/web/vite.config.ts` also adds `packages/` to the dev watcher (plugin
+  `watch-workspace-packages`): in the Docker bind-mount Vite otherwise misses
+  schema changes when a file is replaced. Keep it.
 - Root `vite.config.ts` owns workspace `fmt` / `lint` (Oxlint, including
   `vite-plus/prefer-vite-plus-imports`).
 - Commands: `vp check`, `vp test`, `vp dev apps/web`, `vp build apps/web`.
