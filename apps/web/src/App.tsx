@@ -11,6 +11,7 @@ import { useState } from "react";
 
 import { AuthForm } from "@/components/auth-form.tsx";
 import { BoardScreen } from "@/components/board-screen.tsx";
+import { NotificationBell } from "@/components/notification-bell.tsx";
 import { Badge } from "@/components/ui/badge.tsx";
 import {
   Card,
@@ -64,16 +65,19 @@ export default function App() {
         <span className="text-sm font-medium">{session.data.user.name}</span>
         {/* Convención: queryKey con userId + `queryClient.clear()` al salir, para
             que el siguiente usuario de la pestaña no vea datos del anterior. */}
-        <Button
-          variant="outline"
-          onClick={async () => {
-            await authClient.signOut();
-            queryClient.clear();
-            setSelectedProjectId(null);
-          }}
-        >
-          Cerrar sesión
-        </Button>
+        <div className="flex items-center gap-2">
+          <NotificationBell userId={session.data.user.id} />
+          <Button
+            variant="outline"
+            onClick={async () => {
+              await authClient.signOut();
+              queryClient.clear();
+              setSelectedProjectId(null);
+            }}
+          >
+            Cerrar sesión
+          </Button>
+        </div>
       </header>
       {selectedProjectId !== null ? (
         <BoardScreen

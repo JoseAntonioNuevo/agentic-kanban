@@ -37,12 +37,18 @@ React → TanStack Query / authClient → /api/* → Vite+ proxy
   one JSON line per email to the local outbox (`OUTBOX_PATH`, else
   `outbox.jsonl` next to the database file) and sets `emailed_at`; if that
   fails the error is logged, `emailed_at` stays empty and the POST still
-  answers 201. The notification bell and notification HTTP do not exist yet.
+  answers 201. The notification bell exists (`NotificationBell` in the app header, visible on the dashboard and the board,
+  `useNotifications`/`useMarkNotificationRead`, polling every ~5 s):
+  `GET /api/notifications` (recipient = session user, newest first, max 50,
+  still a member of the row's workspace) and `POST /api/notifications/:notificationId/read`
+  (idempotent; other user's or unknown id → 404). Comments have no realtime:
+  the bell polls, comments are not published over SSE.
 - Routes: `GET /api/workspaces`, `GET /api/projects/:projectId`,
   `GET /api/projects/:projectId/board`, `POST /api/projects/:projectId/tasks`,
   `PATCH`/`DELETE /api/tasks/:taskId`, `POST /api/tasks/:taskId/move`,
   `GET /api/projects/:projectId/events` (SSE),
-  `GET`/`POST /api/tasks/:taskId/comments`. No
+  `GET`/`POST /api/tasks/:taskId/comments`, `GET /api/notifications`,
+  `POST /api/notifications/:notificationId/read`. No
   session → 401; not a member or not found → 404, never 403; invalid input → 400. Client ids only identify rows (details in `.cursor/rules/api.mdc` and
   `db.mdc`).
 - Web: dashboard → board (`selectedProjectId`, no router). Server state only in
@@ -67,7 +73,7 @@ React → TanStack Query / authClient → /api/* → Vite+ proxy
   and `postman/agentic-kanban-local.postman_environment.json`; `Origin:
   {{origin}}` is mandatory on `/api/auth/*`.
 
-Do not invent other product tables, demo users, notification HTTP, the bell,
+Do not invent other product tables, demo users, comment realtime,
 real email (Resend, SMTP, a mail container), deployment or session tags before
 the course asks for them.
 

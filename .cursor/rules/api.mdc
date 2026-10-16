@@ -61,6 +61,14 @@ app.route("/", eventRoutes);
   last two sit in one try/catch that only logs: on failure `emailed_at` stays
   null and the answer is still 201. No SSE publishing for comments yet. Tests
   set `OUTBOX_PATH` to a temp file in `src/test/setup.ts`.
+- `src/routes/notifications.ts` (`notificationRoutes`): `GET /api/notifications`
+  and `POST /api/notifications/:notificationId/read` (`notificationIdParamSchema`).
+  The recipient is always the session user: `listNotificationsForUser`/
+  `markNotificationReadForUser` filter `recipient_user_id` and join
+  `workspace_member` on the row's `workspace_id`. List: `created_at` DESC, `id`
+  DESC, max 50. Not the recipient, no membership or unknown id → 404 (never
+  403); marking is idempotent (200, `read_at` kept). `commentPreview` is the body
+  cut to 120 characters plus «…»; dates leave as `toISOString()`.
 - Database access only through `@agentic-kanban/db`. Never import
   `@libsql/client` or `drizzle-orm` from the API.
 - Better Auth (`src/auth/index.ts`, email/password, cookie session) is served

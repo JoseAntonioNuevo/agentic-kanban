@@ -32,7 +32,12 @@ export {
 export type { BoardColumnWithTasks, BoardData } from "./queries/board.ts";
 export { createCommentForMember, listCommentsForMember } from "./queries/comments.ts";
 export type { CommentWithAuthor } from "./queries/comments.ts";
-export { markNotificationsEmailed } from "./queries/notifications.ts";
+export {
+  listNotificationsForUser,
+  markNotificationReadForUser,
+  markNotificationsEmailed,
+} from "./queries/notifications.ts";
+export type { NotificationView } from "./queries/notifications.ts";
 export { getProjectForMember, listWorkspacesForUser } from "./queries/workspaces.ts";
 export type {
   ProjectRow,

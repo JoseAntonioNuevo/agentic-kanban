@@ -44,6 +44,14 @@ export {
 } from "./health.ts";
 export { extractMentionTokens } from "./mentions.ts";
 export {
+  notificationIdParamSchema,
+  notificationListResponseSchema,
+  notificationSchema,
+  type Notification,
+  type NotificationIdParam,
+  type NotificationListResponse,
+} from "./notification.ts";
+export {
   errorResponseSchema,
   projectIdParamSchema,
   projectSchema,

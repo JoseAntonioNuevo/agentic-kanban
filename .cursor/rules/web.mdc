@@ -49,7 +49,18 @@ and invalidates the thread). `TaskComments` (`task-comments.tsx`) renders in
 `TaskFormDialog` only in edit mode and **outside the `<form>`**, so Enter or
 Guardar never create a comment and Comentar (`type="button"`) never PATCHes.
 Local state is only the new comment text. Bodies render as plain text
-(`whitespace-pre-wrap`), never `dangerouslySetInnerHTML`. No mentions yet.
+(`whitespace-pre-wrap`), never `dangerouslySetInnerHTML`. Mentions are notified through the bell (below).
+
+Bell: `NotificationBell` (`notification-bell.tsx`, popover) is mounted once in
+the `App.tsx` header next to sign-out (dashboard and board). `useNotifications(userId)`
+(`notificationsQueryKey(userId)` → `["notifications", userId]`) parses
+`GET /api/notifications` with `notificationListResponseSchema`, with
+`refetchOnWindowFocus` and `refetchInterval: 5_000`; `useMarkNotificationRead(userId)`
+posts `/api/notifications/:id/read`, replaces the row by id and invalidates. The
+pure `bellState` (`lib/notification-bell-state.ts`) picks loading / error / empty
+/ list: error only when the query errored (never an empty tray), `[]` is
+"No hay menciones.", "Nada pendiente" only on a successful list with no unread.
+Previews render as plain text. The bell shows persisted rows only, not toasts.
 
 Drag-and-drop uses `@dnd-kit/react` 0.5.1 only (`DragDropProvider`,
 `useDroppable` in the column `<section>` with `collisionPriority: 1`,
