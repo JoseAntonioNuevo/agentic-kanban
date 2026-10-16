@@ -51,6 +51,41 @@ or state-management frameworks.
 Layer-specific instructions live in `.cursor/rules/`; keep them scoped and do
 not duplicate them here. `README.md` contains the classroom and Docker workflow.
 
+## Agent workflow
+
+Course steps live in `prompts/<session>/NN-*.md` and run one at a time,
+ideally each in a fresh context. A step is self-contained: re-read this file,
+the `.cursor/rules/*.mdc` of the layers it touches and the code itself.
+
+- Plan first: present a short plan (files, contracts, delegation, checks) and
+  wait for approval before editing. Review steps never edit code.
+- The main agent owns the plan, shared contracts (`packages/schemas`, route
+  paths, exported names), integration and the final diff review. When a step
+  asks for subagents, use the project agents in `.claude/agents/`:
+  `kanban-recon` (Haiku, read-only map), `kanban-implementer` (Sonnet, one
+  bounded slice), `kanban-verifier` (Haiku, runs checks and HTTP probes,
+  never edits) and `kanban-reviewer` (Sonnet, read-only review of one
+  dimension). Small changes are faster done directly.
+- Write shared contracts before parallel slices start. Two subagents never
+  edit the same file; the main agent owns barrels (`src/index.ts`), route
+  mounting and docs. A brief states the goal, owned files, exact contract
+  names, constraints, checks and the expected report.
+- Library APIs: the pinned versions installed in `node_modules` (types and
+  source) are the source of truth, not memory or `@latest` docs.
+- Done means `vp check` and `vp test` are green (run `vp check --fix` first)
+  and the step's acceptance probes were observed. Never weaken or delete a
+  test to get green.
+- Database: generate migrations on the host. When Compose is up, apply them
+  and seed inside the API container (`docker compose exec api bun run
+  db:migrate`, `docker compose exec api bun run db:seed`). Never start a
+  second API on the host. Tests never touch `data/`.
+- Keep this file short: update the current-state and contract sections in
+  place and delete statements that stopped being true, here and in
+  `.cursor/rules/`. Layer detail belongs in the rules.
+- Do not commit or push. End every step with: files changed, checks run with
+  their real result, what the teacher should verify by hand, deviations or
+  risks, and a Conventional Commit message.
+
 ## Commands
 
 ```bash

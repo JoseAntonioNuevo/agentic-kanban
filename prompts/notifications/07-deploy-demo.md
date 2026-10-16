@@ -1,23 +1,68 @@
-Revisa Docker, README y el flujo Ana/Luis.
+# Sesión 4 · 07 — Deploy de aula y guion de la demo
 
-Deja la Sesión 4 lista para desplegar en aula y hacer la demo.
+Tiempo en clase: ~8 min. Antes de tocar nada, dime qué cambiarás en el README,
+`.gitignore` y `AGENTS.md`, y espera mi «adelante».
 
-Requisitos:
+## Punto de partida
 
-Deploy de aula = `docker compose up --build` (siguen **dos** servicios: web, api). No Fly, no Vercel, no Resend, no contenedor de correo, no `sesion-*` tags.
-`data/outbox.jsonl` no se commitea (gitignore). El volumen `./data` ya monta el outbox.
-README: pasos de reset/migrate/seed/compose y un guion de demo:
+El producto del bloque está completo (Sesiones 1–4, prompts 01–06). Falta
+dejarlo listo para arrancar y demostrar en el aula.
 
-```text
-Dos navegadores (Luis en incógnito; si no, es la misma cookie).
-Ana y Luis en ws_thepower_demo / proj_agentic_kanban.
-Ana edita una tarjeta, escribe `@Luis mira esto`, pulsa Comentar (no Guardar).
-Luis: hilo, toast, campana con badge (recipient = Luis). Ana: campana vacía (“No hay menciones.”, no “No se pudieron cargar”). Si Luis GET 200 tiene filas y la UI dice que no cargó, es parse/sesión, no Ana.
-(opcional) data/outbox.jsonl → to luis@demo.test
-Luis no ve comentarios ni notificaciones de proj_ana_notes.
-```
+## Objetivo
 
-No añadas features de producto. Actualiza `AGENTS.md`: deploy de aula = Compose; producto de la Sesión 4 completo.
+Que cualquiera pueda levantar el proyecto con un comando, preparar los datos
+de la demo y seguir un guion de dos navegadores.
 
-Verificación: `vp check --no-fmt`; `vp build apps/web`.
-Plan primero qué tocarás en README/gitignore/AGENTS.md. Luego implementa.
+## Requisitos
+
+- El deploy de aula es `docker compose up --build` con los dos servicios de
+  siempre, `web` y `api`. Nada de Fly, Vercel, Resend, contenedor de correo ni
+  tags `sesion-*`.
+- `data/outbox.jsonl` fuera de Git: añádelo a `.gitignore` y, como ahora mismo
+  está versionado (con líneas de un ensayo anterior), sácalo del índice con
+  `git rm --cached data/outbox.jsonl` sin borrar el fichero local. El volumen
+  `./data` ya lo monta en la API.
+- README con:
+  - reset (`docker compose down`, borrar `data/*.db*` y `data/outbox.jsonl`);
+  - arranque, migración y seed con los comandos reales de `package.json`
+    (dentro del contenedor si Compose está arriba);
+  - el guion de la demo:
+
+    ```text
+    Dos navegadores: Luis en una ventana privada (si no, comparten cookie).
+    Ana y Luis entran en thePower Demo → Agentic Kanban.
+    Ana mueve una tarjeta: Luis la ve moverse y recibe un toast.
+    Ana edita una tarjeta, escribe "@Luis mira esto" y pulsa Comentar (no Guardar).
+    Luis: hilo actualizado, toast y campana con badge.
+    Ana: su campana dice "No hay menciones." (no "No se pudieron cargar").
+    Opcional: la última línea de data/outbox.jsonl va a luis@demo.test.
+    Luis no ve tableros, comentarios ni notificaciones de proj_ana_notes.
+    ```
+
+- `AGENTS.md` final: estado del producto completo y deploy de aula = Compose.
+  Revísalo entero para que sea breve y no contenga frases que ya no son
+  ciertas.
+- No ejecutes el reset durante la clase: solo documéntalo.
+
+## Fuera de alcance
+
+Funcionalidades de producto nuevas y despliegues públicos.
+
+## Cómo trabajar
+
+Encárgalo a un `kanban-implementer` (Sonnet, de `.claude/agents/`); tú revisas
+el README y `AGENTS.md`. Después, `kanban-verifier` (Haiku) ejecuta la puerta
+de calidad completa y comprueba que cada comando del README existe en
+`package.json` o en Docker Compose.
+
+## Hecho cuando
+
+- [ ] `vp check`, `vp test` y `vp build apps/web` en verde;
+      `docker compose config` es válido.
+- [ ] `git status` muestra `data/outbox.jsonl` como eliminado del índice y ya
+      no como modificado.
+- [ ] Los comandos del README coinciden con los scripts reales.
+
+## Al terminar
+
+No hagas commit. Cierra con el resumen que pide `AGENTS.md`.

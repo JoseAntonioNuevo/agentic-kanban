@@ -1,36 +1,84 @@
-Revisa el estado actual del repo antes de proponer cambios.
+# Sesión 2 · 07 — Drag-and-drop optimista
 
-Estamos construyendo el Kanban de la Sesión 2.
+Tiempo en clase: ~13 min. Antes de editar nada, presenta un plan de 15 líneas
+como máximo (flujo desde el arrastre hasta la persistencia, qué caché cambia
+y cómo se hace el rollback) y espera mi «adelante».
 
-Añade drag and drop de tareas usando exclusivamente `@dnd-kit/react` ya instalada en el proyecto.
+## Punto de partida
 
-Debe permitir:
+`POST /api/tasks/:taskId/move` funciona (06). El tablero se pinta desde
+TanStack Query con `useBoard` (05). `@dnd-kit/react` 0.5.1 está instalado y sin
+usar.
 
-- reordenar dentro de una columna
-- mover entre columnas
-- soltar en una columna vacía
+## Objetivo
 
-Usa TanStack Query para hacer el movimiento optimista:
+Arrastrar tareas para reordenarlas en su columna, moverlas a otra o soltarlas
+en una columna vacía, con respuesta inmediata y rollback visible si el
+servidor falla.
 
-- guarda el estado anterior de la cache
-- actualiza inmediatamente la cache
-- envía la mutación al backend
-- reconcilia si funciona
-- restaura la cache anterior si falla
-- muestra un error al usuario si se produce rollback
+## Contratos que fijas aquí
 
-Requisitos:
+- `applyBoardMove(board, { taskId, columnId, position })`: función pura en
+  `packages/schemas/src/board.ts`, exportada desde `@agentic-kanban/schemas`,
+  con el mismo orden que aplica el servidor. La Sesión 3 la reutilizará para
+  los eventos de otros usuarios.
+- `useMoveTask(projectId, userId)` en `apps/web/src/hooks/use-move-task.ts`,
+  con `mutationKey: ["board", projectId, "move"]`.
 
-TanStack Query sigue siendo la única fuente de verdad del server state.
-No mantengas una copia permanente del board en `useState`.
-No instales paquetes legacy de dnd-kit.
-Revisa los exports de la versión instalada antes de implementar.
-El backend sigue siendo la autoridad final.
-El movimiento debe persistir después de refrescar.
-No implementes realtime.
-No implementes comentarios ni notificaciones de otros usuarios.
+## Requisitos
 
-Plan primero: el flujo completo desde drag hasta persistencia, qué cache modificarás y cómo harás rollback.
-Luego implementa. Actualiza `AGENTS.md`: DnD sí; SSE/comentarios no.
+- **dnd-kit 0.5.1.** Antes de escribir código, lee los exports instalados en
+  `node_modules/@dnd-kit/react/*.d.ts`: la API de esta versión no es la de
+  `@dnd-kit/core`. Usa `DragDropProvider` de `@dnd-kit/react` y `useSortable`
+  de `@dnd-kit/react/sortable` (con `id`, `index` y `group` igual al id de la
+  columna), y un destino droppable para que las columnas vacías acepten
+  tareas. `@dnd-kit/helpers` **no** está instalado: no lo instales ni instales
+  los paquetes legacy (`@dnd-kit/core`, `@dnd-kit/sortable`). En `onDragEnd`
+  ignora las operaciones canceladas y calcula columna y posición de destino a
+  partir de `operation.source` y `operation.target` (`isSortable`, `group`,
+  `index`, `initialGroup`, `initialIndex`); si no cambió nada, no llames a la
+  API.
+- **Optimista con TanStack Query.** En `onMutate`: cancela las queries del
+  board, guarda la instantánea y aplica `applyBoardMove` a la caché. En
+  `onError`: restaura la instantánea y muestra `toast.error`. En `onSettled`:
+  invalida el board. El backend sigue siendo la autoridad final y el
+  movimiento debe persistir tras refrescar.
+- La caché de Query es la única fuente del estado del servidor: no guardes una
+  copia del board en `useState` (el estado interno de dnd-kit durante el
+  arrastre está bien). dnd-kit reordena el DOM mientras arrastras; si después
+  de soltar el orden visual y la caché no coinciden, remonta el proveedor con
+  una `key` derivada del orden del board (es lo que funcionó en el ensayo).
+- Tests de `applyBoardMove`: misma columna, otra columna, columna vacía,
+  posición fuera de rango (se acota) y tarea inexistente (board sin cambios).
 
-Verificación: `vp check --no-fmt`. Mover una carta, persistir al refrescar, rollback si falla.
+## Fuera de alcance
+
+Realtime, comentarios y notificaciones de otros usuarios.
+
+## Cómo trabajar
+
+Usa los subagentes de `.claude/agents/`. Si tu herramienta no los tiene, haz
+tú los pasos en el mismo orden.
+
+1. `kanban-recon` (Haiku): exports reales de `@dnd-kit/react` 0.5.1 y cómo se
+   pinta hoy el tablero.
+2. Dos `kanban-implementer` (Sonnet) en paralelo:
+   - A: `applyBoardMove` y sus tests.
+   - B: `useMoveTask` e integración de dnd-kit en los componentes del tablero.
+3. `kanban-verifier` (Haiku): puerta de calidad.
+4. Tú: revisa el diff (fuente única, rollback completo) y prepara los pasos de
+   la prueba manual, incluido el fallo forzado.
+
+## Hecho cuando
+
+- [ ] `vp check` y `vp test` en verde.
+- [ ] Navegador (lo compruebo yo): reordenar en la misma columna, mover a otra,
+      soltar en una vacía; refrescar y el orden se mantiene.
+- [ ] Fallo forzado: con `docker compose stop api`, mover una tarjeta → vuelve
+      a su sitio y aparece el aviso; después `docker compose start api`.
+
+## Al terminar
+
+Actualiza `AGENTS.md` (drag-and-drop sí; realtime y comentarios no) y quita de
+`.cursor/rules/web.mdc` la frase que prohíbe implementar drag-and-drop. No
+hagas commit. Cierra con el resumen que pide `AGENTS.md`.

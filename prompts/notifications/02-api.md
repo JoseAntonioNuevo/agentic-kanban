@@ -1,20 +1,62 @@
-Revisa autenticación, autorización y el modelo de comment.
+# Sesión 4 · 02 — La API de comentarios
 
-Implementa la API mínima de comentarios:
+Tiempo en clase: ~5 min. Antes de editar nada, presenta un plan de 12 líneas
+como máximo y espera mi «adelante».
 
-- GET /api/tasks/:taskId/comments → lista del task, ordenada por created_at
-- POST /api/tasks/:taskId/comments `{ body }` → crea un comentario
+## Punto de partida
 
-Requisitos:
+Tablas `comment` y `notification` (01). `requireSession`, el patrón de rutas y
+el arnés de tests con su propia base existen desde la Sesión 1.
 
-Valida input y response con Zod en `@agentic-kanban/schemas`. Incluye `authorName` (join a `user.name`).
-Sesión → 401. No miembro o task inexistente → 404 (nunca 403).
-`workspace_id` sale de la fila del task, no del cliente.
-Datos solo vía `@agentic-kanban/db`.
-No implementes @menciones, email, campana, publish SSE de comentarios ni frontend.
-No cambies las rutas de board ni el stream de tareas.
+## Objetivo
 
-Plan primero: endpoints, schemas, flujo de authz, archivos, cómo verificar.
-Luego implementa. Actualiza `AGENTS.md`: comentarios HTTP sí; menciones no.
+Leer y crear los comentarios de una tarea con la misma autorización de
+siempre.
 
-Verificación: `vp check --no-fmt`; tests 401 / 404 Luis en task de Ana / miembro crea y lista.
+## Contratos que fijas aquí
+
+| Método y ruta                      | Body       | Respuesta                       |
+| ---------------------------------- | ---------- | ------------------------------- |
+| `GET /api/tasks/:taskId/comments`  | —          | 200 `commentListResponseSchema` |
+| `POST /api/tasks/:taskId/comments` | `{ body }` | 201 `commentSchema`             |
+
+- `commentSchema` en `packages/schemas/src/comment.ts`:
+  `{ id, taskId, projectId, authorId, authorName, body, createdAt }`, con
+  `createdAt` como string ISO. `authorName` sale de un join con `user.name`.
+- `createCommentBodySchema`: `body` recortado, de 1 a 2000 caracteres.
+- Rutas en `apps/api/src/routes/comments.ts`; consultas `ForMember` en
+  `@agentic-kanban/db`.
+
+## Requisitos
+
+- Sin sesión → 401. No miembro o tarea inexistente → 404, nunca 403. El
+  `workspace_id` sale de la fila de la tarea, no del cliente.
+- La lista se ordena por `created_at` ascendente.
+- Datos solo vía `@agentic-kanban/db`; respuestas pasadas por `.parse()`.
+- Tests con el arnés: 401; Luis lee y comenta en una tarea del workspace
+  privado de Ana → 404 en los dos casos; un miembro crea y lista con
+  `authorName`; body vacío → 400; borrar una tarea con comentarios sigue
+  devolviendo 204 (la cascada funciona).
+
+## Fuera de alcance
+
+Menciones, email, campana, publicación por SSE y frontend. No cambies las
+rutas del tablero ni el stream.
+
+## Cómo trabajar
+
+Usa los subagentes de `.claude/agents/`. Tú (Opus) escribes los schemas y las
+firmas. Después, dos `kanban-implementer` (Sonnet) en paralelo: A, consultas y
+rutas; B, tests. Al final, `kanban-verifier` (Haiku) pasa la puerta de calidad y
+prueba por HTTP: Ana comenta en `task_kanban_1` → 201; Luis
+`GET /api/tasks/task_ana_1/comments` → 404.
+
+## Hecho cuando
+
+- [ ] `vp check` y `vp test` en verde.
+- [ ] Las dos pruebas HTTP dan 201 y 404.
+
+## Al terminar
+
+Actualiza `AGENTS.md` (comentarios por HTTP sí; menciones no). No hagas
+commit. Cierra con el resumen que pide `AGENTS.md`.

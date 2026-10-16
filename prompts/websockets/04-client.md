@@ -1,24 +1,79 @@
-Revisa el stream y los hooks del board.
+# Sesión 3 · 04 — El cliente parchea la caché
 
-Conecta el cliente al SSE del project abierto.
+Tiempo en clase: ~15 min. Antes de editar nada, presenta un plan de 12 líneas
+como máximo (hook, cuándo se abre y se cierra, cómo se parchea la query,
+ficheros) y espera mi «adelante».
 
-Debe permitir:
+## Punto de partida
 
-- EventSource a URL relativa `/api/projects/:projectId/events` (same-origin; la cookie de sesión viaja sola). No `baseURL` a `:3000`.
-- parsear `event.data` con `boardEventSchema` (el SSE es data-only; usa `onmessage`)
-- aplicar el evento a la cache de TanStack Query. Añade `applyBoardEvent` junto a `applyBoardMove` (moved reutiliza `applyBoardMove`; created/updated/deleted hacen patch idempotente). Tests de ese helper.
-- ignorar o hacer idempotente el evento si `actorUserId` es el usuario actual (no pelear con el optimistic)
-- cerrar el stream al salir del board / unmount
+El servidor publica `task.created`, `task.updated`, `task.deleted` y
+`task.moved` por `GET /api/projects/:projectId/events` (02 y 03). El tablero se
+pinta con `useBoard` y `boardQueryKey`, y las mutations llevan una
+`mutationKey` que empieza por `["board", projectId]` (Sesión 2).
 
-Requisitos:
+## Objetivo
 
-TanStack Query sigue siendo la única fuente de verdad del server state.
-No copies el board a `useState`.
-No toasts todavía.
-No Socket.IO ni librerías nuevas de realtime.
+Que Luis vea los cambios de Ana sin refrescar, sin romper la actualización
+optimista de Ana.
 
-Plan primero: hook, cuándo se abre/cierra, cómo se parchea la query, archivos concretos.
-Luego implementa. Actualiza `AGENTS.md` y rules: cliente sí; toasts no.
+## Contratos que fijas aquí
 
-Verificación: `vp check --no-fmt`.
-Aula: Ana mueve en `ws_thepower_demo` y Luis ve la carta sin refrescar. Luis no recibe eventos de `proj_ana_notes`.
+- `applyBoardEvent(board, event)`: función pura junto a `applyBoardMove` en
+  `packages/schemas/src/board.ts`. Es idempotente: `task.created` inserta si
+  el id no está; `task.updated` reemplaza por id; `task.deleted` elimina si
+  está y renumera; `task.moved` reutiliza `applyBoardMove`.
+- `useBoardEvents(projectId, userId)` en
+  `apps/web/src/hooks/use-board-events.ts`, montado por `BoardScreen`. La
+  Sesión 4 lo ampliará en lugar de abrir otra conexión.
+
+## Requisitos
+
+- Un solo `EventSource` por tablero, a la URL relativa
+  `/api/projects/${projectId}/events`. Es mismo origen, así que la cookie
+  viaja sola; nunca apuntes a `:3000`.
+- `onmessage`: `JSON.parse` y `boardEventSchema.safeParse`. Ignora lo que no
+  parsea.
+- Aplica el evento con
+  `setQueryData(boardQueryKey(...), (b) => b && applyBoardEvent(b, event))`.
+- Eventos propios (`actorUserId` igual al usuario): si en esta pestaña hay una
+  mutation del tablero en curso
+  (`queryClient.isMutating({ mutationKey: ["board", projectId] }) > 0`),
+  ignóralos, porque su `onSettled` ya reconcilia. Si no, aplícalos: son
+  idempotentes y mantienen sincronizada otra pestaña del mismo usuario.
+- Al reconectar (`onopen` después de un error), invalida la query del board:
+  el hub vive en memoria y no repite lo que se perdió durante el corte.
+- Cierra el `EventSource` al desmontar o al cambiar de project.
+- TanStack Query sigue siendo la única fuente del estado del servidor: no
+  copies el board a `useState`. Sin toasts todavía y sin librerías nuevas de
+  realtime.
+- Tests de `applyBoardEvent`: cada tipo de evento, idempotencia (aplicarlo dos
+  veces da lo mismo que una) y evento de una tarea que no está en el board.
+
+## Fuera de alcance
+
+Toasts, presencia, comentarios y Socket.IO.
+
+## Cómo trabajar
+
+Usa los subagentes de `.claude/agents/`. Si tu herramienta no los tiene, haz
+tú los pasos en el mismo orden.
+
+1. Dos `kanban-implementer` (Sonnet) en paralelo:
+   - A: `applyBoardEvent` y sus tests.
+   - B: `useBoardEvents` y su montaje en `BoardScreen`, usando la firma fijada.
+2. `kanban-verifier` (Haiku): puerta de calidad.
+3. Tú: revisa el diff (una sola conexión, cierre, eco propio) y prepara la
+   prueba con dos navegadores.
+
+## Hecho cuando
+
+- [ ] `vp check` y `vp test` en verde.
+- [ ] Dos navegadores (lo compruebo yo): Ana mueve una tarjeta en
+      `proj_agentic_kanban` y Luis la ve moverse sin refrescar; Ana no nota
+      saltos al mover dos tarjetas seguidas.
+- [ ] Luis no puede escuchar `proj_ana_notes` (404).
+
+## Al terminar
+
+Actualiza `AGENTS.md` y `.cursor/rules/web.mdc` (cliente realtime sí; toasts
+no). No hagas commit. Cierra con el resumen que pide `AGENTS.md`.

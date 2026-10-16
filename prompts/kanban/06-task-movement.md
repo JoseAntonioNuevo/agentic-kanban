@@ -1,31 +1,61 @@
-Revisa el estado actual del repo antes de proponer cambios.
+# Sesión 2 · 06 — Mover una tarea en el backend
 
-Estamos construyendo el Kanban de la Sesión 2.
+Tiempo en clase: ~10 min. Antes de editar nada, presenta un plan de 12 líneas
+como máximo (contrato, algoritmo, transacción y tests) y espera mi «adelante».
 
-Añade una única operación de backend para mover una tarea.
+## Punto de partida
 
-Debe permitir:
+CRUD de tareas por HTTP (03) y tablero en la interfaz (05). Todavía no se
+puede mover una tarea.
 
-- reordenar una tarea dentro de la misma columna
-- moverla a otra columna
-- indicar su nueva posición
+## Objetivo
 
-Requisitos:
+Una sola operación de backend que reordena una tarea dentro de su columna o la
+mueve a otra columna del mismo project, con posiciones siempre consistentes.
 
-Valida el input con Zod en `@agentic-kanban/schemas`.
-Sesión → 401. No miembro o recurso inexistente → 404 (nunca 403).
-Mantén el algoritmo de orden simple y determinista.
-Mantén las posiciones consistentes después de cada movimiento.
-Usa una transacción si varias actualizaciones deben ser atómicas.
-La tarea y la columna destino deben pertenecer al workspace autorizado y al mismo project.
-No permitas movimientos cross-workspace ni cross-project.
-No confíes en IDs enviados por el cliente como autorización.
-Datos solo vía `@agentic-kanban/db`.
-Añade tests para estas restricciones.
-No implementes todavía drag and drop en el frontend.
-No implementes realtime.
+## Contrato que fijas aquí
 
-Plan primero: contrato de la operación, algoritmo de orden, consistencia y aislamiento multi-tenant.
-Luego implementa. Actualiza `AGENTS.md`: POST move sí; DnD no.
+`POST /api/tasks/:taskId/move` con body `moveTaskBodySchema`
+(`{ columnId, position }`) → 200 con la tarea ya movida (`taskSchema`). La
+ruta va en `apps/api/src/routes/board.ts`.
 
-Verificación: `vp check --no-fmt`; tests cross-project / no miembro → 404.
+## Requisitos
+
+- Algoritmo simple y determinista: saca la tarea de su columna, insértala en
+  la de destino en `position` acotada a `0..n` y renumera 0..n-1 las columnas
+  afectadas. Todo dentro de una transacción de Drizzle.
+- Autorización: sin sesión → 401; la tarea se busca por la membresía del
+  `workspace_id` de su fila (si no, 404); la columna de destino debe existir y
+  ser del **mismo project** que la tarea (si no, 404). Así se rechazan los
+  movimientos entre projects y entre workspaces aunque el usuario sea miembro
+  de ambos. Nunca 403 y nunca autorizar con IDs del cliente.
+- Input inválido (posición negativa, `columnId` vacío) → 400.
+- Datos solo vía `@agentic-kanban/db`.
+- Tests: reordenar dentro de la misma columna; mover a otra columna; mover a
+  una columna vacía; posiciones 0..n-1 sin huecos después de cada caso; Ana
+  moviendo una tarea de `proj_agentic_kanban` a una columna de
+  `proj_ana_notes` → 404 (fixtures equivalentes en la base de test); un no
+  miembro → 404; body inválido → 400.
+
+## Fuera de alcance
+
+Drag-and-drop en el frontend y realtime.
+
+## Cómo trabajar
+
+Usa los subagentes de `.claude/agents/`. Tú (Opus) escribes el contrato y el
+algoritmo con su transacción: es la parte delicada. En paralelo, un
+`kanban-implementer` (Sonnet) escribe los tests contra el contrato. Después,
+`kanban-verifier` (Haiku) pasa la puerta de calidad y prueba por HTTP el movimiento
+entre projects con la cookie de Ana.
+
+## Hecho cuando
+
+- [ ] `vp check` y `vp test` en verde.
+- [ ] HTTP: Ana mueve `task_kanban_1` a `col_kanban_done` → 200 y el board
+      refleja el orden nuevo; Ana mueve `task_kanban_1` a `col_ana_todo` → 404.
+
+## Al terminar
+
+Actualiza `AGENTS.md` (mover sí; drag-and-drop no). No hagas commit. Cierra
+con el resumen que pide `AGENTS.md`.

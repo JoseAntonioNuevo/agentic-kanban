@@ -1,10 +1,17 @@
-Revisa el estado actual del repo antes de proponer cambios.
+# Sesión 2 · 04 — Colección de Postman
 
-Estamos construyendo el Kanban de la Sesión 2.
+Tiempo en clase: ~5 min. Antes de crear nada, presenta un plan de 10 líneas
+como máximo y espera mi «adelante».
 
-Prepara una colección de Postman lista para importar y probar manualmente todos los endpoints actuales del Kanban. No cambies la funcionalidad de la API salvo que detectes un bug real.
+## Punto de partida
 
-Crea:
+La API del tablero (03) funciona y tiene tests. Queremos ver el contrato HTTP
+desde fuera antes de construir la interfaz. No cambies la API salvo que
+encuentres un bug real; si lo encuentras, dímelo antes de tocarla.
+
+## Objetivo
+
+Una colección y un entorno de Postman listos para importar:
 
 ```text
 postman/
@@ -12,71 +19,53 @@ postman/
 └── agentic-kanban-local.postman_environment.json
 ```
 
-Requisitos:
+## Requisitos
 
-La colección debe usar las rutas reales existentes en el código, no inventar endpoints.
+- Formato Postman Collection v2.1. Rutas copiadas del código real (lee
+  `apps/api/src/routes/`), nunca inventadas.
+- Variables: `baseUrl` (por defecto `http://localhost:3000`, cambiable a
+  `http://localhost:3002` o a `http://localhost:5173`), `origin`
+  (`http://localhost:5173`), `workspaceId`, `projectId`, `columnId` y `taskId`.
+- Autenticación real de Better Auth: cookies de sesión, nunca tokens Bearer.
+  Todas las peticiones a `/api/auth/*` llevan la cabecera `Origin: {{origin}}`:
+  Better Auth rechaza con 403 las que ya llevan cookie y no traen un origen de
+  confianza (pasa al repetir el login).
+- Scripts que guardan `workspaceId`, `projectId`, `columnId` y `taskId` a
+  partir de las respuestas. Nada de IDs fijos salvo `proj_ana_notes`, que es el
+  fixture de aislamiento del seed.
+- Carpetas y peticiones:
+  - `01 - Auth`: login de Ana (`ana@demo.test` / `Demo1234!`).
+  - `02 - Workspaces`: listar workspaces.
+  - `03 - Board`: obtener el tablero.
+  - `04 - Tasks`: crear, editar y borrar una tarea.
+  - `05 - Security & Validation`: payload inválido (400), petición sin sesión
+    (401) y Luis pidiendo el tablero de `proj_ana_notes` (404). Como la
+    cookie se comparte, este bloque hace login de Luis y termina volviendo a
+    Ana.
+- Tests simples en cada petición importante: código esperado, JSON válido e
+  IDs presentes. Para acceso no autorizado, 404 y nunca 403.
+- Flujo principal en orden: Login Ana → Get Workspaces → Get Board → Create
+  Task → Update Task → Delete Task.
 
-Incluye como mínimo requests para:
+## Fuera de alcance
 
-- login con `ana@demo.test / Demo1234!`
-- obtener los workspaces del usuario
-- obtener el board con columnas y tareas
-- crear una tarea
-- editar una tarea
-- eliminar una tarea
-- comprobar un payload inválido
-- comprobar acceso sin autenticar
-- comprobar acceso a un workspace/recurso no autorizado
+Cambios de funcionalidad en la API, Newman y paquetes nuevos.
 
-Variables de Postman (sin IDs hardcodeados):
+## Cómo trabajar
 
-```text
-baseUrl
-workspaceId
-projectId
-columnId
-taskId
-```
+Encárgalo a un `kanban-implementer` (Sonnet, de `.claude/agents/`). Después,
+`kanban-verifier` (Haiku) comprueba que los dos JSON se parsean, que cada URL
+existe en `apps/api/src/routes/` y reproduce el flujo principal y el bloque 05
+con `curl` contra `http://localhost:3000`.
 
-Por defecto `baseUrl = http://localhost:3000`; debe poder cambiarse a `http://localhost:3002` u otro puerto desde el environment.
+## Hecho cuando
 
-Cuando sea posible, scripts que extraigan de las respuestas `workspaceId`, `projectId`, `columnId`, `taskId` y los guarden para los siguientes requests.
+- [ ] Los dos ficheros son JSON válido y Postman los importa.
+- [ ] Las URLs y los bodies coinciden con las rutas y los schemas Zod reales.
+- [ ] El flujo reproducido con `curl` devuelve 200, 200, 200, 201, 200 y 204,
+      y el bloque 05 devuelve 400, 401 y 404.
 
-La autenticación usa el mecanismo real de Better Auth: cookies de sesión, no tokens Bearer inventados.
+## Al terminar
 
-Carpetas:
-
-```text
-01 - Auth
-02 - Workspaces
-03 - Board
-04 - Tasks
-05 - Security & Validation
-```
-
-Tests simples en los requests importantes:
-
-- status code esperado
-- respuesta JSON válida
-- IDs esperados presentes
-- 400 para validación incorrecta
-- 401 para usuario no autenticado
-- 404 (nunca 403) para acceso no autorizado
-
-Flujo principal:
-
-```text
-Login Ana
-→ Get Workspaces
-→ Get Board
-→ Create Task
-→ Update Task
-→ Delete Task
-```
-
-No hardcodees IDs del seed si puedes obtenerlos de respuestas anteriores.
-
-Plan primero: qué requests incluirás, qué variables guardarás automáticamente y cómo manejarás la sesión de Better Auth.
-Luego genera los JSON. Actualiza `AGENTS.md`: colección Postman sí; no cambies la API para facilitar la colección.
-
-Verificación: ambos JSON son JSON válido; Postman puede importarlos; las URLs coinciden con las rutas implementadas; los bodies coinciden con los schemas Zod; la sesión es cookie de Better Auth. No toques código salvo un bug real.
+Actualiza `AGENTS.md` (la colección existe y cómo usarla). No hagas commit.
+Cierra con el resumen que pide `AGENTS.md`.

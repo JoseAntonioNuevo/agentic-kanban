@@ -1,27 +1,58 @@
-Revisa el estado actual del repo antes de proponer cambios.
+# Sesión 3 · 01 — El contrato de eventos
 
-Estamos construyendo el realtime de la Sesión 3.
+Tiempo en clase: ~10 min. Antes de editar nada, presenta un plan de 10 líneas
+como máximo y espera mi «adelante».
 
-Añade el contrato Zod mínimo de eventos de tablero en `@agentic-kanban/schemas`.
+## Punto de partida
 
-Eventos:
+La Sesión 2 está completa: CRUD de tareas, `POST /api/tasks/:taskId/move`,
+tablero con TanStack Query y drag-and-drop optimista con `applyBoardMove`. Las
+escrituras son HTTP y así se quedan; `apps/api/src/realtime/index.ts` sigue
+siendo un placeholder.
 
-- task.created
-- task.updated
-- task.deleted
-- task.moved
+## Objetivo
 
-Cada evento lleva `projectId`, `actorUserId` y el payload mínimo ya existente (task o ids de move).
-Usa una unión discriminada por `type`. Reutiliza `taskSchema` / ids de move; no inventes campos nuevos.
-Cliente y API parsearán el mismo schema.
+Un contrato Zod que describe los anuncios del tablero y que parsearán igual la
+API y el navegador.
 
-Requisitos:
+## Contrato que fijas aquí
 
-No implementes el hub, SSE, publish ni el frontend.
-No añadas tabla de notificaciones, presencia, comentarios ni Socket.IO.
-HTTP sigue siendo la escritura: este contrato solo describe el anuncio.
+`boardEventSchema` en `packages/schemas/src/events.ts` (exportado con su tipo
+`BoardEvent` desde `@agentic-kanban/schemas`): una unión discriminada por
+`type`.
 
-Primero analiza el código existente y propón el plan mínimo: shape de cada evento, archivos y tests de parse/reject.
-Luego implementa. Actualiza `AGENTS.md`: el contrato sí; el stream no.
+| `type`         | Campos además de `projectId` y `actorUserId` |
+| -------------- | -------------------------------------------- |
+| `task.created` | `task` (`taskSchema`)                        |
+| `task.updated` | `task` (`taskSchema`)                        |
+| `task.deleted` | `taskId`                                     |
+| `task.moved`   | `taskId`, `columnId`, `position` (finales)   |
 
-Verificación: `vp check --no-fmt`; tests del schema.
+Reutiliza `taskSchema` y los campos de `moveTaskBodySchema`; no inventes campos
+nuevos. El contrato solo describe el anuncio: no es una API de escritura.
+
+## Requisitos
+
+- `z.discriminatedUnion("type", [...])` de Zod 4.6.7 (compruébalo en los tipos
+  instalados).
+- Tests de parse para cada tipo y de rechazo: `type` desconocido, falta
+  `actorUserId`, `task.moved` sin `position`, `task.created` sin `task`.
+
+## Fuera de alcance
+
+Hub, SSE, publicación, frontend, tabla de notificaciones, presencia,
+comentarios y Socket.IO.
+
+## Cómo trabajar
+
+Es un paso pequeño: hazlo tú o encárgalo a un `kanban-implementer` (Sonnet, de
+`.claude/agents/`). Después, `kanban-verifier` (Haiku) pasa la puerta de calidad.
+
+## Hecho cuando
+
+- [ ] `vp check` y `vp test` en verde, con los tests nuevos del schema.
+
+## Al terminar
+
+Actualiza `AGENTS.md` (el contrato sí; el stream no). No hagas commit. Cierra
+con el resumen que pide `AGENTS.md`.

@@ -1,22 +1,55 @@
-Revisa el hub y las rutas de board.
+# Sesión 3 · 03 — Publicar después de persistir
 
-Tras cada escritura HTTP exitosa, publica el evento Zod correspondiente a los suscriptores de ese project.
+Tiempo en clase: ~10 min. Antes de editar nada, presenta un plan de 10 líneas
+como máximo (desde qué punto de `board.ts` se publica, con qué payload y cómo
+garantizas que ya se persistió) y espera mi «adelante».
 
-Writes:
+## Punto de partida
 
-- crear → task.created
-- editar → task.updated
-- eliminar → task.deleted
-- mover → task.moved
+El hub y el stream funcionan (02); nadie publica todavía. Las escrituras del
+tablero viven en `apps/api/src/routes/board.ts`.
 
-Si el write falla (404, validación), no publiques.
-`actorUserId` es el `userId` de la sesión (contexto), no un id del body.
-No cambies el contrato HTTP. El stream no es una API de escritura.
-No toques el frontend.
-No implementes toasts.
+## Objetivo
 
-Plan primero: desde qué punto de `board.ts` se emite, qué payload, cómo evitar publicar antes de persistir.
-Luego implementa. Actualiza `AGENTS.md`: publish desde writes sí; cliente no.
+Tras cada escritura HTTP correcta, los suscriptores de ese project reciben el
+evento que la describe.
 
-Verificación: `vp check --no-fmt`.
-Test: suscríbete, write OK → llega el evento Zod; write 404 → no se publica.
+## Requisitos
+
+| Escritura                             | Evento         | Payload                                  |
+| ------------------------------------- | -------------- | ---------------------------------------- |
+| `POST /api/projects/:projectId/tasks` | `task.created` | la tarea guardada, la misma que responde |
+| `PATCH /api/tasks/:taskId`            | `task.updated` | la tarea guardada                        |
+| `DELETE /api/tasks/:taskId`           | `task.deleted` | `taskId`                                 |
+| `POST /api/tasks/:taskId/move`        | `task.moved`   | `taskId`, `columnId`, `position` finales |
+
+- Publica solo cuando la escritura terminó bien (tras la transacción). Si
+  responde 4xx o 5xx, no publiques nada.
+- `projectId` sale de la fila y `actorUserId` es el `userId` de la sesión,
+  nunca un id del body.
+- El contrato HTTP no cambia. El stream no es una API de escritura.
+- Tests: suscríbete al hub directamente desde el test, haz la escritura contra
+  `app` y comprueba que llega el evento y que pasa `boardEventSchema`; una
+  escritura con 404 (usuario ajeno) y otra con 400 no publican nada.
+
+## Fuera de alcance
+
+Frontend y toasts.
+
+## Cómo trabajar
+
+Encárgalo a un `kanban-implementer` (Sonnet, de `.claude/agents/`) con los
+tests incluidos; tú revisas el diff. Después, `kanban-verifier` (Haiku) pasa
+la puerta de calidad y hace una prueba en vivo: abre el stream de
+`proj_agentic_kanban` con la cookie de Luis (`curl -N`), crea una tarea con la
+cookie de Ana y comprueba que aparece la línea `data:` del evento.
+
+## Hecho cuando
+
+- [ ] `vp check` y `vp test` en verde.
+- [ ] La prueba en vivo muestra el evento `task.created` en el stream de Luis.
+
+## Al terminar
+
+Actualiza `AGENTS.md` (publicar desde las escrituras sí; cliente no). No hagas
+commit. Cierra con el resumen que pide `AGENTS.md`.

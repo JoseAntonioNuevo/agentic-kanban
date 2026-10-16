@@ -1,22 +1,61 @@
-Revisa el estado actual del repo antes de proponer cambios.
+# Sesión 1 · 05 — El tenant visible en el dashboard
 
-Estamos construyendo auth de la Sesión 1.
+Tiempo en clase: ~8 min. Antes de editar nada, presenta un plan de 10 líneas
+como máximo y espera mi «adelante».
 
-Haz visible el tenant en el dashboard. Sin tablero, React Router, CORS, RBAC, paquetes nuevos, writes HTTP. No colorees la app por session.user.name / email: el tenant es el workspace.
+## Punto de partida
 
-El seed de 04 ya define shared + privado. Si el .db se creó antes de `ws_ana_demo`, vuelve a `bun run db:seed` (upserts idempotentes). No inventes más filas.
+El seed crea a Ana (dos workspaces) y a Luis (uno). `GET /api/workspaces`
+devuelve cada workspace con sus projects (prompt 03). Si el `.db` es anterior
+al seed, vuelve a ejecutar `db:seed`: es idempotente.
 
-Requisitos:
+## Objetivo
 
-- useQuery + fetch relativo `/api/workspaces` + `workspaceListResponseSchema.parse` (copia `apps/web/src/hooks/use-health.ts`)
-- `credentials: "include"` (la cookie httpOnly debe ir en esta petición; no asumas que authClient la añade a fetch suelto)
-- Lista bajo la card de health en `App.tsx`: nombre + swatch opcional
-- El acento sale de `workspace.id` (shared vs Ana-only). Ana y Luis ven el mismo color en `ws_thepower_demo`
-- Lista vacía es válida (usuario sin memberships)
-- Health no se toca
-- Docs: `AGENTS.md`, `.cursor/rules/web.mdc`, README (Ana dos espacios, Luis uno). Sin Kanban.
+Tras el login, el dashboard lista los workspaces del usuario y sus projects,
+con un acento de color que identifica a cada workspace.
 
-Plan primero: hook, fetch+parse, cómo se pinta el acento, archivos concretos.
-Luego implementa. Actualiza `AGENTS.md`: lista de workspaces sí; Kanban no.
+## Contratos que fijas aquí
 
-Verificación: `vp check --no-fmt`; lista de Ana incluye `ws_thepower_demo` y `ws_ana_demo`; lista de Luis solo `ws_thepower_demo`; Luis GET `/api/projects/proj_ana_notes` → 404; GET `/api/health` sigue OK.
+- `useWorkspaces(userId)` en `apps/web/src/hooks/use-workspaces.ts`.
+- Función pura de color en `apps/web/src/lib/workspace-accent.ts`.
+- Convención para todas las queries de datos del usuario: la queryKey incluye
+  el `userId`, y al cerrar sesión se vacía la caché con `queryClient.clear()`.
+
+## Requisitos
+
+- Copia el patrón de `apps/web/src/hooks/use-health.ts`: `useQuery`, `fetch`
+  relativo a `/api/workspaces` con `credentials: "include"`, el JSON como
+  `unknown` y `workspaceListResponseSchema.parse`. Nunca un cast.
+- La convención de queryKey y caché evita que, al cambiar de usuario en la
+  misma pestaña, se vean datos del anterior.
+- Lista bajo la card de health en `App.tsx`: nombre del workspace, un swatch de
+  color y los nombres de sus projects (aún sin enlace).
+- El color depende solo de `workspace.id`, nunca del nombre o el email del
+  usuario: Ana y Luis ven el mismo color en `ws_thepower_demo`.
+- Estados con mensajes distintos: cargando, error y lista vacía (que es válida).
+
+## Fuera de alcance
+
+Tablero, React Router, escrituras HTTP, CORS, RBAC y paquetes nuevos. Health
+no se toca.
+
+## Cómo trabajar
+
+Usa un `kanban-implementer` (Sonnet, de `.claude/agents/`) para la web y
+después `kanban-verifier` (Haiku) para la puerta de calidad y las pruebas HTTP.
+Tú revisas el diff.
+
+## Hecho cuando
+
+- [ ] `vp check` y `vp test` en verde.
+- [ ] Navegador (lo compruebo yo): Ana ve «thePower Demo» y «Espacio de Ana»;
+      Luis, en una ventana privada, solo «thePower Demo», con el mismo color.
+- [ ] Ana cierra sesión y entra Luis en la misma pestaña: no aparece el
+      espacio de Ana.
+- [ ] Luis `GET /api/projects/proj_ana_notes` → 404; health OK.
+
+## Al terminar
+
+Actualiza `AGENTS.md`, `.cursor/rules/web.mdc` y el README (Ana ve dos
+espacios; Luis, uno). No hagas commit. Cierra con el resumen que pide
+`AGENTS.md`.

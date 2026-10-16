@@ -1,24 +1,55 @@
-Revisa el estado actual del repo antes de proponer cambios.
+# Sesión 2 · 01 — Columnas y tareas
 
-Estamos construyendo el Kanban de la Sesión 2.
+Tiempo en clase: ~6 min. Antes de editar nada, presenta un plan de 10 líneas
+como máximo y espera mi «adelante».
 
-Añade el modelo de datos mínimo para:
+## Punto de partida
 
-- column
-- task
+La Sesión 1 está completa: auth con Better Auth, `workspace`,
+`workspace_member` y `project`, lecturas autorizadas, seed de Ana y Luis y
+dashboard. Todavía no hay columnas ni tareas.
 
-Requisitos:
+## Objetivo
 
-column pertenece a project y workspace.
-task pertenece a column, project y workspace.
-Ambas deben permitir mantener un orden mediante `position`.
-Mantén todas las reglas de aislamiento multi-tenant existentes.
-Usa Drizzle.
-Genera una migración nueva. No modifiques migraciones anteriores.
-No añadas funcionalidades que no necesitamos.
-No implementes todavía API ni frontend.
+El modelo de datos del tablero, con un orden que persiste.
 
-Plan primero: schema, relaciones, índices y constraints.
-Luego implementa. Actualiza `AGENTS.md`: tablas sí; HTTP no.
+## Requisitos
 
-Verificación: `vp check --no-fmt`; el SQL nuevo está en `packages/db/migrations/`.
+- `column`: `id` (text, PK), `workspace_id`, `project_id`, `name`, `position`,
+  `created_at`.
+- `task`: `id` (text, PK), `workspace_id`, `project_id`, `column_id`, `title`,
+  `description` (texto, `""` por defecto), `position`, `created_at`.
+- Claves foráneas hacia `workspace`, `project` y `column` con
+  `onDelete: "cascade"`: libSQL aplica las FK y, sin cascada, borrar una
+  columna o un project fallaría.
+- `position` es un entero ≥ 0 **sin** `UNIQUE`: al reordenar dentro de una
+  transacción, la unicidad se rompería a mitad de camino. Usa índices no
+  únicos: `(project_id, position)` en `column`, `(column_id, position)` en
+  `task`, y `workspace_id` en ambas.
+- Cada fila guarda su `workspace_id` para filtrar por tenant sin depender de
+  lo que mande el cliente; la API se encargará de que coincida con el del
+  project.
+- Mismo modo de timestamp que el resto de tablas. Una migración nueva; no
+  edites las anteriores. Aplícala con
+  `docker compose exec api bun run db:migrate` si Compose está arriba.
+
+## Fuera de alcance
+
+API, frontend, seed, responsables, etiquetas y fechas límite.
+
+## Cómo trabajar
+
+Es un paso pequeño: hazlo tú (Opus). Después, `kanban-verifier` (Haiku, de
+`.claude/agents/`) aplica la migración y pasa la puerta de calidad.
+
+## Hecho cuando
+
+- [ ] Hay un SQL nuevo en `packages/db/migrations/` con las dos tablas, sus FK
+      e índices, y se aplicó.
+- [ ] `vp check` y `vp test` en verde; `GET /api/health` sigue OK.
+
+## Al terminar
+
+Actualiza `AGENTS.md` (tablas del tablero sí; HTTP no) y
+`.cursor/rules/db.mdc`. No hagas commit. Cierra con el resumen que pide
+`AGENTS.md`.

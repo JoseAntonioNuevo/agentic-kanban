@@ -1,32 +1,69 @@
-Revisa el estado actual del repo antes de proponer cambios.
+# Sesión 1 · 04 — Datos de aula repetibles
 
-Estamos construyendo auth de la Sesión 1.
+Tiempo en clase: ~8 min. Antes de editar nada, presenta un plan de 10 líneas
+como máximo y espera mi «adelante».
 
-Implementa un seed determinista e idempotente. Sin endpoints nuevos, UI, CORS, paquetes nuevos. La API no seedea al arrancar.
+## Punto de partida
 
-El tenant es el workspace, no el usuario. Ana y Luis comparten un workspace; Ana tiene otro solo suyo. No colorees la app por nombre de login.
+Auth, tablas multi-tenant y lecturas autorizadas (prompts 01–03).
 
-Requisitos:
+## Objetivo
 
-Datos (y nada más):
+Un seed determinista e idempotente para demostrar el aislamiento con datos
+conocidos. La API nunca seedea al arrancar.
 
-- Ana — ana@demo.test
-- Luis — luis@demo.test
-- contraseña Demo1234!
-- workspace "thePower Demo" id fijo `ws_thepower_demo`
-- project "Agentic Kanban" id fijo `proj_agentic_kanban`, `workspace_id` de ese workspace
-- ambos en `workspace_member` de `ws_thepower_demo`
-- workspace "Espacio de Ana" id fijo `ws_ana_demo`
-- project "Notas de Ana" id fijo `proj_ana_notes`, `workspace_id` de `ws_ana_demo`
-- solo Ana en `workspace_member` de `ws_ana_demo`
+## Datos (exactamente estos)
 
-Usuarios: `auth.api.signUpEmail` de Better Auth (no INSERT en user/account, no hash propio, no HTTP a `/api/auth`).
-Si el email ya existe, reutiliza ese `user.id`.
-Workspace/project/member: upsert por id / unique (`workspace_id`, `user_id`). Nunca DELETE masivo.
-Script en `apps/api`; datos de tenant solo vía `@agentic-kanban/db`. Comando: `bun run db:seed`
-Mismo `.db` que migrate. Nunca Mac API + Compose a la vez. Tras borrar `data/*.db*`: migrate y luego seed.
+| Tipo      | Datos                                                        |
+| --------- | ------------------------------------------------------------ |
+| usuario   | nombre `Ana`, `ana@demo.test`                                |
+| usuario   | nombre `Luis`, `luis@demo.test`                              |
+| password  | `Demo1234!` para los dos (ficticia, solo aula)               |
+| workspace | `ws_thepower_demo` «thePower Demo»: miembros Ana y Luis      |
+| project   | `proj_agentic_kanban` «Agentic Kanban» en `ws_thepower_demo` |
+| workspace | `ws_ana_demo` «Espacio de Ana»: solo Ana                     |
+| project   | `proj_ana_notes` «Notas de Ana» en `ws_ana_demo`             |
 
-Plan primero: cómo se crean los usuarios sin saltarse Better Auth, cómo un segundo seed no duplica, archivos concretos.
-Luego implementa. Actualiza `AGENTS.md`: seed sí; dashboard no.
+El tenant es el workspace, no el usuario. Los nombres `Ana` y `Luis` importan:
+en la Sesión 4 las menciones `@Ana` y `@Luis` se resuelven por `user.name`.
 
-Verificación: `vp check --no-fmt`; seed dos veces; 2 users, 2 workspaces, 2 projects, 3 members; Ana en ambos workspaces, Luis solo en `ws_thepower_demo`; login de Ana y Luis por el flujo normal; GET `/api/health` sigue OK.
+## Requisitos
+
+- Usuarios con `auth.api.signUpEmail` de Better Auth: sin INSERT en `user` o
+  `account`, sin hash propio y sin HTTP a `/api/auth`. Si el email ya existe,
+  reutiliza su `user.id`.
+- Workspaces, projects y memberships con upsert por `id` y por
+  `UNIQUE (workspace_id, user_id)`. Nunca DELETE masivo.
+- Script en `apps/api/src/seed.ts` (los datos de tenant solo vía
+  `@agentic-kanban/db`), script `seed` en `apps/api/package.json` y `db:seed`
+  en la raíz (`bun --filter @agentic-kanban/api seed`). Organízalo por bloques:
+  la Sesión 2 añadirá columnas y tareas.
+- Usa el mismo `.db` que la migración. Con Compose arriba, ejecútalo con
+  `docker compose exec api bun run db:seed`. Después de un reset: migrar y
+  luego seedear.
+
+## Fuera de alcance
+
+Endpoints, UI, CORS, paquetes nuevos y más filas de las de la tabla.
+
+## Cómo trabajar
+
+Paso pequeño: hazlo tú o encárgalo a un solo `kanban-implementer` (Sonnet).
+Después, `kanban-verifier` (Haiku) ejecuta el seed dos veces, cuenta filas y
+prueba los logins.
+
+## Hecho cuando
+
+- [ ] El seed corre dos veces sin errores y sin duplicar: Ana y Luis existen
+      una sola vez (puede haber otros usuarios de pruebas anteriores), 2
+      workspaces y 2 projects demo, 3 memberships.
+- [ ] `POST /api/auth/sign-in/email` con Ana y con Luis → 200.
+- [ ] Con la cookie de Ana `GET /api/workspaces` → 2 workspaces; con la de
+      Luis → 1. Luis `GET /api/projects/proj_ana_notes` → 404.
+- [ ] `vp check` y `vp test` en verde; health OK.
+
+## Al terminar
+
+Actualiza `AGENTS.md` (seed y cuentas demo) y el README (cómo seedear y el
+orden migrar → seedear). No hagas commit. Cierra con el resumen que pide
+`AGENTS.md`.
