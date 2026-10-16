@@ -34,6 +34,9 @@ React → TanStack Query / authClient → /api/* → Vite+ proxy
   `mutationKey: ["board", projectId, …]`, sign-out calls `queryClient.clear()`.
   `applyBoardMove` (in `@agentic-kanban/schemas`) and `useMoveTask` are the
   optimistic move (details in `.cursor/rules/web.mdc`).
+- Events: `boardEventSchema` (`packages/schemas/src/events.ts`) is the contract
+  with 4 types (`task.created`, `task.updated`, `task.deleted`, `task.moved`);
+  there is no stream or publishing yet, writes stay HTTP.
 - Seed: `bun run db:seed`, idempotent upserts by fixed id, never on API start.
   Ana (`ana@demo.test`) and Luis (`luis@demo.test`), fictitious password
   `Demo1234!`; `ws_thepower_demo`/`proj_agentic_kanban` has both,

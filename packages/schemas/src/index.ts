@@ -26,6 +26,7 @@ export {
   type TaskIdParam,
   type UpdateTaskBody,
 } from "./board.ts";
+export { boardEventSchema, type BoardEvent } from "./events.ts";
 export {
   healthResponseSchema,
   serviceStatusSchema,

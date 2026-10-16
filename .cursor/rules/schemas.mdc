@@ -22,6 +22,7 @@ export type HealthResponse = z.infer<typeof healthResponseSchema>;
 export interface HealthResponse { status: string }
 ```
 
+- Board events (`boardEventSchema`, discriminated by `type`) live in `src/events.ts`.
 - Re-export public schemas and types from `src/index.ts`.
 - Web and API both `parse()` the same schema. Do not duplicate shapes.
 - Tests: `import { describe, expect, it } from "vite-plus/test"`. Cover a
