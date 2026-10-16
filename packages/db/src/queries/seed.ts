@@ -7,7 +7,7 @@
 import { eq } from "drizzle-orm";
 
 import { getDb } from "../client.ts";
-import { project, user, workspace, workspaceMember } from "../schema/index.ts";
+import { column, project, task, user, workspace, workspaceMember } from "../schema/index.ts";
 
 /** `user.id` por email (se compara en minúsculas, como guarda Better Auth). */
 export async function findUserIdByEmail(email: string): Promise<string | null> {
@@ -49,4 +49,58 @@ export async function ensureWorkspaceMember(workspaceId: string, userId: string)
     .insert(workspaceMember)
     .values({ workspaceId, userId })
     .onConflictDoNothing({ target: [workspaceMember.workspaceId, workspaceMember.userId] });
+}
+
+/**
+ * Crea la columna o restaura todos sus campos (salvo `id` y `createdAt`) si el
+ * `id` ya existe: un re-seed devuelve esa fila a su estado demo.
+ */
+export async function upsertColumn(input: {
+  id: string;
+  workspaceId: string;
+  projectId: string;
+  name: string;
+  position: number;
+}): Promise<void> {
+  await getDb()
+    .insert(column)
+    .values(input)
+    .onConflictDoUpdate({
+      target: column.id,
+      set: {
+        workspaceId: input.workspaceId,
+        projectId: input.projectId,
+        name: input.name,
+        position: input.position,
+      },
+    });
+}
+
+/**
+ * Crea la tarea o restaura todos sus campos (salvo `id` y `createdAt`) si el
+ * `id` ya existe: un re-seed devuelve esa fila a su estado demo.
+ */
+export async function upsertTask(input: {
+  id: string;
+  workspaceId: string;
+  projectId: string;
+  columnId: string;
+  title: string;
+  description: string;
+  position: number;
+}): Promise<void> {
+  await getDb()
+    .insert(task)
+    .values(input)
+    .onConflictDoUpdate({
+      target: task.id,
+      set: {
+        workspaceId: input.workspaceId,
+        projectId: input.projectId,
+        columnId: input.columnId,
+        title: input.title,
+        description: input.description,
+        position: input.position,
+      },
+    });
 }

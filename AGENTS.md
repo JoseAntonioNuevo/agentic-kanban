@@ -36,7 +36,9 @@ A deterministic, idempotent seed (`bun run db:seed`, upserts only, never run
 on API start) creates the classroom accounts through Better Auth's
 `signUpEmail`: Ana (`ana@demo.test`) and Luis (`luis@demo.test`), fictitious
 password `Demo1234!`. `ws_thepower_demo` (project `proj_agentic_kanban`) has
-Ana and Luis; `ws_ana_demo` (project `proj_ana_notes`) only Ana.
+Ana and Luis; `ws_ana_demo` (project `proj_ana_notes`) only Ana. Demo board:
+columns `To Do`, `In Progress`, `Done` (`col_kanban_*`, `col_ana_*`), tasks
+`task_kanban_1..5` and `task_ana_1`; re-seeding restores those rows.
 Do not invent other product tables, other demo users, CRUD beyond these
 reads, board endpoints or UI, drag-and-drop, realtime, comments, mentions,
 email, deployment, or session tags before the course work asks for them.

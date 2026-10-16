@@ -27,6 +27,8 @@ export type {
 export {
   ensureWorkspaceMember,
   findUserIdByEmail,
+  upsertColumn,
   upsertProject,
+  upsertTask,
   upsertWorkspace,
 } from "./queries/seed.ts";

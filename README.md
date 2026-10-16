@@ -4,8 +4,8 @@ Proyecto starter del curso **thePower — Desarrollo Agéntico**.
 
 Esqueleto técnico listo (Bun, Vite+, React, Hono, Drizzle, libSQL). Hay login
 y un dashboard con los espacios del usuario: Ana ve dos (`thePower Demo` y
-`Espacio de Ana`) y Luis uno (`thePower Demo`, con el mismo color). El tablero
-Kanban se construye en las sesiones en vivo.
+`Espacio de Ana`) y Luis uno (`thePower Demo`, con el mismo color). La interfaz
+del tablero Kanban se construye en las sesiones en vivo.
 
 ## Requisitos
 
@@ -51,6 +51,11 @@ docker compose exec api bun run db:seed
 
 Crea `ana@demo.test` y `luis@demo.test` (contraseña ficticia `Demo1234!`).
 `ws_thepower_demo` tiene a Ana y Luis; `ws_ana_demo`, solo a Ana.
+
+También crea el tablero demo: columnas `To Do`, `In Progress` y `Done` en
+`proj_agentic_kanban` (`col_kanban_*`, tareas `task_kanban_1` a `task_kanban_5`)
+y en `proj_ana_notes` (`col_ana_*`, tarea `task_ana_1`). Volver a ejecutar el
+seed restaura esas filas a su estado inicial.
 
 ## Resetear la base de datos
 

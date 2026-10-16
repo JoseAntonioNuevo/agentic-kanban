@@ -10,7 +10,9 @@ import {
   ensureWorkspaceMember,
   findUserIdByEmail,
   getLibsql,
+  upsertColumn,
   upsertProject,
+  upsertTask,
   upsertWorkspace,
 } from "@agentic-kanban/db";
 
@@ -34,6 +36,84 @@ export const PROJ_ANA_NOTES = {
   workspaceId: WS_ANA_DEMO.id,
   name: "Notas de Ana",
 } as const;
+
+// Tablero: columnas y tareas de demostración (IDs fijos, posiciones 0..n-1).
+const KANBAN_COLUMNS = [
+  { id: "col_kanban_todo", name: "To Do", position: 0 },
+  { id: "col_kanban_doing", name: "In Progress", position: 1 },
+  { id: "col_kanban_done", name: "Done", position: 2 },
+] as const;
+const ANA_COLUMNS = [
+  { id: "col_ana_todo", name: "To Do", position: 0 },
+  { id: "col_ana_doing", name: "In Progress", position: 1 },
+  { id: "col_ana_done", name: "Done", position: 2 },
+] as const;
+
+export const KANBAN_BOARD_COLUMNS = KANBAN_COLUMNS.map((c) => ({
+  ...c,
+  workspaceId: PROJ_AGENTIC_KANBAN.workspaceId,
+  projectId: PROJ_AGENTIC_KANBAN.id,
+}));
+export const ANA_BOARD_COLUMNS = ANA_COLUMNS.map((c) => ({
+  ...c,
+  workspaceId: PROJ_ANA_NOTES.workspaceId,
+  projectId: PROJ_ANA_NOTES.id,
+}));
+
+export const KANBAN_BOARD_TASKS = [
+  {
+    id: "task_kanban_1",
+    columnId: "col_kanban_todo",
+    title: "Configurar Better Auth",
+    description: "Registro e inicio de sesión con correo y contraseña.",
+    position: 0,
+  },
+  {
+    id: "task_kanban_2",
+    columnId: "col_kanban_todo",
+    title: "Diseñar el modelo multi-tenant",
+    description: "Cada fila lleva su workspace_id y la API lo filtra.",
+    position: 1,
+  },
+  {
+    id: "task_kanban_3",
+    columnId: "col_kanban_doing",
+    title: "API del tablero",
+    description: "Endpoints para leer columnas y tareas de un project.",
+    position: 0,
+  },
+  {
+    id: "task_kanban_4",
+    columnId: "col_kanban_doing",
+    title: "Drag and drop optimista",
+    description: "Mover tarjetas al instante y reconciliar con la API.",
+    position: 1,
+  },
+  {
+    id: "task_kanban_5",
+    columnId: "col_kanban_done",
+    title: "Seed de aula",
+    description: "Datos conocidos y repetibles para las demos.",
+    position: 0,
+  },
+].map((t) => ({
+  ...t,
+  workspaceId: PROJ_AGENTIC_KANBAN.workspaceId,
+  projectId: PROJ_AGENTIC_KANBAN.id,
+}));
+export const ANA_BOARD_TASKS = [
+  {
+    id: "task_ana_1",
+    columnId: "col_ana_todo",
+    title: "Repasar apuntes",
+    description: "Releer las notas de la última sesión.",
+    position: 0,
+  },
+].map((t) => ({
+  ...t,
+  workspaceId: PROJ_ANA_NOTES.workspaceId,
+  projectId: PROJ_ANA_NOTES.id,
+}));
 
 /** Devuelve el `user.id` del email; si no existe, lo registra con Better Auth. */
 async function ensureUser(input: { name: string; email: string }): Promise<string> {
@@ -62,12 +142,24 @@ async function seed(): Promise<void> {
   await ensureWorkspaceMember(WS_THEPOWER_DEMO.id, luisId);
   await ensureWorkspaceMember(WS_ANA_DEMO.id, anaId);
 
-  // La Sesión 2 añadirá aquí el bloque de columnas y tareas.
+  // Tablero: columnas y tareas (las columnas antes, por la FK de las tareas)
+  for (const col of [...KANBAN_BOARD_COLUMNS, ...ANA_BOARD_COLUMNS]) {
+    await upsertColumn(col);
+  }
+  for (const item of [...KANBAN_BOARD_TASKS, ...ANA_BOARD_TASKS]) {
+    await upsertTask(item);
+  }
 
   console.log("Seed listo:");
   console.log(`  usuarios: ${ANA.email}, ${LUIS.email} (contraseña ${DEMO_PASSWORD})`);
   console.log(`  ${WS_THEPOWER_DEMO.id}: Ana y Luis -> ${PROJ_AGENTIC_KANBAN.id}`);
   console.log(`  ${WS_ANA_DEMO.id}: solo Ana -> ${PROJ_ANA_NOTES.id}`);
+  console.log(
+    `  tablero ${PROJ_AGENTIC_KANBAN.id}: ${KANBAN_BOARD_COLUMNS.length} columnas, ${KANBAN_BOARD_TASKS.length} tareas`,
+  );
+  console.log(
+    `  tablero ${PROJ_ANA_NOTES.id}: ${ANA_BOARD_COLUMNS.length} columnas, ${ANA_BOARD_TASKS.length} tarea`,
+  );
 }
 
 // Solo se ejecuta como script (`bun run db:seed`): importar sus constantes
