@@ -37,6 +37,21 @@ function ensureDatabaseDirectory(url: string): void {
   mkdirSync(dirname(url.slice("file:".length)), { recursive: true });
 }
 
+/**
+ * Ruta absoluta del fichero SQLite según la misma resolución que el cliente
+ * (`DATABASE_URL` o el default del repo). Devuelve `null` si la URL no es
+ * `file:` (p. ej. `libsql://`). Una ruta relativa se resuelve contra
+ * `process.cwd()`, igual que libSQL.
+ */
+export function getDatabaseFilePath(): string | null {
+  const url = resolveDatabaseUrl();
+  if (!url.startsWith("file:")) {
+    return null;
+  }
+
+  return resolve(process.cwd(), url.slice("file:".length));
+}
+
 let cachedClient: Client | undefined;
 let cachedDb: LibSQLDatabase | undefined;
 

@@ -6,23 +6,32 @@
  *
  * Sin sesión → 401; tarea inexistente o sin membresía → 404 (nunca 403); input
  * inválido → 400. El `workspace_id` sale de la fila de la tarea, no del cliente.
- * Las menciones, el email y la publicación por SSE llegan en los prompts siguientes.
+ *
+ * Menciones: el `POST` extrae los `@nombre` del texto y `createCommentForMember`
+ * crea comentario y notificaciones en una sola transacción. Solo después del
+ * commit se añade el email al outbox y se marca `emailed_at`; si eso falla se
+ * registra el error y la respuesta sigue siendo 201. La publicación por SSE
+ * llega en un prompt posterior.
  */
 import {
   createCommentForMember,
   listCommentsForMember,
+  markNotificationsEmailed,
   type CommentWithAuthor,
+  type NotificationRow,
 } from "@agentic-kanban/db";
 import {
   commentListResponseSchema,
   commentSchema,
   createCommentBodySchema,
   errorResponseSchema,
+  extractMentionTokens,
   taskIdParamSchema,
 } from "@agentic-kanban/schemas";
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 
+import { appendToOutbox } from "../mail/outbox.ts";
 import { requireSession, type SessionEnv } from "../middleware/session.ts";
 
 export const commentRoutes = new Hono<SessionEnv>();
@@ -42,6 +51,35 @@ function toCommentResponse(row: CommentWithAuthor) {
 
 /** 404 uniforme: no revela si la tarea existe en otro tenant. */
 const notFoundBody = () => errorResponseSchema.parse({ error: "No encontrado" });
+
+/**
+ * Envío de aula tras el commit: una línea por notificación en el outbox y luego
+ * `emailed_at`. Si falla, `emailed_at` queda vacío y el error solo se registra:
+ * el comentario ya está guardado y la respuesta no cambia.
+ */
+async function deliverMentionEmails(notifications: NotificationRow[]): Promise<void> {
+  if (notifications.length === 0) {
+    return;
+  }
+
+  try {
+    await appendToOutbox(
+      notifications.map((n) => ({
+        to: n.emailTo,
+        subject: n.emailSubject,
+        body: n.emailBody,
+        notificationId: n.id,
+        createdAt: n.createdAt.toISOString(),
+      })),
+    );
+    await markNotificationsEmailed(
+      notifications.map((n) => n.id),
+      new Date(),
+    );
+  } catch (error) {
+    console.error("No se pudo entregar el email de mención", error);
+  }
+}
 
 commentRoutes.get(
   "/api/tasks/:taskId/comments",
@@ -67,12 +105,19 @@ commentRoutes.post(
   async (c) => {
     const { taskId } = c.req.valid("param");
     const { body } = c.req.valid("json");
-    const row = await createCommentForMember({ taskId, userId: c.get("userId"), body });
+    const result = await createCommentForMember({
+      taskId,
+      userId: c.get("userId"),
+      body,
+      mentionTokens: extractMentionTokens(body),
+    });
 
-    if (!row) {
+    if (!result) {
       return c.json(notFoundBody(), 404);
     }
 
-    return c.json(toCommentResponse(row), 201);
+    await deliverMentionEmails(result.notifications);
+
+    return c.json(toCommentResponse(result.comment), 201);
   },
 );

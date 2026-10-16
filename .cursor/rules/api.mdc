@@ -53,7 +53,14 @@ app.route("/", eventRoutes);
   `authorName` from `user.name`). Authorization comes from the task row:
   `listCommentsForMember`/`createCommentForMember` join the task with
   `workspace_member`; no task or not a member → 404 and `workspace_id`/`project_id`
-  are copied from that row. No mentions, email or SSE publishing yet.
+  are copied from that row. The POST passes `extractMentionTokens(body)` as
+  `mentionTokens`; `createCommentForMember` returns `{ comment, notifications }`
+  (comment and `notification` rows in one transaction). Fixed order: transaction
+  commit → `appendToOutbox` (`src/mail/outbox.ts`, `OUTBOX_PATH` or
+  `outbox.jsonl` next to the database file) → `markNotificationsEmailed`. The
+  last two sit in one try/catch that only logs: on failure `emailed_at` stays
+  null and the answer is still 201. No SSE publishing for comments yet. Tests
+  set `OUTBOX_PATH` to a temp file in `src/test/setup.ts`.
 - Database access only through `@agentic-kanban/db`. Never import
   `@libsql/client` or `drizzle-orm` from the API.
 - Better Auth (`src/auth/index.ts`, email/password, cookie session) is served

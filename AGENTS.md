@@ -28,8 +28,16 @@ React → TanStack Query / authClient → /api/* → Vite+ proxy
   `notification.comment_id` NOT NULL, `kind` only `mention`). Foreign keys
   cascade: deleting a task deletes its comments and notifications. Comments have
   HTTP (`GET`/`POST /api/tasks/:taskId/comments`) and a thread in the edit task
-  dialog (`TaskComments`, plain text); mentions, email, the notification bell
-  and notification HTTP do not exist yet.
+  dialog (`TaskComments`, plain text). Mentions and classroom email exist:
+  `extractMentionTokens` (`@agentic-kanban/schemas`, `@\p{L}+`, not after a
+  letter/digit, case-insensitive, deduped) feeds `createCommentForMember`,
+  which resolves names against the members of the task's workspace and inserts
+  the comment plus one `notification` per mentioned member (no unknown names,
+  no self-mention) in the same transaction. After the commit the API appends
+  one JSON line per email to the local outbox (`OUTBOX_PATH`, else
+  `outbox.jsonl` next to the database file) and sets `emailed_at`; if that
+  fails the error is logged, `emailed_at` stays empty and the POST still
+  answers 201. The notification bell and notification HTTP do not exist yet.
 - Routes: `GET /api/workspaces`, `GET /api/projects/:projectId`,
   `GET /api/projects/:projectId/board`, `POST /api/projects/:projectId/tasks`,
   `PATCH`/`DELETE /api/tasks/:taskId`, `POST /api/tasks/:taskId/move`,
@@ -59,8 +67,9 @@ React → TanStack Query / authClient → /api/* → Vite+ proxy
   and `postman/agentic-kanban-local.postman_environment.json`; `Origin:
   {{origin}}` is mandatory on `/api/auth/*`.
 
-Do not invent other product tables, demo users, notification HTTP,
-mentions, email, deployment or session tags before the course asks for them.
+Do not invent other product tables, demo users, notification HTTP, the bell,
+real email (Resend, SMTP, a mail container), deployment or session tags before
+the course asks for them.
 
 Out of scope: billing, RBAC, attachments, mobile, SSO, automations,
 microservices, queues, Redis, extra cloud services, and additional architecture
@@ -154,7 +163,8 @@ docker compose up --build
 
 API tests: `vp test`. They use their own temporary database and a test
 `BETTER_AUTH_SECRET`, configured in `vite.config.ts` (`test`) and
-`apps/api/src/test/setup.ts`; they never touch `data/`.
+`apps/api/src/test/setup.ts` (which also points `OUTBOX_PATH` at a temporary
+file); they never touch `data/`.
 
 Migrations: `bun run db:generate` on the host, apply with
 `docker compose exec api bun run db:migrate`. Do not add dependencies or

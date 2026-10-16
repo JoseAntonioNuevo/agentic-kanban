@@ -26,7 +26,11 @@ Hono → drizzle-orm/libsql → @libsql/client → file:…/agentic-kanban.db
   index `(task_id, created_at)`) and `notification` (`notification.ts`: recipient
   and actor FK to `user`, `comment_id` NOT NULL, `kind` enum `mention` guarded by
   CHECK `notification_kind_check`, nullable `read_at`/`emailed_at`, index
-  `(recipient_user_id, created_at)`). Deleting a task cascades to its comments
+  `(recipient_user_id, created_at)`). `notification` rows are filled by
+  `createCommentForMember` (`queries/comments.ts`) in the comment's transaction,
+  one per mentioned member of the task's workspace (`emailed_at` null);
+  `markNotificationsEmailed` (`queries/notifications.ts`) sets it after the
+  outbox write. Deleting a task cascades to its comments
   and notifications (and a comment to its notifications). Board queries live in
   `queries/board.ts` with the `*ForMember` suffix (membership join on the row's
   `workspace_id`; create, delete and move run in `getDb().transaction`). One file per

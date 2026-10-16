@@ -42,6 +42,7 @@ export {
   type HealthResponse,
   type ServiceStatus,
 } from "./health.ts";
+export { extractMentionTokens } from "./mentions.ts";
 export {
   errorResponseSchema,
   projectIdParamSchema,

@@ -4,7 +4,7 @@
  * Cada fichero de test tiene su propio registro de módulos (isolate), así que
  * este setup se ejecuta una vez por fichero y `@agentic-kanban/db` abre un
  * cliente nuevo: cada fichero obtiene su propia base temporal, con las
- * migraciones aplicadas. Nunca se toca `data/agentic-kanban.db`.
+ * migraciones aplicadas y su propio outbox (`OUTBOX_PATH`). Nunca se toca `data/agentic-kanban.db`.
  */
 import { randomUUID } from "node:crypto";
 import { rmSync } from "node:fs";
@@ -14,8 +14,15 @@ import { afterAll } from "vite-plus/test";
 
 const databasePath = join(tmpdir(), `agentic-kanban-test-${process.pid}-${randomUUID()}.db`);
 
+const outboxPath = join(
+  tmpdir(),
+  `agentic-kanban-test-${process.pid}-${randomUUID()}.outbox.jsonl`,
+);
+
 // Debe fijarse ANTES de importar el código de la API o de la base.
 process.env.DATABASE_URL = `file:${databasePath}`;
+// El outbox de correo también es temporal: los tests nunca escriben en `data/`.
+process.env.OUTBOX_PATH = outboxPath;
 
 // Import dinámico: el módulo lee DATABASE_URL al abrir el cliente, no antes.
 const { getLibsql, migrateDatabase } = await import("@agentic-kanban/db");
@@ -32,4 +39,6 @@ afterAll(() => {
   for (const suffix of ["", "-wal", "-shm"]) {
     rmSync(`${databasePath}${suffix}`, { force: true });
   }
+
+  rmSync(outboxPath, { force: true });
 });
