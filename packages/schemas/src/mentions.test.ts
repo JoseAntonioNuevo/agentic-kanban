@@ -7,6 +7,11 @@ describe("extractMentionTokens", () => {
     expect(extractMentionTokens("@Luis mira esto")).toEqual(["Luis"]);
   });
 
+  it("un número o _ pegados al nombre no mencionan a nadie", () => {
+    expect(extractMentionTokens("@Luis2 revisa")).toEqual([]);
+    expect(extractMentionTokens("@Luis_dev revisa")).toEqual([]);
+  });
+
   it("la puntuación corta el nombre", () => {
     expect(extractMentionTokens("@Luis,")).toEqual(["Luis"]);
     expect(extractMentionTokens("(@luis)")).toEqual(["luis"]);

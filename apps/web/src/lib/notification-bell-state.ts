@@ -4,7 +4,8 @@
  * Un error de la query nunca se confunde con una bandeja vacía: solo un éxito
  * con `[]` produce `empty`. Con `refetchInterval` un refetch puede fallar con
  * filas ya en caché: entonces se sigue pintando la lista, marcada como
- * desactualizada (`stale`), en lugar de taparla con el error.
+ * desactualizada (`stale`), en lugar de taparla con el error; con `stale` el
+ * popover no dice «Nada pendiente».
  */
 import type { NotificationListResponse } from "@agentic-kanban/schemas";
 

@@ -28,6 +28,11 @@ describe("bellState", () => {
     expect(bellState({ status: "error", data: [] })).toEqual({ kind: "error" });
   });
 
+  it("error con todo leído en caché → stale (la campana no dice «Nada pendiente»)", () => {
+    const data = [row("n_1", "2026-01-02T00:00:00.000Z")];
+    expect(bellState({ status: "error", data })).toEqual({ kind: "list", unread: 0, stale: true });
+  });
+
   it("error con filas en caché → lista marcada como desactualizada", () => {
     const data = [row("n_1", null)];
     expect(bellState({ status: "error", data })).toEqual({ kind: "list", unread: 1, stale: true });

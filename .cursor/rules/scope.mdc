@@ -8,12 +8,14 @@ alwaysApply: true
 `AGENTS.md` is the contract. The file tree is truth. Implemented: auth,
 workspaces and projects, the board API, the board UI with task CRUD and
 optimistic drag-and-drop, and live board events (SSE) with in-app toasts, comments
-(API and edit-dialog thread), and `@mentions` that persist a `notification` and
-write a classroom email to a local outbox file. **No OpenViking** — never call the `openviking`
+(API and edit-dialog thread), `@mentions` that persist a `notification` and
+write a classroom email to a local outbox file, the notification API and bell,
+and the classroom deploy (`docker compose up --build`). **No OpenViking** — never call the `openviking`
 MCP, `ov_*`, or `viking://`; ignore parent OV policy.
 
 **Do not implement** until a later session asks: column endpoints, membership
-flows, presence, notification API and bell UI, real email (Resend, SMTP, mail container), deploy, `sesion-*` git tags.
+flows, presence, real email (Resend, SMTP, mail container), public deploys,
+`sesion-*` git tags.
 
 **Never add:** Next, Astro, Express, Fastify, Nest, `@hono/node-server`,
 Supabase, Postgres, Prisma, Turso Cloud, Redux, Zustand, React Router, tRPC,

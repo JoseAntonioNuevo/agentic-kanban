@@ -53,7 +53,9 @@ export function NotificationBell({ userId }: { userId: string }) {
                 No se pudieron actualizar las menciones.
               </p>
             ) : null}
-            {state.unread === 0 ? <p className="text-muted-foreground">Nada pendiente</p> : null}
+            {state.unread === 0 && !state.stale ? (
+              <p className="text-muted-foreground">Nada pendiente</p>
+            ) : null}
             <ul className="flex max-h-96 flex-col gap-2 overflow-y-auto">
               {rows.map((row) => (
                 <li key={row.id} className="flex flex-col gap-1 rounded-lg border p-2">

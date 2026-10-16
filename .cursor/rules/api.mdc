@@ -17,6 +17,7 @@ app.route("/", projectRoutes);
 app.route("/", boardRoutes);
 app.route("/", commentRoutes);
 app.route("/", eventRoutes);
+app.route("/", notificationRoutes);
 ```
 
 `src/index.ts` also exports `app` for tests (keep the Bun `export default`).
@@ -53,7 +54,8 @@ app.route("/", eventRoutes);
   `authorName` from `user.name`). Authorization comes from the task row:
   `listCommentsForMember`/`createCommentForMember` join the task with
   `workspace_member`; no task or not a member → 404 and `workspace_id`/`project_id`
-  are copied from that row. The POST passes `extractMentionTokens(body)` as
+  are copied from that row (two members with the same `user.name` are both
+  mentioned: names are not unique). The POST passes `extractMentionTokens(body)` as
   `mentionTokens`; `createCommentForMember` returns `{ comment, notifications }`
   (comment and `notification` rows in one transaction). Fixed order: transaction
   commit → `appendToOutbox` (`src/mail/outbox.ts`, `OUTBOX_PATH` or
