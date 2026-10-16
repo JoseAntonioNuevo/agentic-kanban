@@ -22,7 +22,10 @@ React → authClient → /api/auth/* → Vite+ proxy → Better Auth (httpOnly c
 Better Auth owns the `user`, `session`, `account` and `verification` tables.
 The workspace is the tenant: the `workspace`, `workspace_member` (unique per
 workspace and user, no role) and `project` tables exist with cascading foreign
-keys. Read contracts (all require a session, `requireSession`):
+keys. The board tables `column` and `task` also exist (each row carries its own
+`workspace_id`, cascading foreign keys, `position` with no UNIQUE so reordering
+in a transaction works); there is still no HTTP for them. Read contracts (all
+require a session, `requireSession`):
 `GET /api/workspaces` (the user's workspaces, each with `projects: [{ id,
 name }]`, `[]` if none) and `GET /api/projects/:projectId` (the project if the
 user is a member of its workspace); not a member or not found → 404, never
@@ -35,8 +38,8 @@ on API start) creates the classroom accounts through Better Auth's
 password `Demo1234!`. `ws_thepower_demo` (project `proj_agentic_kanban`) has
 Ana and Luis; `ws_ana_demo` (project `proj_ana_notes`) only Ana.
 Do not invent other product tables, other demo users, CRUD beyond these
-reads, a Kanban board, drag-and-drop, realtime, comments, mentions, email,
-deployment, or session tags before the course work asks for them.
+reads, board endpoints or UI, drag-and-drop, realtime, comments, mentions,
+email, deployment, or session tags before the course work asks for them.
 
 Out of scope: billing, RBAC, attachments, mobile, SSO, automations,
 microservices, queues, Redis, extra cloud services, and additional architecture
