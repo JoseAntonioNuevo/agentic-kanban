@@ -1,6 +1,6 @@
 # Sesión 3 · 01 — El contrato de eventos
 
-Tiempo en clase: ~10 min. Tú no editas código: orquestas. Antes de lanzar a los implementadores, presenta un plan de 10 líneas
+Tiempo en clase: ~10 min. Antes de lanzar a los implementadores, presenta un plan de 10 líneas
 como máximo y espera mi «adelante».
 
 ## Punto de partida
@@ -45,13 +45,12 @@ comentarios y Socket.IO.
 
 ## Cómo trabajar
 
-Tú (Opus) orquestas y no editas ficheros: investigan los subagentes Haiku, implementa Sonnet y verifica Haiku. Usa los subagentes de `.claude/agents/`; si tu herramienta no los tiene, haz los mismos pasos en este orden.
+Sigue el flujo con subagentes de `AGENTS.md` (Agent workflow). En este paso:
 
-1. **Investigar** — `kanban-recon` (Haiku): `taskSchema`, `moveTaskBodySchema` y la API de `z.discriminatedUnion` en el Zod 4.6.7 instalado.
-2. **Planificar** — tú: forma exacta de cada evento. Presenta el plan y espera mi «adelante».
-3. **Implementar** — `kanban-implementer` (Sonnet): uno solo: schema, tests y documentación de «Al terminar».
-4. **Verificar** — `kanban-verifier` (Haiku): puerta de calidad.
-5. **Revisar** — tú revisas el diff completo. Si algo falla, encarga el arreglo a un `kanban-implementer` y vuelve a verificar.
+- **Investigar** (Haiku): `taskSchema`, `moveTaskBodySchema` y la API de `z.discriminatedUnion` en el Zod 4.6.7 instalado.
+- **Planificar** (Opus): forma exacta de cada evento.
+- **Implementar** (Sonnet): uno solo: schema, tests y documentación de «Al terminar».
+- **Verificar** (Haiku): puerta de calidad.
 
 ## Hecho cuando
 
@@ -59,5 +58,5 @@ Tú (Opus) orquestas y no editas ficheros: investigan los subagentes Haiku, impl
 
 ## Al terminar
 
-El implementador encargado de la documentación actualiza `AGENTS.md` (el contrato sí; el stream no). No hagas commit. Cierra
+El implementador que cierra el paso actualiza `AGENTS.md` (el contrato sí; el stream no). No hagas commit. Cierra
 con el resumen que pide `AGENTS.md`.

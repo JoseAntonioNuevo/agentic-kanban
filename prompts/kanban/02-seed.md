@@ -1,6 +1,6 @@
 # Sesión 2 · 02 — El seed del tablero
 
-Tiempo en clase: ~6 min. Tú no editas código: orquestas. Antes de lanzar a los implementadores, presenta un plan de 8 líneas
+Tiempo en clase: ~6 min. Antes de lanzar a los implementadores, presenta un plan de 8 líneas
 como máximo y espera mi «adelante».
 
 ## Punto de partida
@@ -34,13 +34,12 @@ API y frontend.
 
 ## Cómo trabajar
 
-Tú (Opus) orquestas y no editas ficheros: investigan los subagentes Haiku, implementa Sonnet y verifica Haiku. Usa los subagentes de `.claude/agents/`; si tu herramienta no los tiene, haz los mismos pasos en este orden.
+Sigue el flujo con subagentes de `AGENTS.md` (Agent workflow). En este paso:
 
-1. **Investigar** — `kanban-recon` (Haiku): estructura del seed actual y consultas de upsert disponibles.
-2. **Planificar** — tú: IDs y posiciones de columnas y tareas. Presenta el plan y espera mi «adelante».
-3. **Implementar** — `kanban-implementer` (Sonnet): uno solo: seed y documentación de «Al terminar».
-4. **Verificar** — `kanban-verifier` (Haiku): ejecuta el seed dos veces y cuenta filas por project.
-5. **Revisar** — tú revisas el diff completo. Si algo falla, encarga el arreglo a un `kanban-implementer` y vuelve a verificar.
+- **Investigar** (Haiku): estructura del seed actual y consultas de upsert disponibles.
+- **Planificar** (Opus): IDs y posiciones de columnas y tareas.
+- **Implementar** (Sonnet): uno solo: seed y documentación de «Al terminar».
+- **Verificar** (Haiku): ejecuta el seed dos veces y cuenta filas por project.
 
 ## Hecho cuando
 
@@ -51,5 +50,5 @@ Tú (Opus) orquestas y no editas ficheros: investigan los subagentes Haiku, impl
 
 ## Al terminar
 
-El implementador encargado de la documentación actualiza `AGENTS.md` y el README (datos del tablero demo). No hagas commit.
+El implementador que cierra el paso actualiza `AGENTS.md` y el README (datos del tablero demo). No hagas commit.
 Cierra con el resumen que pide `AGENTS.md`.

@@ -1,6 +1,6 @@
 # Sesión 1 · 03 — Las lecturas autorizadas
 
-Tiempo en clase: ~13 min. Tú no editas código: orquestas. Antes de lanzar a los implementadores, presenta un plan de 15 líneas
+Tiempo en clase: ~13 min. Antes de lanzar a los implementadores, presenta un plan de 15 líneas
 como máximo y espera mi «adelante».
 
 ## Punto de partida
@@ -66,13 +66,13 @@ Frontend, seed, escrituras, CORS, RBAC y paquetes nuevos. Health no se toca.
 
 ## Cómo trabajar
 
-Tú (Opus) orquestas y no editas ficheros: investigan los subagentes Haiku, implementa Sonnet y verifica Haiku. Usa los subagentes de `.claude/agents/`; si tu herramienta no los tiene, haz los mismos pasos en este orden.
+Sigue el flujo con subagentes de `AGENTS.md` (Agent workflow). En este paso:
 
-1. **Investigar** — `kanban-recon` (Haiku): `auth`, rutas existentes, `packages/db`, `packages/schemas` y cómo se ejecutan los tests con la config de Vite+; confirma en `node_modules` las firmas de `auth.api.getSession` y del migrador de Drizzle.
-2. **Planificar** — tú: fija los schemas, las firmas de las consultas y la del middleware en los briefs. Presenta el plan y espera mi «adelante».
-3. **Implementar** — `kanban-implementer` (Sonnet): primero uno escribe los schemas compartidos y las firmas de las consultas; después dos en paralelo: A, consultas en `packages/db`, `requireSession`, rutas y montaje; B, arnés de tests y tests contra los contratos. Uno de ellos actualiza la documentación de «Al terminar».
-4. **Verificar** — `kanban-verifier` (Haiku): puerta de calidad y pruebas HTTP de «Hecho cuando» por el proxy.
-5. **Revisar** — tú revisas el diff completo buscando cualquier consulta sin filtro de tenant. Si algo falla, encarga el arreglo a un `kanban-implementer` y vuelve a verificar.
+- **Investigar** (Haiku): `auth`, rutas existentes, `packages/db`, `packages/schemas` y cómo se ejecutan los tests con la config de Vite+; confirma en `node_modules` las firmas de `auth.api.getSession` y del migrador de Drizzle.
+- **Planificar** (Opus): fija los schemas, las firmas de las consultas y la del middleware en los briefs.
+- **Implementar** (Sonnet): primero uno escribe los schemas compartidos y las firmas de las consultas; después dos en paralelo: A, consultas en `packages/db`, `requireSession`, rutas y montaje; B, arnés de tests y tests contra los contratos. Uno de ellos actualiza la documentación de «Al terminar».
+- **Verificar** (Haiku): puerta de calidad y pruebas HTTP de «Hecho cuando» por el proxy.
+- **Revisar** (Opus): busca cualquier consulta sin filtro de tenant.
 
 ## Hecho cuando
 
@@ -84,6 +84,6 @@ Tú (Opus) orquestas y no editas ficheros: investigan los subagentes Haiku, impl
 
 ## Al terminar
 
-El implementador encargado de la documentación actualiza `AGENTS.md` (contratos de lectura y cómo correr los tests de API) y
+El implementador que cierra el paso actualiza `AGENTS.md` (contratos de lectura y cómo correr los tests de API) y
 `.cursor/rules/api.mdc`. No hagas commit. Cierra con el resumen que pide
 `AGENTS.md`.

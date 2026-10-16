@@ -1,6 +1,6 @@
 # Sesión 2 · 03 — La API del tablero
 
-Tiempo en clase: ~10 min. Tú no editas código: orquestas. Antes de lanzar a los implementadores, presenta un plan de 15 líneas
+Tiempo en clase: ~10 min. Antes de lanzar a los implementadores, presenta un plan de 15 líneas
 como máximo y espera mi «adelante».
 
 ## Punto de partida
@@ -56,13 +56,13 @@ Mover tareas, drag-and-drop, realtime y frontend.
 
 ## Cómo trabajar
 
-Tú (Opus) orquestas y no editas ficheros: investigan los subagentes Haiku, implementa Sonnet y verifica Haiku. Usa los subagentes de `.claude/agents/`; si tu herramienta no los tiene, haz los mismos pasos en este orden.
+Sigue el flujo con subagentes de `AGENTS.md` (Agent workflow). En este paso:
 
-1. **Investigar** — `kanban-recon` (Haiku): `requireSession`, `getProjectForMember`, el patrón de rutas, el arnés de tests y la API de transacciones de Drizzle instalada.
-2. **Planificar** — tú: fija schemas, rutas y firmas de las consultas en los briefs. Presenta el plan y espera mi «adelante».
-3. **Implementar** — `kanban-implementer` (Sonnet): primero uno escribe los schemas de `board.ts`; después dos en paralelo: A, consultas en `packages/db`, rutas y montaje; B, tests contra los contratos. Uno de ellos actualiza la documentación de «Al terminar».
-4. **Verificar** — `kanban-verifier` (Haiku): puerta de calidad y pruebas HTTP de «Hecho cuando» por el proxy.
-5. **Revisar** — tú revisas el diff completo buscando cualquier camino sin filtro de tenant. Si algo falla, encarga el arreglo a un `kanban-implementer` y vuelve a verificar.
+- **Investigar** (Haiku): `requireSession`, `getProjectForMember`, el patrón de rutas, el arnés de tests y la API de transacciones de Drizzle instalada.
+- **Planificar** (Opus): fija schemas, rutas y firmas de las consultas en los briefs.
+- **Implementar** (Sonnet): primero uno escribe los schemas de `board.ts`; después dos en paralelo: A, consultas en `packages/db`, rutas y montaje; B, tests contra los contratos. Uno de ellos actualiza la documentación de «Al terminar».
+- **Verificar** (Haiku): puerta de calidad y pruebas HTTP de «Hecho cuando» por el proxy.
+- **Revisar** (Opus): busca cualquier camino sin filtro de tenant.
 
 ## Hecho cuando
 
@@ -73,6 +73,6 @@ Tú (Opus) orquestas y no editas ficheros: investigan los subagentes Haiku, impl
 
 ## Al terminar
 
-El implementador encargado de la documentación actualiza `AGENTS.md` (contrato del tablero; mover y drag-and-drop todavía
+El implementador que cierra el paso actualiza `AGENTS.md` (contrato del tablero; mover y drag-and-drop todavía
 no) y `.cursor/rules/api.mdc`. No hagas commit. Cierra con el resumen que pide
 `AGENTS.md`.

@@ -1,6 +1,6 @@
 # Sesión 4 · 05 — La campana
 
-Tiempo en clase: ~12 min. Tú no editas código: orquestas. Antes de lanzar a los implementadores, presenta un plan de 15 líneas
+Tiempo en clase: ~12 min. Antes de lanzar a los implementadores, presenta un plan de 15 líneas
 como máximo y espera mi «adelante».
 
 ## Punto de partida
@@ -62,13 +62,13 @@ comentarios.
 
 ## Cómo trabajar
 
-Tú (Opus) orquestas y no editas ficheros: investigan los subagentes Haiku, implementa Sonnet y verifica Haiku. Usa los subagentes de `.claude/agents/`; si tu herramienta no los tiene, haz los mismos pasos en este orden.
+Sigue el flujo con subagentes de `AGENTS.md` (Agent workflow). En este paso:
 
-1. **Investigar** — `kanban-recon` (Haiku): consultas de notificaciones existentes, cabeceras del dashboard y del tablero, y componentes `popover` y `badge`.
-2. **Planificar** — tú: fija schemas y firmas en los briefs. Presenta el plan y espera mi «adelante».
-3. **Implementar** — `kanban-implementer` (Sonnet): primero uno escribe `notification.ts`; después dos en paralelo: A, consultas, rutas y tests de API; B, hooks, `NotificationBell` y su montaje en las dos cabeceras. Uno de ellos actualiza la documentación de «Al terminar».
-4. **Verificar** — `kanban-verifier` (Haiku): puerta de calidad y pruebas HTTP: tras una mención de Ana, Luis `GET /api/notifications` → 200 con al menos 1; Ana → 200 `[]`.
-5. **Revisar** — tú revisas el diff completo comprobando los estados del popover contra la lista de arriba. Si algo falla, encarga el arreglo a un `kanban-implementer` y vuelve a verificar.
+- **Investigar** (Haiku): consultas de notificaciones existentes, cabeceras del dashboard y del tablero, y componentes `popover` y `badge`.
+- **Planificar** (Opus): fija schemas y firmas en los briefs.
+- **Implementar** (Sonnet): primero uno escribe `notification.ts`; después dos en paralelo: A, consultas, rutas y tests de API; B, hooks, `NotificationBell` y su montaje en las dos cabeceras. Uno de ellos actualiza la documentación de «Al terminar».
+- **Verificar** (Haiku): puerta de calidad y pruebas HTTP: tras una mención de Ana, Luis `GET /api/notifications` → 200 con al menos 1; Ana → 200 `[]`.
+- **Revisar** (Opus): comprueba los estados del popover contra la lista de arriba.
 
 ## Hecho cuando
 
@@ -80,5 +80,5 @@ Tú (Opus) orquestas y no editas ficheros: investigan los subagentes Haiku, impl
 
 ## Al terminar
 
-El implementador encargado de la documentación actualiza `AGENTS.md` (campana sí; realtime de comentarios no). No hagas
+El implementador que cierra el paso actualiza `AGENTS.md` (campana sí; realtime de comentarios no). No hagas
 commit. Cierra con el resumen que pide `AGENTS.md`.
