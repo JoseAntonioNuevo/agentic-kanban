@@ -14,3 +14,10 @@ export {
   workspace,
   workspaceMember,
 } from "./schema/index.ts";
+export { migrateDatabase } from "./migrate.ts";
+export { getProjectForMember, listWorkspacesForUser } from "./queries/workspaces.ts";
+export type {
+  ProjectRow,
+  WorkspaceProjectSummary,
+  WorkspaceWithProjects,
+} from "./queries/workspaces.ts";

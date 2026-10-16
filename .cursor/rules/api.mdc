@@ -12,9 +12,21 @@ Bun-native server. Do not add Node, `@hono/node-server`, Express, or CORS.
 // ✅ src/index.ts
 app.route("/", healthRoutes);
 app.route("/", authRoutes);
+app.route("/", workspaceRoutes);
+app.route("/", projectRoutes);
 ```
 
+`src/index.ts` also exports `app` for tests (keep the Bun `export default`).
+
 - One Hono app per route file (`new Hono()`), then `app.route("/", …)`.
+- Product routes use `new Hono<SessionEnv>()` and `requireSession`
+  (`src/middleware/session.ts`): `auth.api.getSession`, no session → 401
+  `{ error }`, else `c.get("userId")`. Authorization order: session →
+  membership (query in `@agentic-kanban/db`; missing or not a member → 404,
+  never 403) → `workspace_id` from the DB row, never from body/query/params →
+  every tenant query filters by it. Params use `@hono/zod-validator`.
+- Build every response (including 401/404 `{ error }`) and pass it through
+  `.parse()` of the shared schema before `c.json`; dates go out as ISO strings.
 - Validate responses (and later inputs) with `@agentic-kanban/schemas`.
 - Database access only through `@agentic-kanban/db`. Never import
   `@libsql/client` or `drizzle-orm` from the API.

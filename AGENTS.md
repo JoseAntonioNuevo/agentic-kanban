@@ -11,7 +11,7 @@ repository documentation are authoritative.
 
 ## Current scope
 
-Implemented: the health path and email/password authentication.
+Implemented: the health path, email/password authentication and the two authorized read endpoints.
 
 ```text
 React → TanStack Query → /api/health → Vite+ proxy
@@ -22,8 +22,14 @@ React → authClient → /api/auth/* → Vite+ proxy → Better Auth (httpOnly c
 Better Auth owns the `user`, `session`, `account` and `verification` tables.
 The workspace is the tenant: the `workspace`, `workspace_member` (unique per
 workspace and user, no role) and `project` tables exist with cascading foreign
-keys. There are no workspace endpoints or UI yet. Do not invent other product
-tables, demo users, CRUD, a Kanban board, drag-and-drop, realtime, comments, mentions,
+keys. Read contracts (all require a session, `requireSession`):
+`GET /api/workspaces` (the user's workspaces, each with `projects: [{ id,
+name }]`, `[]` if none) and `GET /api/projects/:projectId` (the project if the
+user is a member of its workspace). Order: session (401 without it) →
+membership in `workspace_member` (not a member or not found → 404, never 403)
+→ `workspace_id` always from the database row, never from body/query/params →
+every tenant query filters by it. There is no UI yet and no write endpoints.
+Do not invent other product tables, demo users, CRUD beyond these reads, a Kanban board, drag-and-drop, realtime, comments, mentions,
 email, deployment, or session tags before the course work asks for them.
 
 Out of scope: billing, RBAC, attachments, mobile, SSO, automations,
@@ -101,6 +107,10 @@ vp test
 vp build apps/web
 docker compose up --build
 ```
+
+API tests: `vp test`. They use their own temporary database and a test
+`BETTER_AUTH_SECRET`, configured in `vite.config.ts` (`test`) and
+`apps/api/src/test/setup.ts`; they never touch `data/`.
 
 Migrations: `bun run db:generate` on the host, apply with
 `docker compose exec api bun run db:migrate`. Do not add dependencies or

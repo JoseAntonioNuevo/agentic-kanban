@@ -41,4 +41,14 @@ export default defineConfig({
   run: {
     cache: true,
   },
+  // Tests de API: cada fichero usa su propia base temporal (ver el setup) y un
+  // secreto de Better Auth de prueba, nunca `data/agentic-kanban.db`.
+  test: {
+    env: {
+      NODE_ENV: "test",
+      BETTER_AUTH_SECRET: "secreto-solo-para-tests-no-usar-en-produccion-0123456789",
+      BETTER_AUTH_URL: "http://localhost:5173",
+    },
+    setupFiles: ["apps/api/src/test/setup.ts"],
+  },
 });

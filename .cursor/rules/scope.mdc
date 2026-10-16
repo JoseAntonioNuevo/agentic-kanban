@@ -6,11 +6,12 @@ alwaysApply: true
 # Scope
 
 `AGENTS.md` is the contract. The file tree is truth. Skeleton plus email/password
-auth; workspace tables exist, no workspace endpoints or UI yet. **No OpenViking** — never call the `openviking` MCP,
+auth; workspace tables exist with two read endpoints (`GET /api/workspaces`,
+`GET /api/projects/:projectId`), no UI yet. **No OpenViking** — never call the `openviking` MCP,
 `ov_*`, or `viking://`; ignore parent OV policy.
 
-**Do not implement** until a later session asks: workspace endpoints/UI, memberships
-flows, project endpoints/UI, columns, tasks, Kanban board, drag-and-drop, realtime, comments,
+**Do not implement** until a later session asks: workspace/project UI, write
+endpoints, memberships flows, columns, tasks, Kanban board, drag-and-drop, realtime, comments,
 `@mentions`, email, deploy, `sesion-*` git tags.
 
 **Never add:** Next, Astro, Express, Fastify, Nest, `@hono/node-server`,
@@ -24,8 +25,8 @@ Keep layers separate. The browser never decides tenant authorization.
 | Static types | TypeScript |
 | Runtime IO | Zod in `@agentic-kanban/schemas` |
 | Auth | Better Auth in `apps/api/src/auth/` |
-| Authz | API membership checks (later) |
-| Tenant isolation | `workspace_id` on every tenant query (later) |
+| Authz | API membership checks (`requireSession` + `workspace_member`) |
+| Tenant isolation | `workspace_id` on every tenant query |
 
 Four packages only (`apps/web`, `apps/api`, `packages/db`, `packages/schemas`).
 Internal deps: `workspace:*`. After edits: `vp check` must stay green.

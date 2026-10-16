@@ -1,7 +1,6 @@
 /**
  * Reexporta los contratos Zod públicos.
  * Web y API importan desde `@agentic-kanban/schemas`, no copian shapes.
- * Los schemas de workspace/proyecto llegarán con su sesión del curso.
  */
 export {
   signInInputSchema,
@@ -15,3 +14,17 @@ export {
   type HealthResponse,
   type ServiceStatus,
 } from "./health.ts";
+export {
+  errorResponseSchema,
+  projectIdParamSchema,
+  projectSchema,
+  projectSummarySchema,
+  workspaceListResponseSchema,
+  workspaceSchema,
+  type ErrorResponse,
+  type Project,
+  type ProjectIdParam,
+  type ProjectSummary,
+  type Workspace,
+  type WorkspaceListResponse,
+} from "./workspace.ts";
