@@ -1,6 +1,6 @@
 # Sesión 3 · 05 — Toasts para los cambios de otros
 
-Tiempo en clase: ~8 min. Tú no editas código: orquestas. Antes de lanzar a los implementadores, dime qué texto mostrarás para
+Tiempo en clase: ~8 min. Antes de lanzar a los implementadores, dime qué texto mostrarás para
 cada tipo y cuándo no habrá toast, y espera mi «adelante».
 
 ## Punto de partida
@@ -36,13 +36,12 @@ Presencia, comentarios y menciones.
 
 ## Cómo trabajar
 
-Tú (Opus) orquestas y no editas ficheros: investigan los subagentes Haiku, implementa Sonnet y verifica Haiku. Usa los subagentes de `.claude/agents/`; si tu herramienta no los tiene, haz los mismos pasos en este orden.
+Sigue el flujo con subagentes de `AGENTS.md` (Agent workflow). En este paso:
 
-1. **Investigar** — `kanban-recon` (Haiku): dónde `useBoardEvents` reconoce los eventos propios y cómo está montado `sonner`.
-2. **Planificar** — tú: textos y cuándo no hay toast. Presenta el plan y espera mi «adelante».
-3. **Implementar** — `kanban-implementer` (Sonnet): uno solo: toasts, función pura con tests y documentación de «Al terminar».
-4. **Verificar** — `kanban-verifier` (Haiku): puerta de calidad.
-5. **Revisar** — tú revisas el diff completo. Si algo falla, encarga el arreglo a un `kanban-implementer` y vuelve a verificar.
+- **Investigar** (Haiku): dónde `useBoardEvents` reconoce los eventos propios y cómo está montado `sonner`.
+- **Planificar** (Opus): textos y cuándo no hay toast.
+- **Implementar** (Sonnet): uno solo: toasts, función pura con tests y documentación de «Al terminar».
+- **Verificar** (Haiku): puerta de calidad.
 
 ## Hecho cuando
 
@@ -52,5 +51,5 @@ Tú (Opus) orquestas y no editas ficheros: investigan los subagentes Haiku, impl
 
 ## Al terminar
 
-El implementador encargado de la documentación actualiza `AGENTS.md`. No hagas commit. Cierra con el resumen que pide
+El implementador que cierra el paso actualiza `AGENTS.md`. No hagas commit. Cierra con el resumen que pide
 `AGENTS.md`.

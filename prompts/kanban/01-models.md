@@ -1,6 +1,6 @@
 # Sesión 2 · 01 — Columnas y tareas
 
-Tiempo en clase: ~6 min. Tú no editas código: orquestas. Antes de lanzar a los implementadores, presenta un plan de 10 líneas
+Tiempo en clase: ~6 min. Antes de lanzar a los implementadores, presenta un plan de 10 líneas
 como máximo y espera mi «adelante».
 
 ## Punto de partida
@@ -39,13 +39,12 @@ API, frontend, seed, responsables, etiquetas y fechas límite.
 
 ## Cómo trabajar
 
-Tú (Opus) orquestas y no editas ficheros: investigan los subagentes Haiku, implementa Sonnet y verifica Haiku. Usa los subagentes de `.claude/agents/`; si tu herramienta no los tiene, haz los mismos pasos en este orden.
+Sigue el flujo con subagentes de `AGENTS.md` (Agent workflow). En este paso:
 
-1. **Investigar** — `kanban-recon` (Haiku): schema actual, modo de timestamp, FK existentes y cómo se generan las migraciones.
-2. **Planificar** — tú: columnas, FK con cascada e índices. Presenta el plan y espera mi «adelante».
-3. **Implementar** — `kanban-implementer` (Sonnet): uno solo: tablas, reexport, migración generada y documentación de «Al terminar».
-4. **Verificar** — `kanban-verifier` (Haiku): aplica la migración, pasa la puerta de calidad y comprueba health.
-5. **Revisar** — tú revisas el diff completo. Si algo falla, encarga el arreglo a un `kanban-implementer` y vuelve a verificar.
+- **Investigar** (Haiku): schema actual, modo de timestamp, FK existentes y cómo se generan las migraciones.
+- **Planificar** (Opus): columnas, FK con cascada e índices.
+- **Implementar** (Sonnet): uno solo: tablas, reexport, migración generada y documentación de «Al terminar».
+- **Verificar** (Haiku): aplica la migración, pasa la puerta de calidad y comprueba health.
 
 ## Hecho cuando
 
@@ -55,6 +54,6 @@ Tú (Opus) orquestas y no editas ficheros: investigan los subagentes Haiku, impl
 
 ## Al terminar
 
-El implementador encargado de la documentación actualiza `AGENTS.md` (tablas del tablero sí; HTTP no) y
+El implementador que cierra el paso actualiza `AGENTS.md` (tablas del tablero sí; HTTP no) y
 `.cursor/rules/db.mdc`. No hagas commit. Cierra con el resumen que pide
 `AGENTS.md`.

@@ -1,6 +1,6 @@
 # Sesión 1 · 02 — El modelo multi-tenant
 
-Tiempo en clase: ~12 min. Tú no editas código: orquestas. Antes de lanzar a los implementadores, presenta un plan de 12 líneas
+Tiempo en clase: ~12 min. Antes de lanzar a los implementadores, presenta un plan de 12 líneas
 como máximo y espera mi «adelante».
 
 ## Punto de partida
@@ -41,13 +41,12 @@ Endpoints, UI, seed, schemas Zod de API, `slug`, `owner`, columnas y tareas.
 
 ## Cómo trabajar
 
-Tú (Opus) orquestas y no editas ficheros: investigan los subagentes Haiku, implementa Sonnet y verifica Haiku. Usa los subagentes de `.claude/agents/`; si tu herramienta no los tiene, haz los mismos pasos en este orden.
+Sigue el flujo con subagentes de `AGENTS.md` (Agent workflow). En este paso:
 
-1. **Investigar** — `kanban-recon` (Haiku): tablas de auth existentes, su modo de timestamp, cómo se exporta el schema y cómo se generan las migraciones.
-2. **Planificar** — tú: tablas, FK, índices y restricción única. Presenta el plan y espera mi «adelante».
-3. **Implementar** — `kanban-implementer` (Sonnet): uno solo: tablas, reexport, migración generada y documentación de «Al terminar».
-4. **Verificar** — `kanban-verifier` (Haiku): aplica la migración, pasa la puerta de calidad y comprueba health.
-5. **Revisar** — tú revisas el diff completo. Si algo falla, encarga el arreglo a un `kanban-implementer` y vuelve a verificar.
+- **Investigar** (Haiku): tablas de auth existentes, su modo de timestamp, cómo se exporta el schema y cómo se generan las migraciones.
+- **Planificar** (Opus): tablas, FK, índices y restricción única.
+- **Implementar** (Sonnet): uno solo: tablas, reexport, migración generada y documentación de «Al terminar».
+- **Verificar** (Haiku): aplica la migración, pasa la puerta de calidad y comprueba health.
 
 ## Hecho cuando
 
@@ -58,5 +57,5 @@ Tú (Opus) orquestas y no editas ficheros: investigan los subagentes Haiku, impl
 
 ## Al terminar
 
-El implementador encargado de la documentación actualiza `AGENTS.md` (tablas sí; endpoints no) y `.cursor/rules/db.mdc`.
+El implementador que cierra el paso actualiza `AGENTS.md` (tablas sí; endpoints no) y `.cursor/rules/db.mdc`.
 No hagas commit. Cierra con el resumen que pide `AGENTS.md`.

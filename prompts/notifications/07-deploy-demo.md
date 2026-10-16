@@ -1,6 +1,6 @@
 # Sesión 4 · 07 — Deploy de aula y guion de la demo
 
-Tiempo en clase: ~8 min. Tú no editas código: orquestas. Antes de lanzar a los implementadores, dime qué cambiarás en el README,
+Tiempo en clase: ~8 min. Antes de lanzar a los implementadores, dime qué cambiarás en el README,
 `.gitignore` y `AGENTS.md`, y espera mi «adelante».
 
 ## Punto de partida
@@ -50,13 +50,13 @@ Funcionalidades de producto nuevas y despliegues públicos.
 
 ## Cómo trabajar
 
-Tú (Opus) orquestas y no editas ficheros: investigan los subagentes Haiku, implementa Sonnet y verifica Haiku. Usa los subagentes de `.claude/agents/`; si tu herramienta no los tiene, haz los mismos pasos en este orden.
+Sigue el flujo con subagentes de `AGENTS.md` (Agent workflow). En este paso:
 
-1. **Investigar** — `kanban-recon` (Haiku): README, `.gitignore`, scripts de `package.json`, `docker-compose.yml` y el estado de `data/outbox.jsonl` en Git.
-2. **Planificar** — tú: qué cambia en el README, `.gitignore` y `AGENTS.md`. Presenta el plan y espera mi «adelante».
-3. **Implementar** — `kanban-implementer` (Sonnet): uno solo: README, `.gitignore`, `git rm --cached data/outbox.jsonl` y `AGENTS.md`.
-4. **Verificar** — `kanban-verifier` (Haiku): puerta de calidad completa, `docker compose config` y que cada comando del README existe en `package.json` o en Docker Compose.
-5. **Revisar** — tú revisas el diff completo del README y de `AGENTS.md`. Si algo falla, encarga el arreglo a un `kanban-implementer` y vuelve a verificar.
+- **Investigar** (Haiku): README, `.gitignore`, scripts de `package.json`, `docker-compose.yml` y el estado de `data/outbox.jsonl` en Git.
+- **Planificar** (Opus): qué cambia en el README, `.gitignore` y `AGENTS.md`.
+- **Implementar** (Sonnet): uno solo: README, `.gitignore`, `git rm --cached data/outbox.jsonl` y `AGENTS.md`.
+- **Verificar** (Haiku): puerta de calidad completa, `docker compose config` y que cada comando del README existe en `package.json` o en Docker Compose.
+- **Revisar** (Opus): el README y `AGENTS.md`.
 
 ## Hecho cuando
 

@@ -1,6 +1,6 @@
 # Sesión 4 · 02 — La API de comentarios
 
-Tiempo en clase: ~5 min. Tú no editas código: orquestas. Antes de lanzar a los implementadores, presenta un plan de 12 líneas
+Tiempo en clase: ~5 min. Antes de lanzar a los implementadores, presenta un plan de 12 líneas
 como máximo y espera mi «adelante».
 
 ## Punto de partida
@@ -45,13 +45,12 @@ rutas del tablero ni el stream.
 
 ## Cómo trabajar
 
-Tú (Opus) orquestas y no editas ficheros: investigan los subagentes Haiku, implementa Sonnet y verifica Haiku. Usa los subagentes de `.claude/agents/`; si tu herramienta no los tiene, haz los mismos pasos en este orden.
+Sigue el flujo con subagentes de `AGENTS.md` (Agent workflow). En este paso:
 
-1. **Investigar** — `kanban-recon` (Haiku): patrón de rutas, `requireSession`, consultas `ForMember` y arnés de tests.
-2. **Planificar** — tú: fija schemas, rutas y firmas en los briefs. Presenta el plan y espera mi «adelante».
-3. **Implementar** — `kanban-implementer` (Sonnet): primero uno escribe los schemas de `comment.ts`; después dos en paralelo: A, consultas y rutas; B, tests. Uno de ellos actualiza la documentación de «Al terminar».
-4. **Verificar** — `kanban-verifier` (Haiku): puerta de calidad y pruebas HTTP: Ana comenta en `task_kanban_1` → 201; Luis `GET /api/tasks/task_ana_1/comments` → 404.
-5. **Revisar** — tú revisas el diff completo. Si algo falla, encarga el arreglo a un `kanban-implementer` y vuelve a verificar.
+- **Investigar** (Haiku): patrón de rutas, `requireSession`, consultas `ForMember` y arnés de tests.
+- **Planificar** (Opus): fija schemas, rutas y firmas en los briefs.
+- **Implementar** (Sonnet): primero uno escribe los schemas de `comment.ts`; después dos en paralelo: A, consultas y rutas; B, tests. Uno de ellos actualiza la documentación de «Al terminar».
+- **Verificar** (Haiku): puerta de calidad y pruebas HTTP: Ana comenta en `task_kanban_1` → 201; Luis `GET /api/tasks/task_ana_1/comments` → 404.
 
 ## Hecho cuando
 
@@ -60,5 +59,5 @@ Tú (Opus) orquestas y no editas ficheros: investigan los subagentes Haiku, impl
 
 ## Al terminar
 
-El implementador encargado de la documentación actualiza `AGENTS.md` (comentarios por HTTP sí; menciones no). No hagas
+El implementador que cierra el paso actualiza `AGENTS.md` (comentarios por HTTP sí; menciones no). No hagas
 commit. Cierra con el resumen que pide `AGENTS.md`.

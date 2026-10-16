@@ -43,6 +43,5 @@ se sostenga con `ruta:línea` y un escenario concreto, y consolida.
 Una línea por problema real, del más grave al menos grave:
 `severidad (alta/media/baja) | ruta:línea | problema | escenario | corrección mínima`.
 Añade el resultado del verificador. Si no hay problemas reales, dilo. Después
-propón el plan mínimo de corrección y espera mi aprobación. Tú no
-editas código: si lo apruebo, encarga cada corrección a un
-`kanban-implementer` (Sonnet) y vuelve a pasar `kanban-verifier` (Haiku).
+propón el plan mínimo de corrección y espera mi aprobación. Si lo apruebo, aplica tú las correcciones y vuelve a pasar `kanban-verifier`
+(Haiku).

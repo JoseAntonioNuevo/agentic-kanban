@@ -1,6 +1,6 @@
 # Sesión 4 · 06 — `comment.created` por el stream existente
 
-Tiempo en clase: ~10 min. Tú no editas código: orquestas. Antes de lanzar a los implementadores, presenta un plan de 12 líneas
+Tiempo en clase: ~10 min. Antes de lanzar a los implementadores, presenta un plan de 12 líneas
 como máximo (forma del evento, dónde se publica, cómo lo aplica el cliente) y
 espera mi «adelante».
 
@@ -45,13 +45,12 @@ Cambios en la campana, reenviar emails y presencia.
 
 ## Cómo trabajar
 
-Tú (Opus) orquestas y no editas ficheros: investigan los subagentes Haiku, implementa Sonnet y verifica Haiku. Usa los subagentes de `.claude/agents/`; si tu herramienta no los tiene, haz los mismos pasos en este orden.
+Sigue el flujo con subagentes de `AGENTS.md` (Agent workflow). En este paso:
 
-1. **Investigar** — `kanban-recon` (Haiku): `boardEventSchema`, `applyBoardEvent`, el `POST` de comentarios y `useBoardEvents`.
-2. **Planificar** — tú: forma del evento, dónde se publica y cómo lo aplica el cliente. Presenta el plan y espera mi «adelante».
-3. **Implementar** — `kanban-implementer` (Sonnet): primero uno amplía `boardEventSchema` y `applyBoardEvent`; después dos en paralelo: A, publicación y sus tests; B, gestión del evento en `useBoardEvents`. Uno de ellos actualiza la documentación de «Al terminar».
-4. **Verificar** — `kanban-verifier` (Haiku): puerta de calidad.
-5. **Revisar** — tú revisas el diff completo. Si algo falla, encarga el arreglo a un `kanban-implementer` y vuelve a verificar.
+- **Investigar** (Haiku): `boardEventSchema`, `applyBoardEvent`, el `POST` de comentarios y `useBoardEvents`.
+- **Planificar** (Opus): forma del evento, dónde se publica y cómo lo aplica el cliente.
+- **Implementar** (Sonnet): primero uno amplía `boardEventSchema` y `applyBoardEvent`; después dos en paralelo: A, publicación y sus tests; B, gestión del evento en `useBoardEvents`. Uno de ellos actualiza la documentación de «Al terminar».
+- **Verificar** (Haiku): puerta de calidad.
 
 ## Hecho cuando
 
@@ -63,5 +62,5 @@ Tú (Opus) orquestas y no editas ficheros: investigan los subagentes Haiku, impl
 
 ## Al terminar
 
-El implementador encargado de la documentación actualiza `AGENTS.md` y `.cursor/rules/web.mdc`. No hagas commit. Cierra con el
+El implementador que cierra el paso actualiza `AGENTS.md` y `.cursor/rules/web.mdc`. No hagas commit. Cierra con el
 resumen que pide `AGENTS.md`.
