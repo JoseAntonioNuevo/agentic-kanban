@@ -37,8 +37,16 @@ app.route("/", eventRoutes);
   column is validated against the task's own project, else 404).
   Data comes from the `*ForMember` queries in `@agentic-kanban/db`. Client ids
   only identify: `columnId` is validated against the authorized project (else
-  404, no IDOR). `DELETE` answers 204 (`c.body(null, 204)`). Session 3 will
-  publish realtime events from these write routes.
+  404, no IDOR). `DELETE` answers 204 (`c.body(null, 204)`). Each write
+  publishes one event through the local `announce(event)` helper (wraps
+  `publish` in try/catch + `console.error`: the write is already committed, so
+  a publish failure never changes the HTTP response). It is called right after
+  the `*ForMember` query returns a row (transaction committed) and before
+  answering; 404 and 400 publish nothing. `projectId` comes from the row,
+  `actorUserId` from the session (`c.get("userId")`), never from the body.
+  `task.created`/`task.updated` carry the same `toTaskResponse` body that is
+  returned; `task.deleted` carries `taskId`; `task.moved` carries the final
+  `columnId`/`position` of the reread row.
 - Database access only through `@agentic-kanban/db`. Never import
   `@libsql/client` or `drizzle-orm` from the API.
 - Better Auth (`src/auth/index.ts`, email/password, cookie session) is served
@@ -52,7 +60,7 @@ app.route("/", eventRoutes);
   listener)` returns the unsubscribe function (empty sets are deleted) and
   `publish(event)` parses with `boardEventSchema` and delivers only to that
   `projectId`; a throwing listener is logged and does not stop the others.
-  The write routes do not publish yet.
+  The board write routes in `board.ts` publish to it.
 - `src/routes/events.ts` (`eventRoutes`): `GET /api/projects/:projectId/events`
   (`requireSession` → `getProjectForMember`, else 404) answers with
   `streamSSE`. Only the `streamSSE` callback loop writes to the stream: hub

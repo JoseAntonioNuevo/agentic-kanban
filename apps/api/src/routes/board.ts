@@ -11,6 +11,10 @@
  * membresía o sin fila responden 404 (nunca 403). Los ids del cliente solo
  * identifican; el `workspace_id` sale siempre de la fila de la base.
  * Input inválido → 400 (`@hono/zod-validator`).
+ *
+ * Las cuatro escrituras publican un evento en el hub (`announce`) solo después
+ * de que la consulta `*ForMember` terminó (la transacción ya hizo commit) y
+ * devolvió fila; con 404 o 400 no se publica nada.
  */
 import {
   createTaskForMember,
@@ -29,11 +33,13 @@ import {
   taskIdParamSchema,
   taskSchema,
   updateTaskBodySchema,
+  type BoardEvent,
 } from "@agentic-kanban/schemas";
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 
 import { requireSession, type SessionEnv } from "../middleware/session.ts";
+import { publish } from "../realtime/index.ts";
 
 export const boardRoutes = new Hono<SessionEnv>();
 
@@ -49,6 +55,18 @@ function toTaskResponse(row: TaskRow) {
     position: row.position,
     createdAt: row.createdAt.toISOString(),
   });
+}
+
+/**
+ * Anuncia un evento en el hub. La escritura ya está confirmada: un fallo al
+ * publicar se registra y nunca cambia la respuesta HTTP.
+ */
+function announce(event: BoardEvent): void {
+  try {
+    publish(event);
+  } catch (error) {
+    console.error("No se pudo publicar el evento del tablero", error);
+  }
 }
 
 /** 404 uniforme: no revela si el recurso existe en otro tenant. */
@@ -88,7 +106,7 @@ boardRoutes.get(
   },
 );
 
-// La Sesión 3 publicará eventos de tiempo real desde las rutas de escritura.
+// Publica `task.created` tras persistir; el body del evento es el mismo que la respuesta.
 boardRoutes.post(
   "/api/projects/:projectId/tasks",
   requireSession,
@@ -109,7 +127,15 @@ boardRoutes.post(
       return c.json(notFoundBody(), 404);
     }
 
-    return c.json(toTaskResponse(row), 201);
+    const task = toTaskResponse(row);
+    announce({
+      type: "task.created",
+      projectId: row.projectId,
+      actorUserId: c.get("userId"),
+      task,
+    });
+
+    return c.json(task, 201);
   },
 );
 
@@ -127,7 +153,15 @@ boardRoutes.patch(
       return c.json(notFoundBody(), 404);
     }
 
-    return c.json(toTaskResponse(row));
+    const task = toTaskResponse(row);
+    announce({
+      type: "task.updated",
+      projectId: row.projectId,
+      actorUserId: c.get("userId"),
+      task,
+    });
+
+    return c.json(task);
   },
 );
 
@@ -142,6 +176,13 @@ boardRoutes.delete(
     if (!row) {
       return c.json(notFoundBody(), 404);
     }
+
+    announce({
+      type: "task.deleted",
+      projectId: row.projectId,
+      actorUserId: c.get("userId"),
+      taskId: row.id,
+    });
 
     return c.body(null, 204);
   },
@@ -161,6 +202,16 @@ boardRoutes.post(
     if (!row) {
       return c.json(notFoundBody(), 404);
     }
+
+    // Valores finales de la fila releída tras mover (la posición ya está acotada).
+    announce({
+      type: "task.moved",
+      projectId: row.projectId,
+      actorUserId: c.get("userId"),
+      taskId: row.id,
+      columnId: row.columnId,
+      position: row.position,
+    });
 
     return c.json(toTaskResponse(row));
   },

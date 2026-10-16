@@ -38,8 +38,10 @@ React → TanStack Query / authClient → /api/* → Vite+ proxy
 - Events: `boardEventSchema` (`packages/schemas/src/events.ts`) is the contract
   with 4 types (`task.created`, `task.updated`, `task.deleted`, `task.moved`).
   `GET /api/projects/:projectId/events` is an SSE stream fed by the in-memory
-  hub (`subscribe`/`publish`, `apps/api/src/realtime/index.ts`); the write
-  routes do not publish yet and the web client does not consume it yet.
+  hub (`subscribe`/`publish`, `apps/api/src/realtime/index.ts`). The board
+  write routes publish after persisting (`task.created`, `task.updated`,
+  `task.deleted`, `task.moved`; only on success, never on 400/404); the web
+  client does not consume the stream yet.
 - Seed: `bun run db:seed`, idempotent upserts by fixed id, never on API start.
   Ana (`ana@demo.test`) and Luis (`luis@demo.test`), fictitious password
   `Demo1234!`; `ws_thepower_demo`/`proj_agentic_kanban` has both,
