@@ -7,7 +7,7 @@ import { boardEventSchema, type BoardEvent } from "@agentic-kanban/schemas";
 import { randomUUID } from "node:crypto";
 import { describe, expect, it } from "vite-plus/test";
 
-import { publish } from "../realtime/index.ts";
+import { listenerCount, publish } from "../realtime/index.ts";
 import { createWorkspaceFixture, requestAs, signUpUser } from "../test/helpers.ts";
 
 /** Margen de seguridad para que un stream que no responde no cuelgue el test. */
@@ -133,7 +133,11 @@ describe("GET /api/projects/:projectId/events", () => {
       await reader.cancel();
     }
 
-    // Tras cancelar, publicar sigue sin lanzar (el listener ya se dio de baja).
+    // Al cancelar, la ruta se da de baja del hub (`onAbort` → `unsubscribe`).
+    for (let attempt = 0; attempt < 20 && listenerCount(projectId) > 0; attempt++) {
+      await new Promise((resolve) => setTimeout(resolve, 10));
+    }
+    expect(listenerCount(projectId)).toBe(0);
     expect(() =>
       publish({ type: "task.deleted", projectId, actorUserId: ana.userId, taskId: "task_after" }),
     ).not.toThrow();

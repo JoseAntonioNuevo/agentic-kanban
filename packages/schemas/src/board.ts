@@ -98,8 +98,8 @@ function renumberTasks(tasks: Task[]): Task[] {
  * afectadas conservan su referencia. Si la tarea o la columna destino no
  * existen, devuelve el mismo `board` sin cambios.
  *
- * La reutilizan la actualización optimista del navegador y, en la Sesión 3,
- * la aplicación de los eventos de otros usuarios.
+ * La reutilizan la actualización optimista del navegador y `applyBoardEvent`
+ * para `task.moved`.
  */
 export function applyBoardMove(board: BoardResponse, move: BoardMove): BoardResponse {
   const sourceColumn = board.columns.find((col) => col.tasks.some((t) => t.id === move.taskId));

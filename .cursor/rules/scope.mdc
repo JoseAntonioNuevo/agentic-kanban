@@ -6,12 +6,12 @@ alwaysApply: true
 # Scope
 
 `AGENTS.md` is the contract. The file tree is truth. Implemented: auth,
-workspaces and projects, the board API and the board UI with task CRUD and
-optimistic drag-and-drop. **No OpenViking** — never call the `openviking`
+workspaces and projects, the board API, the board UI with task CRUD and
+optimistic drag-and-drop, and live board events (SSE) with in-app toasts. **No OpenViking** — never call the `openviking`
 MCP, `ov_*`, or `viking://`; ignore parent OV policy.
 
 **Do not implement** until a later session asks: column endpoints, membership
-flows, realtime, comments, `@mentions`, email, deploy, `sesion-*` git tags.
+flows, presence, persisted notifications, comments, `@mentions`, email, deploy, `sesion-*` git tags.
 
 **Never add:** Next, Astro, Express, Fastify, Nest, `@hono/node-server`,
 Supabase, Postgres, Prisma, Turso Cloud, Redux, Zustand, React Router, tRPC,

@@ -60,7 +60,7 @@ app.route("/", eventRoutes);
   listener)` returns the unsubscribe function (empty sets are deleted) and
   `publish(event)` parses with `boardEventSchema` and delivers only to that
   `projectId`; a throwing listener is logged and does not stop the others.
-  The board write routes in `board.ts` publish to it.
+  `listenerCount(projectId)` exists for tests.
 - `src/routes/events.ts` (`eventRoutes`): `GET /api/projects/:projectId/events`
   (`requireSession` → `getProjectForMember`, else 404) answers with
   `streamSSE`. Only the `streamSSE` callback loop writes to the stream: hub
@@ -72,7 +72,8 @@ app.route("/", eventRoutes);
   `onAbort` unsubscribes and clears the timer.
 - Bun idles out requests after 10 s: `src/index.ts` sets `idleTimeout: 0` and
   `fetch(request, server)` calls `server.timeout(request, 0)` for paths ending
-  in `/events` (never pass `server` to `app.fetch`, its 2nd arg is `env`). The
+  in `/events` (never pass `server` to `app.fetch`, its 2nd arg is `env`).
+  The stream checks session and membership only when it opens. The
   Vite+ `/api` proxy uses `timeout: 0` and `proxyTimeout: 0` (no `ws`).
 - Do not auto-run migrations or seed (apply with `docker compose exec api bun run db:migrate`, then `bun run db:seed`). Dev: `bun run --hot`. Listen
   `0.0.0.0:${API_PORT:-3000}`.

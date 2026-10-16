@@ -31,7 +31,7 @@ export function BoardScreen({
 }) {
   const board = useBoard(projectId, userId);
   const moveTask = useMoveTask(projectId, userId);
-  useBoardEvents(projectId, userId);
+  const boardEvents = useBoardEvents(projectId, userId);
   const [dialog, setDialog] = useState<TaskDialogState>(null);
 
   const backButton = (
@@ -96,6 +96,7 @@ export function BoardScreen({
         onCreateTask={(columnId) => setDialog({ mode: "create", columnId })}
         onEditTask={(task: Task) => setDialog({ mode: "edit", task })}
         onMoveTask={(move) => moveTask.mutate(move)}
+        onDraggingChange={boardEvents.setDragging}
       />
       <TaskFormDialog
         projectId={projectId}

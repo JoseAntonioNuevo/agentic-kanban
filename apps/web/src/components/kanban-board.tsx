@@ -28,13 +28,24 @@ export function KanbanBoard({
   onCreateTask,
   onEditTask,
   onMoveTask,
+  onDraggingChange,
 }: {
   board: BoardResponse;
   onCreateTask: (columnId: string) => void;
   onEditTask: (task: Task) => void;
   onMoveTask: (move: BoardMove) => void;
+  /** Avisa al empezar y al terminar un arrastre (los eventos realtime esperan). */
+  onDraggingChange: (active: boolean) => void;
 }) {
   const handleDragEnd = (event: DragEndEvent) => {
+    try {
+      moveFromDragEnd(event);
+    } finally {
+      onDraggingChange(false);
+    }
+  };
+
+  const moveFromDragEnd = (event: DragEndEvent) => {
     if (event.canceled) {
       return;
     }
@@ -69,7 +80,11 @@ export function KanbanBoard({
   };
 
   return (
-    <DragDropProvider key={boardOrderKey(board)} onDragEnd={handleDragEnd}>
+    <DragDropProvider
+      key={boardOrderKey(board)}
+      onDragStart={() => onDraggingChange(true)}
+      onDragEnd={handleDragEnd}
+    >
       <div className="flex w-full items-start gap-4 overflow-x-auto pb-2">
         {board.columns.map((column) => (
           <KanbanColumn

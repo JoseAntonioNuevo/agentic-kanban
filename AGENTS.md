@@ -13,7 +13,8 @@ repository documentation are authoritative.
 
 Implemented: health, email/password auth (Better Auth, httpOnly cookie), the
 multi-tenant model, authorized reads, the board API, the board UI with task
-CRUD and optimistic drag-and-drop, the classroom seed and a Postman collection.
+CRUD and optimistic drag-and-drop, live board events over SSE with toasts,
+the classroom seed and a Postman collection.
 
 ```text
 React → TanStack Query / authClient → /api/* → Vite+ proxy
@@ -35,22 +36,11 @@ React → TanStack Query / authClient → /api/* → Vite+ proxy
   `mutationKey: ["board", projectId, …]`, sign-out calls `queryClient.clear()`.
   `applyBoardMove` (in `@agentic-kanban/schemas`) and `useMoveTask` are the
   optimistic move (details in `.cursor/rules/web.mdc`).
-- Events: `boardEventSchema` (`packages/schemas/src/events.ts`) is the contract
-  with 4 types (`task.created`, `task.updated`, `task.deleted`, `task.moved`).
-  `GET /api/projects/:projectId/events` is an SSE stream fed by the in-memory
-  hub (`subscribe`/`publish`, `apps/api/src/realtime/index.ts`). The board
-  write routes publish after persisting (`task.created`, `task.updated`,
-  `task.deleted`, `task.moved`; only on success, never on 400/404). The web
-  client consumes it: `useBoardEvents(projectId, userId)` (mounted by
-  `BoardScreen`) opens one relative-URL `EventSource` per board and patches the
-  board query with the pure `applyBoardEvent` (`@agentic-kanban/schemas`).
-  Own-actor events are ignored only while a board mutation is in flight in
-  that tab (otherwise applied; idempotent); after a reconnect the board query
-  is invalidated. Changes by other users also show an in-app `toast.info`
-  (sonner) with the text from `boardEventToastMessage` (`apps/web/src/lib`;
-  title from the event, or from the board cache before applying it for
-  `deleted`/`moved`); own events never toast, and there is no history, bell or
-  email: the toast is lost when closed.
+- Events: `boardEventSchema` (`packages/schemas/src/events.ts`, 4 types) is
+  announced over `GET /api/projects/:projectId/events` (SSE, in-memory hub in
+  `apps/api/src/realtime/index.ts`). Writes stay HTTP and publish only after
+  persisting. `useBoardEvents` patches the board cache with `applyBoardEvent`
+  and toasts changes made by others (details in `api.mdc` and `web.mdc`).
 - Seed: `bun run db:seed`, idempotent upserts by fixed id, never on API start.
   Ana (`ana@demo.test`) and Luis (`luis@demo.test`), fictitious password
   `Demo1234!`; `ws_thepower_demo`/`proj_agentic_kanban` has both,

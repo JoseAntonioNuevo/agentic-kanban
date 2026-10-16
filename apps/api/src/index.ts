@@ -31,7 +31,9 @@ const port = Number(process.env.API_PORT ?? 3000);
 export default {
   port,
   hostname: "0.0.0.0",
-  // Bun cierra las conexiones inactivas a los 10 s: se desactiva para el SSE.
+  // Bun cierra las conexiones inactivas a los 10 s. Se desactiva en global y,
+  // además, por petición en `/events` (`server.timeout`), que es lo que de
+  // verdad necesita el SSE.
   idleTimeout: 0,
   fetch(request: Request, server: Server<undefined>) {
     // `server.timeout(request, 0)` quita el límite de inactividad de esta petición.

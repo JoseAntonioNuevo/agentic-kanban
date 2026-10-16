@@ -180,6 +180,42 @@ describe("eventos de las escrituras del tablero", () => {
     }
   });
 
+  it("una columna de otro project del mismo usuario da 404 y no se publica nada", async () => {
+    const { ana, projectId, taskIds } = await setup();
+    const other = await createWorkspaceFixture({
+      name: "Otro de Ana",
+      memberUserIds: [ana.userId],
+      projects: ["Otro tablero"],
+    });
+    const otherProjectId = other.projectIds[0] ?? "";
+    const otherBoard = await createBoardFixture({
+      workspaceId: other.workspaceId,
+      projectId: otherProjectId,
+      columns: [{ name: "Ajena" }],
+    });
+    const foreignColumnId = otherBoard.columnIds[0] ?? "";
+
+    const created = await withEvents(projectId, () =>
+      requestAs(
+        ana.cookie,
+        `/api/projects/${projectId}/tasks`,
+        json("POST", { columnId: foreignColumnId, title: "No debe crearse" }),
+      ),
+    );
+    expect(created.response.status).toBe(404);
+    expect(created.events).toHaveLength(0);
+
+    const moved = await withEvents(projectId, () =>
+      requestAs(
+        ana.cookie,
+        `/api/tasks/${taskIds[0] ?? ""}/move`,
+        json("POST", { columnId: foreignColumnId, position: 0 }),
+      ),
+    );
+    expect(moved.response.status).toBe(404);
+    expect(moved.events).toHaveLength(0);
+  });
+
   it("el input inválido recibe 400 y no se publica nada", async () => {
     const { ana, projectId, todoId, taskIds } = await setup();
 

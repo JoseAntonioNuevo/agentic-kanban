@@ -30,6 +30,11 @@ export function subscribe(projectId: string, listener: BoardEventListener): () =
   };
 }
 
+/** Número de listeners de un project (para comprobar las bajas en los tests). */
+export function listenerCount(projectId: string): number {
+  return listenersByProject.get(projectId)?.size ?? 0;
+}
+
 /** Valida y reparte el evento a los suscriptores de su project. */
 export function publish(event: BoardEvent): void {
   const parsed = boardEventSchema.parse(event);

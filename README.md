@@ -6,7 +6,8 @@ Esqueleto técnico listo (Bun, Vite+, React, Hono, Drizzle, libSQL). Hay login
 y un dashboard con los espacios del usuario: Ana ve dos (`thePower Demo` y
 `Espacio de Ana`) y Luis uno (`thePower Demo`, con el mismo color). Cada
 proyecto abre su tablero: crear, editar, borrar y mover tareas con
-drag-and-drop.
+drag-and-drop. Los cambios de un usuario llegan en vivo a los demás (SSE) con
+un aviso.
 
 ## Requisitos
 
@@ -74,6 +75,7 @@ Tras un reset: migrar y luego seedear (los dos comandos de arriba).
 Navegador (React)
   → authClient → /api/auth/* (Better Auth, cookie httpOnly)
   → TanStack Query pide /api/health, /api/workspaces y el tablero (URL relativa)
+  → EventSource escucha /api/projects/:id/events (SSE, mismo proxy)
   → Vite+ reenvía /api al contenedor api
   → Hono comprueba sesión y membresía
   → Drizzle consulta libSQL
