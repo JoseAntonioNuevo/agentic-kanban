@@ -25,14 +25,10 @@ workspace and user, no role) and `project` tables exist with cascading foreign
 keys. Read contracts (all require a session, `requireSession`):
 `GET /api/workspaces` (the user's workspaces, each with `projects: [{ id,
 name }]`, `[]` if none) and `GET /api/projects/:projectId` (the project if the
-user is a member of its workspace). Order: session (401 without it) →
-membership in `workspace_member` (not a member or not found → 404, never 403)
-→ `workspace_id` always from the database row, never from body/query/params →
-every tenant query filters by it. There are no write endpoints. The web
-dashboard lists the user's workspaces and their projects (`useWorkspaces`),
-each with a color accent from `workspaceAccent(workspace.id)`. Convention for
-every user-data query: the queryKey includes the `userId`, and sign-out calls
-`queryClient.clear()`.
+user is a member of its workspace); not a member or not found → 404, never
+403 (authorization order in `.cursor/rules/api.mdc`). There are no write
+endpoints. The web dashboard lists the user's workspaces and projects
+(`useWorkspaces`, cache convention in `.cursor/rules/web.mdc`).
 A deterministic, idempotent seed (`bun run db:seed`, upserts only, never run
 on API start) creates the classroom accounts through Better Auth's
 `signUpEmail`: Ana (`ana@demo.test`) and Luis (`luis@demo.test`), fictitious

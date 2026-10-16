@@ -14,7 +14,7 @@ services:
     environment:
       DATABASE_URL: file:/data/agentic-kanban.db
       API_PORT: "3000"
-      # Placeholders de Better Auth; la Sesión 1 los usará de verdad.
+      # Better Auth: firma las sesiones. Valor solo para desarrollo local.
       BETTER_AUTH_SECRET: local-dev-only-change-in-session-1
       BETTER_AUTH_URL: http://localhost:5173
     volumes:

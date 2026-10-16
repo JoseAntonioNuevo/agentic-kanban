@@ -66,11 +66,13 @@ Tras un reset: migrar y luego seedear (los dos comandos de arriba).
 
 ```text
 Navegador (React)
-  → TanStack Query pide GET /api/health (URL relativa)
+  → authClient → /api/auth/* (Better Auth, cookie httpOnly)
+  → TanStack Query pide /api/health y /api/workspaces (URL relativa)
   → Vite+ reenvía /api al contenedor api
-  → Hono responde
-  → Drizzle ejecuta SELECT 1 en libSQL
+  → Hono comprueba sesión y membresía
+  → Drizzle consulta libSQL
   → Zod valida el JSON en la API y otra vez en el frontend
 ```
 
-La pantalla inicial solo muestra si Frontend, API y Database están OK.
+Sin sesión se ve el formulario de acceso. Tras iniciar sesión: el estado de
+Frontend, API y Database, y los espacios del usuario con sus proyectos.
