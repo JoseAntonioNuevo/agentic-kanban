@@ -42,6 +42,15 @@ board query. Components in `src/components/`: `board-screen`, `kanban-board`,
 `kanban-column`, `kanban-card` and `task-form-dialog` (one dialog, create and
 edit modes).
 
+Comments: `useComments(taskId, userId)` (`commentsQueryKey(taskId, userId)` →
+`["comments", taskId, userId]`) lists and `useCreateComment(taskId, userId)`
+posts `{ body }` (no board `mutationKey`; on success it appends to the cache
+and invalidates the thread). `TaskComments` (`task-comments.tsx`) renders in
+`TaskFormDialog` only in edit mode and **outside the `<form>`**, so Enter or
+Guardar never create a comment and Comentar (`type="button"`) never PATCHes.
+Local state is only the new comment text. Bodies render as plain text
+(`whitespace-pre-wrap`), never `dangerouslySetInnerHTML`. No mentions yet.
+
 Drag-and-drop uses `@dnd-kit/react` 0.5.1 only (`DragDropProvider`,
 `useDroppable` in the column `<section>` with `collisionPriority: 1`,
 `useSortable` from `@dnd-kit/react/sortable` in the card with

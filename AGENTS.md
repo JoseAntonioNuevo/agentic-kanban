@@ -27,8 +27,9 @@ React → TanStack Query / authClient → /api/* → Vite+ proxy
   `position` without UNIQUE), `comment` and `notification` (own `workspace_id`;
   `notification.comment_id` NOT NULL, `kind` only `mention`). Foreign keys
   cascade: deleting a task deletes its comments and notifications. Comments have
-  HTTP (`GET`/`POST /api/tasks/:taskId/comments`); mentions, email, the
-  notification bell and notification HTTP do not exist yet.
+  HTTP (`GET`/`POST /api/tasks/:taskId/comments`) and a thread in the edit task
+  dialog (`TaskComments`, plain text); mentions, email, the notification bell
+  and notification HTTP do not exist yet.
 - Routes: `GET /api/workspaces`, `GET /api/projects/:projectId`,
   `GET /api/projects/:projectId/board`, `POST /api/projects/:projectId/tasks`,
   `PATCH`/`DELETE /api/tasks/:taskId`, `POST /api/tasks/:taskId/move`,
@@ -40,7 +41,9 @@ React → TanStack Query / authClient → /api/* → Vite+ proxy
   TanStack Query: queryKeys include `userId`, board mutations use
   `mutationKey: ["board", projectId, …]`, sign-out calls `queryClient.clear()`.
   `applyBoardMove` (in `@agentic-kanban/schemas`) and `useMoveTask` are the
-  optimistic move (details in `.cursor/rules/web.mdc`).
+  optimistic move (details in `.cursor/rules/web.mdc`). The edit dialog shows
+  the task's comment thread (`useComments`, `commentsQueryKey(taskId, userId)`),
+  outside the `<form>`; the create dialog has none.
 - Events: `boardEventSchema` (`packages/schemas/src/events.ts`, 4 types) is
   announced over `GET /api/projects/:projectId/events` (SSE, in-memory hub in
   `apps/api/src/realtime/index.ts`). Writes stay HTTP and publish only after

@@ -8,7 +8,8 @@
  * errores se muestran con `role="alert"`. En modo editar hay «Borrar» con
  * confirmación en un AlertDialog.
  *
- * Sesión 4: aquí, en modo editar, se añadirán los comentarios de la tarea.
+ * En modo editar, el hilo de comentarios (`TaskComments`) se pinta FUERA del
+ * `<form>`: Enter o Guardar nunca crean comentarios y Comentar nunca hace PATCH.
  */
 import { createTaskBodySchema, updateTaskBodySchema, type Task } from "@agentic-kanban/schemas";
 import { useState, type FormEvent } from "react";
@@ -35,7 +36,9 @@ import {
 } from "@/components/ui/dialog.tsx";
 import { Input } from "@/components/ui/input.tsx";
 import { Label } from "@/components/ui/label.tsx";
+import { Separator } from "@/components/ui/separator.tsx";
 import { Textarea } from "@/components/ui/textarea.tsx";
+import { TaskComments } from "@/components/task-comments.tsx";
 import { useTaskMutations } from "@/hooks/use-task-mutations.ts";
 
 /** Estado del diálogo: crear en una columna, editar una tarea o cerrado. */
@@ -64,7 +67,7 @@ export function TaskFormDialog({
       }}
     >
       {state !== null ? (
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
           <TaskForm
             // La clave reinicia el texto al abrir otra tarea u otra columna.
             key={state.mode === "edit" ? state.task.id : `create-${state.columnId}`}
@@ -73,6 +76,12 @@ export function TaskFormDialog({
             state={state}
             onClose={onClose}
           />
+          {state.mode === "edit" ? (
+            <>
+              <Separator />
+              <TaskComments key={state.task.id} taskId={state.task.id} userId={userId} />
+            </>
+          ) : null}
         </DialogContent>
       ) : null}
     </Dialog>
