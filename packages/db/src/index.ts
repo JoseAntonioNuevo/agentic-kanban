@@ -5,4 +5,12 @@
  */
 export { db, getDb, getLibsql, libsql, pingDatabase } from "./client.ts";
 export * as schema from "./schema/index.ts";
-export { account, session, user, verification } from "./schema/index.ts";
+export {
+  account,
+  project,
+  session,
+  user,
+  verification,
+  workspace,
+  workspaceMember,
+} from "./schema/index.ts";

@@ -20,8 +20,10 @@ React → authClient → /api/auth/* → Vite+ proxy → Better Auth (httpOnly c
 ```
 
 Better Auth owns the `user`, `session`, `account` and `verification` tables.
-There are no workspaces or tenants yet. Do not invent other product tables,
-demo users, CRUD, a Kanban board, drag-and-drop, realtime, comments, mentions,
+The workspace is the tenant: the `workspace`, `workspace_member` (unique per
+workspace and user, no role) and `project` tables exist with cascading foreign
+keys. There are no workspace endpoints or UI yet. Do not invent other product
+tables, demo users, CRUD, a Kanban board, drag-and-drop, realtime, comments, mentions,
 email, deployment, or session tags before the course work asks for them.
 
 Out of scope: billing, RBAC, attachments, mobile, SSO, automations,

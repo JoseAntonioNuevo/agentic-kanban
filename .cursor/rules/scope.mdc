@@ -6,11 +6,11 @@ alwaysApply: true
 # Scope
 
 `AGENTS.md` is the contract. The file tree is truth. Skeleton plus email/password
-auth; no workspaces yet. **No OpenViking** — never call the `openviking` MCP,
+auth; workspace tables exist, no workspace endpoints or UI yet. **No OpenViking** — never call the `openviking` MCP,
 `ov_*`, or `viking://`; ignore parent OV policy.
 
-**Do not implement** until a later session asks: workspaces, memberships,
-projects, columns, tasks, Kanban board, drag-and-drop, realtime, comments,
+**Do not implement** until a later session asks: workspace endpoints/UI, memberships
+flows, project endpoints/UI, columns, tasks, Kanban board, drag-and-drop, realtime, comments,
 `@mentions`, email, deploy, `sesion-*` git tags.
 
 **Never add:** Next, Astro, Express, Fastify, Nest, `@hono/node-server`,
