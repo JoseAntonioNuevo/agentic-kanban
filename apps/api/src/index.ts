@@ -3,7 +3,7 @@
  *
  * Monta `GET /api/health`, `/api/auth/*` (Better Auth), las lecturas
  * autorizadas de workspaces y projects, las rutas del tablero (leer el
- * board y crear, editar y borrar tareas) y el stream SSE de eventos. `app` se exporta para los tests; Bun
+ * board y crear, editar y borrar tareas), los comentarios de una tarea y el stream SSE de eventos. `app` se exporta para los tests; Bun
  * usa el `export default` (`port`, `hostname`, `fetch`) para escuchar.
  */
 import type { Server } from "bun";
@@ -11,6 +11,7 @@ import { Hono } from "hono";
 
 import { authRoutes } from "./routes/auth.ts";
 import { boardRoutes } from "./routes/board.ts";
+import { commentRoutes } from "./routes/comments.ts";
 import { eventRoutes } from "./routes/events.ts";
 import { healthRoutes } from "./routes/health.ts";
 import { projectRoutes } from "./routes/projects.ts";
@@ -24,6 +25,7 @@ app.route("/", authRoutes);
 app.route("/", workspaceRoutes);
 app.route("/", projectRoutes);
 app.route("/", boardRoutes);
+app.route("/", commentRoutes);
 app.route("/", eventRoutes);
 
 const port = Number(process.env.API_PORT ?? 3000);

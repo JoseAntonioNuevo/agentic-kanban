@@ -15,6 +15,7 @@ app.route("/", authRoutes);
 app.route("/", workspaceRoutes);
 app.route("/", projectRoutes);
 app.route("/", boardRoutes);
+app.route("/", commentRoutes);
 app.route("/", eventRoutes);
 ```
 
@@ -47,6 +48,12 @@ app.route("/", eventRoutes);
   `task.created`/`task.updated` carry the same `toTaskResponse` body that is
   returned; `task.deleted` carries `taskId`; `task.moved` carries the final
   `columnId`/`position` of the reread row.
+- `src/routes/comments.ts` (`commentRoutes`): `GET`/`POST /api/tasks/:taskId/comments`
+  (`createCommentBodySchema` → 201 `commentSchema`; list by `created_at` ASC with
+  `authorName` from `user.name`). Authorization comes from the task row:
+  `listCommentsForMember`/`createCommentForMember` join the task with
+  `workspace_member`; no task or not a member → 404 and `workspace_id`/`project_id`
+  are copied from that row. No mentions, email or SSE publishing yet.
 - Database access only through `@agentic-kanban/db`. Never import
   `@libsql/client` or `drizzle-orm` from the API.
 - Better Auth (`src/auth/index.ts`, email/password, cookie session) is served

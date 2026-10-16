@@ -26,12 +26,14 @@ React → TanStack Query / authClient → /api/* → Vite+ proxy
   `project`), board (`column`, `task`, each with its own `workspace_id`,
   `position` without UNIQUE), `comment` and `notification` (own `workspace_id`;
   `notification.comment_id` NOT NULL, `kind` only `mention`). Foreign keys
-  cascade: deleting a task deletes its comments and notifications. Tables only:
-  no HTTP for comments or notifications yet.
+  cascade: deleting a task deletes its comments and notifications. Comments have
+  HTTP (`GET`/`POST /api/tasks/:taskId/comments`); mentions, email, the
+  notification bell and notification HTTP do not exist yet.
 - Routes: `GET /api/workspaces`, `GET /api/projects/:projectId`,
   `GET /api/projects/:projectId/board`, `POST /api/projects/:projectId/tasks`,
   `PATCH`/`DELETE /api/tasks/:taskId`, `POST /api/tasks/:taskId/move`,
-  `GET /api/projects/:projectId/events` (SSE). No
+  `GET /api/projects/:projectId/events` (SSE),
+  `GET`/`POST /api/tasks/:taskId/comments`. No
   session → 401; not a member or not found → 404, never 403; invalid input → 400. Client ids only identify rows (details in `.cursor/rules/api.mdc` and
   `db.mdc`).
 - Web: dashboard → board (`selectedProjectId`, no router). Server state only in
@@ -54,7 +56,7 @@ React → TanStack Query / authClient → /api/* → Vite+ proxy
   and `postman/agentic-kanban-local.postman_environment.json`; `Origin:
   {{origin}}` is mandatory on `/api/auth/*`.
 
-Do not invent other product tables, demo users, comment/notification HTTP,
+Do not invent other product tables, demo users, notification HTTP,
 mentions, email, deployment or session tags before the course asks for them.
 
 Out of scope: billing, RBAC, attachments, mobile, SSO, automations,

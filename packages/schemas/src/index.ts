@@ -27,6 +27,14 @@ export {
   type TaskIdParam,
   type UpdateTaskBody,
 } from "./board.ts";
+export {
+  commentListResponseSchema,
+  commentSchema,
+  createCommentBodySchema,
+  type Comment,
+  type CommentListResponse,
+  type CreateCommentBody,
+} from "./comment.ts";
 export { boardEventSchema, type BoardEvent } from "./events.ts";
 export {
   healthResponseSchema,
