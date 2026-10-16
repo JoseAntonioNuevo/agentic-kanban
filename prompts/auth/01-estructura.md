@@ -8,7 +8,7 @@ Alcance: registro, login, sesión por cookie, logout.
 
 Requisitos:
 
-- better-auth 1.7.1 (API y web), placeholder en `apps/api/src/auth/`
+- better-auth 1.7.10 (API y web), placeholder en `apps/api/src/auth/`
 - drizzleAdapter + provider sqlite sobre `@agentic-kanban/db` (el mismo `.db`)
 - Zod en `@agentic-kanban/schemas`: sign-up/sign-in solo en el cliente (password mínimo 8 y con medidas de seguridad apropiadas). Better Auth valida el servidor; no envuelvas `/api/auth/*` con `@hono/zod-validator`
 - shadcn (input, button, card) y estado local; sin RHF

@@ -19,19 +19,19 @@ flowchart TB
   api --> db
 ```
 
-- Workspaces: `apps/*` + `packages/*`. Gestor y runtime de la API: **Bun 1.4.0**.
+- Workspaces: `apps/*` + `packages/*`. Gestor y runtime de la API: **Bun 1.4.3**.
 - Interno: `"@agentic-kanban/schemas": "workspace:*"` (nunca una versión publicada).
-- Externo: pin exacto (`"hono": "4.13.3"`). Un solo `bun.lock` en la raíz.
+- Externo: pin exacto (`"hono": "4.13.13"`). Un solo `bun.lock` en la raíz.
 - `web` **no** importa `db`. El navegador no habla con libSQL.
 
 ```mermaid
 flowchart LR
   subgraph bien [Correcto]
-    pin["hono: 4.13.3"]
+    pin["hono: 4.13.13"]
     ws["db: workspace:*"]
   end
   subgraph mal [Incorrecto]
-    caret["hono: ^4.13.3"]
+    caret["hono: ^4.13.13"]
     npm["schemas: 1.0.0"]
   end
 ```

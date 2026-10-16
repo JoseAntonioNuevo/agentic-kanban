@@ -13,6 +13,7 @@
 ### Task 1: Prepare the isolated build workspace
 
 **Files:**
+
 - Create: `.codex-tmp/course-presentations/source-notes.txt`
 - Create: `.codex-tmp/course-presentations/slide-plan.txt`
 
@@ -50,6 +51,7 @@ Write the approved four-deck outline and per-slide narrative job to `slide-plan.
 ### Task 2: Implement the shared presentation system
 
 **Files:**
+
 - Create: `.codex-tmp/course-presentations/build-decks.mjs`
 
 - [ ] **Step 1: Read the required authoring references**
@@ -78,6 +80,7 @@ Set notes through `slide.speakerNotes.textFrame.setText(...)`. Every slide's not
 ### Task 3: Author Deck 1
 
 **Files:**
+
 - Modify: `.codex-tmp/course-presentations/build-decks.mjs`
 - Create: `presentaciones/01-arquitectura-y-autenticacion.pptx`
 
@@ -92,6 +95,7 @@ Target 45–60 seconds per slide with concise teaching cues and transitions.
 ### Task 4: Author Deck 2
 
 **Files:**
+
 - Modify: `.codex-tmp/course-presentations/build-decks.mjs`
 - Create: `presentaciones/02-tablero-kanban.pptx`
 
@@ -106,6 +110,7 @@ Target 50–65 seconds per slide and connect every design decision to the practi
 ### Task 5: Author Deck 3
 
 **Files:**
+
 - Modify: `.codex-tmp/course-presentations/build-decks.mjs`
 - Create: `presentaciones/03-tiempo-real-sse.pptx`
 
@@ -124,6 +129,7 @@ Add 50–65 seconds of teaching cues and a transition to every slide, ending eac
 ### Task 6: Author Deck 4
 
 **Files:**
+
 - Modify: `.codex-tmp/course-presentations/build-decks.mjs`
 - Create: `presentaciones/04-comentarios-y-notificaciones.pptx`
 
@@ -142,6 +148,7 @@ Add 50–65 seconds of teaching cues and a transition to every slide, ending eac
 ### Task 7: Export and perform deterministic checks
 
 **Files:**
+
 - Create: `.codex-tmp/course-presentations/rendered/**`
 - Create: `.codex-tmp/course-presentations/verify-decks.mjs`
 - Create: `.codex-tmp/course-presentations/qa-ledger.txt`
@@ -234,6 +241,7 @@ Expected: 43 total slide PNGs and four montages, all under `.codex-tmp/course-pr
 ### Task 8: Visual QA and correction loop
 
 **Files:**
+
 - Modify: `.codex-tmp/course-presentations/build-decks.mjs`
 - Modify: `.codex-tmp/course-presentations/qa-ledger.txt`
 
@@ -256,6 +264,7 @@ Inspect every regenerated slide individually at full size and record before/fix/
 ### Task 9: Final handoff
 
 **Files:**
+
 - Final: `presentaciones/01-arquitectura-y-autenticacion.pptx`
 - Final: `presentaciones/02-tablero-kanban.pptx`
 - Final: `presentaciones/03-tiempo-real-sse.pptx`

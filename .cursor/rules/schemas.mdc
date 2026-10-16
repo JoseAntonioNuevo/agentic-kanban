@@ -6,7 +6,7 @@ alwaysApply: false
 
 # Schemas (`packages/schemas`)
 
-Runtime contracts live here, not in ad-hoc types in web or api. Zod 4.4.3
+Runtime contracts live here, not in ad-hoc types in web or api. Zod 4.6.7
 (same major as both apps). Export the schema and `z.infer` the type.
 
 ```ts

@@ -34,4 +34,4 @@ Router.
 - `next-themes` is the theme helper, not Next.js. Do not add Next, React Router,
   or React Hook Form. Do not implement drag-and-drop (`@dnd-kit/react` is
   installed only).
-- After `bunx shadcn@4.18.0 add …`, re-pin every new dependency (never `@latest`).
+- After `bunx shadcn@4.22.0 add …`, re-pin every new dependency (never `@latest`).

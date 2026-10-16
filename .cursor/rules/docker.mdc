@@ -8,8 +8,8 @@ alwaysApply: false
 
 Two services only: `web` and `api`. No database container.
 
-- Images: `oven/bun:1.4.0`. Do not use
-  `ghcr.io/voidzero-dev/vite-plus:0.2.9` (unauthenticated pulls are denied).
+- Images: `oven/bun:1.4.3`. Do not use
+  `ghcr.io/voidzero-dev/vite-plus` (unauthenticated pulls are denied).
 - Bind-mount source plus anonymous `/app/node_modules` (and each workspace
   package `node_modules`) so the host does not overwrite Linux deps or leak
   Bun isolated symlinks (`node_modules/.bun`).

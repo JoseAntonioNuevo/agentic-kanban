@@ -5,17 +5,17 @@ SPA en `apps/web`: React pinta, TanStack Query pide, Zod valida, Vite+ sirve. No
 ```mermaid
 flowchart TB
   subgraph ui [UI]
-    A["React 19.2.8"]
-    B["shadcn 4.18.0"]
+    A["React 19.3.1"]
+    B["shadcn 4.22.0"]
     C["Tailwind 4.3.3"]
     D["sonner"]
   end
   subgraph data [Estado y contrato]
-    E["TanStack Query 5.101.4"]
-    F["Zod 4.4.3 + schemas"]
+    E["TanStack Query 5.104.3"]
+    F["Zod 4.6.7 + schemas"]
   end
   subgraph tool [Toolchain]
-    G["Vite+ 0.2.9"]
+    G["Vite+ 1.3.0"]
     H["TypeScript 7.0.2"]
   end
   ui --> data --> tool

@@ -6,7 +6,7 @@ alwaysApply: false
 
 # Vite+
 
-Vite+ 0.2.9 owns fmt, lint, typecheck, test, and the web dev server. Import
+Vite+ 1.3.0 owns fmt, lint, typecheck, test, and the web dev server. Import
 config from `vite-plus`. Do not add standalone Vite, ESLint, Prettier, or a
 second Vitest.
 

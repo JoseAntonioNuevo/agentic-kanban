@@ -4,8 +4,8 @@ No hay contenedor de Postgres. Un fichero libSQL en `./data`. Drizzle 0.45 habla
 
 ```mermaid
 flowchart LR
-  hono["Hono"] --> drizzle["drizzle-orm 0.45.2"]
-  drizzle --> libsql["@libsql/client 0.17.4"]
+  hono["Hono"] --> drizzle["drizzle-orm 0.45.4"]
+  drizzle --> libsql["@libsql/client 0.18.0"]
   libsql --> dbfile["file .../agentic-kanban.db"]
 ```
 
