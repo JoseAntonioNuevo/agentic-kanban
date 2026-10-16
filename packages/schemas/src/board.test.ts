@@ -422,6 +422,26 @@ describe("applyBoardEvent", () => {
     expect(applyBoardEvent(board, { ...event, projectId: "p_otro" })).toBe(board);
   });
 
+  it("comment.created devuelve el mismo objeto", () => {
+    const board = makeBoard();
+    const event: BoardEvent = {
+      type: "comment.created",
+      projectId: "p_1",
+      actorUserId,
+      comment: {
+        id: "cm_1",
+        taskId: "a",
+        projectId: "p_1",
+        authorId: "u_2",
+        authorName: "Ana",
+        body: "Hola",
+        createdAt: "2026-01-01T00:00:00.000Z",
+      },
+    };
+
+    expect(applyBoardEvent(board, event)).toBe(board);
+  });
+
   it("no muta el tablero original", () => {
     const board = makeBoard();
     const snapshot = boardResponseSchema.parse(JSON.parse(JSON.stringify(board)));

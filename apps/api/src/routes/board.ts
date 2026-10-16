@@ -33,13 +33,12 @@ import {
   taskIdParamSchema,
   taskSchema,
   updateTaskBodySchema,
-  type BoardEvent,
 } from "@agentic-kanban/schemas";
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 
 import { requireSession, type SessionEnv } from "../middleware/session.ts";
-import { publish } from "../realtime/index.ts";
+import { announce } from "../realtime/index.ts";
 
 export const boardRoutes = new Hono<SessionEnv>();
 
@@ -55,18 +54,6 @@ function toTaskResponse(row: TaskRow) {
     position: row.position,
     createdAt: row.createdAt.toISOString(),
   });
-}
-
-/**
- * Anuncia un evento en el hub. La escritura ya está confirmada: un fallo al
- * publicar se registra y nunca cambia la respuesta HTTP.
- */
-function announce(event: BoardEvent): void {
-  try {
-    publish(event);
-  } catch (error) {
-    console.error("No se pudo publicar el evento del tablero", error);
-  }
 }
 
 /** 404 uniforme: no revela si el recurso existe en otro tenant. */

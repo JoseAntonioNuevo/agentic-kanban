@@ -13,6 +13,16 @@ const task = {
   createdAt: "2026-01-01T00:00:00.000Z",
 };
 
+const comment = {
+  id: "cm_1",
+  taskId: "task_1",
+  projectId: "proj_1",
+  authorId: "user_2",
+  authorName: "Ana",
+  body: "Hola",
+  createdAt: "2026-01-01T00:00:00.000Z",
+};
+
 const base = { projectId: "proj_1", actorUserId: "user_1" };
 
 describe("boardEventSchema", () => {
@@ -34,6 +44,22 @@ describe("boardEventSchema", () => {
   it("parsea task.moved con columna y posición finales", () => {
     const event = { type: "task.moved", ...base, taskId: "task_1", columnId: "col_2", position: 3 };
     expect(boardEventSchema.parse(event)).toEqual(event);
+  });
+
+  it("parsea comment.created", () => {
+    const event = { type: "comment.created", ...base, comment };
+    expect(boardEventSchema.parse(event)).toEqual(event);
+  });
+
+  it("rechaza comment.created sin comment", () => {
+    expect(() => boardEventSchema.parse({ type: "comment.created", ...base })).toThrow();
+  });
+
+  it("rechaza comment.created con comment sin authorName", () => {
+    const { authorName: _authorName, ...sinAutor } = comment;
+    expect(() =>
+      boardEventSchema.parse({ type: "comment.created", ...base, comment: sinAutor }),
+    ).toThrow();
   });
 
   it("rechaza un type desconocido", () => {

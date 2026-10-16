@@ -17,5 +17,7 @@ export function boardEventToastMessage(event: BoardEvent, title?: string): strin
       return title ? `Tarea eliminada: ${title}` : "Tarea eliminada";
     case "task.moved":
       return title ? `Tarea movida: ${title}` : "Tarea movida";
+    case "comment.created":
+      return `Nuevo comentario de ${event.comment.authorName}`;
   }
 }

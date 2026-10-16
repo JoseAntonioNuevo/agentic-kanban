@@ -6,6 +6,10 @@
  * `applyBoardEvent`; el board nunca se copia a `useState`. Durante un arrastre
  * los eventos se guardan y se aplican al soltar: cambiar el orden de la caché
  * remonta el `DragDropProvider` y cortaría el arrastre en curso.
+ *
+ * `comment.created` no toca el board: invalida el hilo de comentarios de la
+ * tarea y la campana (también si el autor soy yo, por otra pestaña), avisa con
+ * un toast solo si el autor es otro y se salta el eco propio y el búfer.
  */
 import {
   applyBoardEvent,
@@ -19,6 +23,8 @@ import { toast } from "sonner";
 
 import { boardEventToastMessage } from "../lib/board-event-toast.ts";
 import { boardQueryKey } from "./use-board.ts";
+import { commentsQueryKey } from "./use-comments.ts";
+import { notificationsQueryKey } from "./use-notifications.ts";
 import { boardMutationKey } from "./use-task-mutations.ts";
 
 /**
@@ -90,6 +96,21 @@ export function useBoardEvents(
       }
 
       const event = parsed.data;
+
+      if (event.type === "comment.created") {
+        // Siempre, también si el actor soy yo (otra pestaña mía): el hilo y la campana se releen.
+        void queryClient.invalidateQueries({
+          queryKey: commentsQueryKey(event.comment.taskId, userId),
+        });
+        void queryClient.invalidateQueries({ queryKey: notificationsQueryKey(userId) });
+
+        if (event.actorUserId !== userId) {
+          toast.info(boardEventToastMessage(event));
+        }
+
+        // No toca el board: ni eco propio, ni búfer de arrastre, ni `applyEvent`.
+        return;
+      }
 
       // Eco propio: se ignora solo si hay una mutation del tablero en curso en
       // esta pestaña (su `onSettled` ya reconcilia). Si no, se aplica: es

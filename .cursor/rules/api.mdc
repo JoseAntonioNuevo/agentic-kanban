@@ -59,7 +59,9 @@ app.route("/", eventRoutes);
   commit → `appendToOutbox` (`src/mail/outbox.ts`, `OUTBOX_PATH` or
   `outbox.jsonl` next to the database file) → `markNotificationsEmailed`. The
   last two sit in one try/catch that only logs: on failure `emailed_at` stays
-  null and the answer is still 201. No SSE publishing for comments yet. Tests
+  null and the answer is still 201. Then the POST calls `announce({ type: "comment.created", projectId,
+  actorUserId, comment })` with the same body it returns; 404/400 publish nothing.
+  Tests (`comment-events.test.ts`) subscribe to the hub. Tests
   set `OUTBOX_PATH` to a temp file in `src/test/setup.ts`.
 - `src/routes/notifications.ts` (`notificationRoutes`): `GET /api/notifications`
   and `POST /api/notifications/:notificationId/read` (`notificationIdParamSchema`).
@@ -82,6 +84,8 @@ app.route("/", eventRoutes);
   listener)` returns the unsubscribe function (empty sets are deleted) and
   `publish(event)` parses with `boardEventSchema` and delivers only to that
   `projectId`; a throwing listener is logged and does not stop the others.
+  `announce(event)` wraps `publish` in try/catch (logs, never changes the HTTP
+  answer); `routes/board.ts` and `routes/comments.ts` import it from here.
   `listenerCount(projectId)` exists for tests.
 - `src/routes/events.ts` (`eventRoutes`): `GET /api/projects/:projectId/events`
   (`requireSession` → `getProjectForMember`, else 404) answers with

@@ -164,6 +164,7 @@ function sameTask(a: Task, b: Task): boolean {
  *   columna del tablero local (mover es cosa de `task.moved`).
  * - `task.deleted`: elimina la tarea si está y renumera su columna.
  * - `task.moved`: reutiliza `applyBoardMove`.
+ * - `comment.created`: no cambia el tablero (devuelve el mismo `board`).
  */
 export function applyBoardEvent(board: BoardResponse, event: BoardEvent): BoardResponse {
   if (event.projectId !== board.project.id) {
@@ -242,5 +243,8 @@ export function applyBoardEvent(board: BoardResponse, event: BoardEvent): BoardR
         columnId: event.columnId,
         position: event.position,
       });
+
+    case "comment.created":
+      return board;
   }
 }

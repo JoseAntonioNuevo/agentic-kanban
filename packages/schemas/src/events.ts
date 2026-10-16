@@ -2,13 +2,14 @@
  * Contrato de eventos del tablero.
  *
  * Describe los anuncios del tablero que la API publicará y que el navegador
- * parseará con este mismo schema. Las escrituras siguen siendo HTTP: este
+ * parseará con este mismo schema (tareas y comentarios nuevos). Las escrituras siguen siendo HTTP: este
  * contrato solo anuncia lo ocurrido, no es una API de escritura. En
  * `task.moved`, `columnId` y `position` son los valores finales.
  */
 import { z } from "zod";
 
 import { moveTaskBodySchema, taskSchema } from "./board.ts";
+import { commentSchema } from "./comment.ts";
 
 /** Campos comunes: proyecto afectado y usuario que originó el cambio. */
 const base = {
@@ -27,6 +28,7 @@ export const boardEventSchema = z.discriminatedUnion("type", [
     taskId: z.string().min(1),
     ...moveTaskBodySchema.shape,
   }),
+  z.object({ type: z.literal("comment.created"), ...base, comment: commentSchema }),
 ]);
 
 export type BoardEvent = z.infer<typeof boardEventSchema>;

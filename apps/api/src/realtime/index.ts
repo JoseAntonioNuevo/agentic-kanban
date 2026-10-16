@@ -51,3 +51,15 @@ export function publish(event: BoardEvent): void {
     }
   }
 }
+
+/**
+ * Anuncia un evento en el hub. La escritura ya está confirmada: un fallo al
+ * publicar se registra y nunca cambia la respuesta HTTP.
+ */
+export function announce(event: BoardEvent): void {
+  try {
+    publish(event);
+  } catch (error) {
+    console.error("No se pudo publicar el evento del tablero", error);
+  }
+}

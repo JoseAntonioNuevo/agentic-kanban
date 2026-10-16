@@ -99,7 +99,11 @@ from the current user call `toast.info(boardEventToastMessage(event, title))`
 (`lib/board-event-toast.ts`, pure; `title` comes from the event for
 created/updated and from the current board cache for deleted/moved, omitted if
 not found). Own events never toast. Toasts are in-app only: no history, bell or
-email. No new realtime libraries; extend this hook instead of opening another
+email. `comment.created` events never touch the board (no own-echo rule, no
+drag buffer, no `applyBoardEvent`): they always invalidate
+`commentsQueryKey(event.comment.taskId, userId)` and `notificationsQueryKey(userId)`
+(also when the actor is the current user, i.e. another tab) and toast only when
+the actor is someone else. No new realtime libraries; extend this hook instead of opening another
 connection.
 
 Cache convention: every query of user data puts the `userId` in its queryKey

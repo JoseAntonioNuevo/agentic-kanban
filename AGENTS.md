@@ -41,8 +41,8 @@ React → TanStack Query / authClient → /api/* → Vite+ proxy
   `useNotifications`/`useMarkNotificationRead`, polling every ~5 s):
   `GET /api/notifications` (recipient = session user, newest first, max 50,
   still a member of the row's workspace) and `POST /api/notifications/:notificationId/read`
-  (idempotent; other user's or unknown id → 404). Comments have no realtime:
-  the bell polls, comments are not published over SSE.
+  (idempotent; other user's or unknown id → 404). A new comment is also
+  announced over SSE as `comment.created` (see Events); the bell still polls.
 - Routes: `GET /api/workspaces`, `GET /api/projects/:projectId`,
   `GET /api/projects/:projectId/board`, `POST /api/projects/:projectId/tasks`,
   `PATCH`/`DELETE /api/tasks/:taskId`, `POST /api/tasks/:taskId/move`,
@@ -58,10 +58,12 @@ React → TanStack Query / authClient → /api/* → Vite+ proxy
   optimistic move (details in `.cursor/rules/web.mdc`). The edit dialog shows
   the task's comment thread (`useComments`, `commentsQueryKey(taskId, userId)`),
   outside the `<form>`; the create dialog has none.
-- Events: `boardEventSchema` (`packages/schemas/src/events.ts`, 4 types) is
+- Events: `boardEventSchema` (`packages/schemas/src/events.ts`, 5 types) is
   announced over `GET /api/projects/:projectId/events` (SSE, in-memory hub in
   `apps/api/src/realtime/index.ts`). Writes stay HTTP and publish only after
-  persisting. `useBoardEvents` patches the board cache with `applyBoardEvent`
+  persisting; `comment.created` is published by the comments `POST` after the
+  comment, notifications and outbox are persisted (never on 404/400), with the
+  response's comment and the session user as `actorUserId`. `useBoardEvents` patches the board cache with `applyBoardEvent`
   and toasts changes made by others (details in `api.mdc` and `web.mdc`).
 - Seed: `bun run db:seed`, idempotent upserts by fixed id, never on API start.
   Ana (`ana@demo.test`) and Luis (`luis@demo.test`), fictitious password
@@ -73,7 +75,7 @@ React → TanStack Query / authClient → /api/* → Vite+ proxy
   and `postman/agentic-kanban-local.postman_environment.json`; `Origin:
   {{origin}}` is mandatory on `/api/auth/*`.
 
-Do not invent other product tables, demo users, comment realtime,
+Do not invent other product tables, demo users,
 real email (Resend, SMTP, a mail container), deployment or session tags before
 the course asks for them.
 

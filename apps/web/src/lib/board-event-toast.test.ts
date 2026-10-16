@@ -63,4 +63,22 @@ describe("boardEventToastMessage", () => {
 
     expect(boardEventToastMessage(event)).toBe("Tarea movida");
   });
+
+  it("comment.created muestra el autor del comentario", () => {
+    const event: BoardEvent = {
+      type: "comment.created",
+      ...base,
+      comment: {
+        id: "cm_1",
+        taskId: "t_1",
+        projectId: "p_1",
+        authorId: "u_2",
+        authorName: "Ana",
+        body: "Hola",
+        createdAt: "2026-01-01T00:00:00.000Z",
+      },
+    };
+
+    expect(boardEventToastMessage(event)).toBe("Nuevo comentario de Ana");
+  });
 });

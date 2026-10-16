@@ -10,8 +10,9 @@
  * Menciones: el `POST` extrae los `@nombre` del texto y `createCommentForMember`
  * crea comentario y notificaciones en una sola transacción. Solo después del
  * commit se añade el email al outbox y se marca `emailed_at`; si eso falla se
- * registra el error y la respuesta sigue siendo 201. La publicación por SSE
- * llega en un prompt posterior.
+ * registra el error y la respuesta sigue siendo 201. Por último se publica
+ * `comment.created` en el hub del project (`announce`), con el mismo body que
+ * responde el `POST`; con 404 o 400 no se publica nada.
  */
 import {
   createCommentForMember,
@@ -33,6 +34,7 @@ import { Hono } from "hono";
 
 import { appendToOutbox } from "../mail/outbox.ts";
 import { requireSession, type SessionEnv } from "../middleware/session.ts";
+import { announce } from "../realtime/index.ts";
 
 export const commentRoutes = new Hono<SessionEnv>();
 
@@ -118,6 +120,15 @@ commentRoutes.post(
 
     await deliverMentionEmails(result.notifications);
 
-    return c.json(toCommentResponse(result.comment), 201);
+    // Publica tras persistir comentario, notificaciones y outbox; el evento lleva el body de la respuesta.
+    const comment = toCommentResponse(result.comment);
+    announce({
+      type: "comment.created",
+      projectId: result.comment.projectId,
+      actorUserId: c.get("userId"),
+      comment,
+    });
+
+    return c.json(comment, 201);
   },
 );
