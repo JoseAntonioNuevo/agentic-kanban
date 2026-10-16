@@ -22,10 +22,17 @@ const data = (await res.json()) as HealthResponse;
 await fetch("http://localhost:3000/api/health");
 ```
 
-The UI is the auth form plus the health card (`useHealth`). `authClient`
+The UI is the auth form, the health card (`useHealth`) and the user's
+workspace list (`useWorkspaces`). `authClient`
 (`src/lib/auth-client.ts`) is the only `createAuthClient()`, without `baseURL`
 (same origin through the proxy). Form state is local React state, validated
-with the shared sign-up/sign-in schemas. No workspace UI yet. No React Router.
+with the shared sign-up/sign-in schemas. No React Router.
+
+Cache convention: every query of user data puts the `userId` in its queryKey
+(`workspacesQueryKey(userId)` → `["workspaces", userId]`), and sign-out calls
+`queryClient.clear()`, so switching users in one tab never shows the previous
+user's data. `workspaceAccent(workspaceId)` (`src/lib/workspace-accent.ts`) is
+pure and depends only on `workspace.id`, never on names or user data.
 
 - App imports: `@/hooks/...`, `@/components/ui/...` with `.tsx` where the file
   uses that style. Generated shadcn under `src/components/ui` — do not restyle

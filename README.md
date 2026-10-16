@@ -2,8 +2,10 @@
 
 Proyecto starter del curso **thePower — Desarrollo Agéntico**.
 
-Esqueleto técnico listo (Bun, Vite+, React, Hono, Drizzle, libSQL). Aún no hay
-login, workspaces ni tablero Kanban: eso se construye en las sesiones en vivo.
+Esqueleto técnico listo (Bun, Vite+, React, Hono, Drizzle, libSQL). Hay login
+y un dashboard con los espacios del usuario: Ana ve dos (`thePower Demo` y
+`Espacio de Ana`) y Luis uno (`thePower Demo`, con el mismo color). El tablero
+Kanban se construye en las sesiones en vivo.
 
 ## Requisitos
 

@@ -2,7 +2,7 @@
  * Pantalla raíz: acceso con Better Auth y, con sesión, el estado del sistema.
  *
  * `authClient.useSession()` decide entre skeleton, formulario de acceso o
- * cabecera con usuario + card de health. No hay workspaces todavía.
+ * cabecera con usuario + card de health + lista de workspaces del usuario.
  * `useHealth()` pide GET /api/health y Zod valida la respuesta. Frontend se
  * marca OK si el JS ha cargado; API y Database salen del JSON parseado.
  */
@@ -17,8 +17,10 @@ import {
 } from "@/components/ui/card.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
+import { WorkspaceList } from "@/components/workspace-list.tsx";
 import { useHealth } from "@/hooks/use-health.ts";
 import { authClient } from "@/lib/auth-client.ts";
+import { queryClient } from "@/lib/query-client.ts";
 
 /** Componente raíz: elige pantalla según el estado de la sesión. */
 export default function App() {
@@ -44,11 +46,20 @@ export default function App() {
     <main className="flex min-h-svh flex-col items-center justify-center gap-4 bg-background p-6">
       <header className="flex w-full max-w-md items-center justify-between">
         <span className="text-sm font-medium">{session.data.user.name}</span>
-        <Button variant="outline" onClick={() => void authClient.signOut()}>
+        {/* Convención: queryKey con userId + `queryClient.clear()` al salir, para
+            que el siguiente usuario de la pestaña no vea datos del anterior. */}
+        <Button
+          variant="outline"
+          onClick={async () => {
+            await authClient.signOut();
+            queryClient.clear();
+          }}
+        >
           Cerrar sesión
         </Button>
       </header>
       <HealthCard />
+      <WorkspaceList userId={session.data.user.id} />
     </main>
   );
 }
