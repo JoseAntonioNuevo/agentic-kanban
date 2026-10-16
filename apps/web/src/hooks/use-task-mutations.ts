@@ -18,8 +18,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { boardQueryKey } from "./use-board.ts";
 
 /**
- * Prefijo de la `mutationKey` de todo cambio del tablero. La Sesión 3 lo usa
- * con `useIsMutating` para saber si hay un cambio propio en curso.
+ * Prefijo de la `mutationKey` de todo cambio del tablero. `useBoardEvents` lo
+ * usa con `queryClient.isMutating` para saber si hay un cambio propio en curso.
  */
 export const boardMutationKey = (projectId: string) => ["board", projectId] as const;
 

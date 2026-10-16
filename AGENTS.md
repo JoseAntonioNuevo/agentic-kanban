@@ -40,8 +40,13 @@ React → TanStack Query / authClient → /api/* → Vite+ proxy
   `GET /api/projects/:projectId/events` is an SSE stream fed by the in-memory
   hub (`subscribe`/`publish`, `apps/api/src/realtime/index.ts`). The board
   write routes publish after persisting (`task.created`, `task.updated`,
-  `task.deleted`, `task.moved`; only on success, never on 400/404); the web
-  client does not consume the stream yet.
+  `task.deleted`, `task.moved`; only on success, never on 400/404). The web
+  client consumes it: `useBoardEvents(projectId, userId)` (mounted by
+  `BoardScreen`) opens one relative-URL `EventSource` per board and patches the
+  board query with the pure `applyBoardEvent` (`@agentic-kanban/schemas`).
+  Own-actor events are ignored only while a board mutation is in flight in
+  that tab (otherwise applied; idempotent); after a reconnect the board query
+  is invalidated. No realtime toasts yet.
 - Seed: `bun run db:seed`, idempotent upserts by fixed id, never on API start.
   Ana (`ana@demo.test`) and Luis (`luis@demo.test`), fictitious password
   `Demo1234!`; `ws_thepower_demo`/`proj_agentic_kanban` has both,

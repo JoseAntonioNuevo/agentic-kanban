@@ -4,6 +4,7 @@
  * `useBoard` (TanStack Query) es la única fuente del board: aquí no se copia
  * a `useState`. El estado local es solo el diálogo (crear/editar/cerrado).
  * Los movimientos por arrastre pasan por `useMoveTask` (optimista, con rollback).
+ * `useBoardEvents` abre el stream SSE del tablero y parchea esa misma caché.
  * Estados: cargando, 404 («Proyecto no encontrado»), error genérico con
  * reintento (solo sin datos en caché) y el tablero. El botón «Volver» devuelve al dashboard.
  */
@@ -15,6 +16,7 @@ import { TaskFormDialog, type TaskDialogState } from "@/components/task-form-dia
 import { Button } from "@/components/ui/button.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { BoardNotFoundError, useBoard } from "@/hooks/use-board.ts";
+import { useBoardEvents } from "@/hooks/use-board-events.ts";
 import { useMoveTask } from "@/hooks/use-move-task.ts";
 
 /** Cabecera + estado de carga/error/404 + tablero con su diálogo. */
@@ -29,6 +31,7 @@ export function BoardScreen({
 }) {
   const board = useBoard(projectId, userId);
   const moveTask = useMoveTask(projectId, userId);
+  useBoardEvents(projectId, userId);
   const [dialog, setDialog] = useState<TaskDialogState>(null);
 
   const backButton = (

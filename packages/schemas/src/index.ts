@@ -9,6 +9,7 @@ export {
   type SignUpInput,
 } from "./auth.ts";
 export {
+  applyBoardEvent,
   applyBoardMove,
   boardColumnSchema,
   boardResponseSchema,

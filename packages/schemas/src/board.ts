@@ -7,6 +7,7 @@
  */
 import { z } from "zod";
 
+import type { BoardEvent } from "./events.ts";
 import { projectSchema } from "./workspace.ts";
 
 /** Título de tarea: sin espacios en los extremos, entre 1 y 200 caracteres. */
@@ -83,6 +84,11 @@ export type TaskIdParam = z.infer<typeof taskIdParamSchema>;
 /** Movimiento de una tarea: columna destino y posición (se acota a `0..n`). */
 export type BoardMove = { taskId: string; columnId: string; position: number };
 
+/** Renumera `position` 0..n-1 reutilizando la referencia de las tareas que no cambian. */
+function renumberTasks(tasks: Task[]): Task[] {
+  return tasks.map((t, position) => (t.position === position ? t : { ...t, position }));
+}
+
 /**
  * Aplica un movimiento a un tablero y devuelve un tablero nuevo (inmutable).
  *
@@ -115,22 +121,126 @@ export function applyBoardMove(board: BoardResponse, move: BoardMove): BoardResp
     ...targetTasks.slice(index),
   ];
 
-  // Renumera 0..n-1 reutilizando la referencia de las tareas que no cambian.
-  const renumber = (tasks: Task[]): Task[] =>
-    tasks.map((t, position) => (t.position === position ? t : { ...t, position }));
-
   return {
     ...board,
     columns: board.columns.map((col) => {
       if (col.id === targetColumn.id) {
-        return { ...col, tasks: renumber(inserted) };
+        return { ...col, tasks: renumberTasks(inserted) };
       }
 
       if (col.id === sourceColumn.id) {
-        return { ...col, tasks: renumber(withoutMoved) };
+        return { ...col, tasks: renumberTasks(withoutMoved) };
       }
 
       return col;
     }),
   };
+}
+
+/** Indica si dos tareas tienen exactamente los mismos valores. */
+function sameTask(a: Task, b: Task): boolean {
+  return (
+    a.id === b.id &&
+    a.workspaceId === b.workspaceId &&
+    a.projectId === b.projectId &&
+    a.columnId === b.columnId &&
+    a.title === b.title &&
+    a.description === b.description &&
+    a.position === b.position &&
+    a.createdAt === b.createdAt
+  );
+}
+
+/**
+ * Aplica un evento del tablero (anunciado por la API) y devuelve un tablero
+ * nuevo (inmutable). Es idempotente: aplicar dos veces el mismo evento da lo
+ * mismo que aplicarlo una. Si el evento no cambia nada (otro proyecto, tarea
+ * ausente, tarea ya presente), devuelve el mismo `board`; las columnas no
+ * afectadas conservan su referencia.
+ *
+ * - `task.created`: inserta en su columna en `min(position, n)` si el id no
+ *   está en ninguna columna y la columna existe; renumera esa columna.
+ * - `task.updated`: reemplaza los datos por id conservando la posición y la
+ *   columna del tablero local (mover es cosa de `task.moved`).
+ * - `task.deleted`: elimina la tarea si está y renumera su columna.
+ * - `task.moved`: reutiliza `applyBoardMove`.
+ */
+export function applyBoardEvent(board: BoardResponse, event: BoardEvent): BoardResponse {
+  if (event.projectId !== board.project.id) {
+    return board;
+  }
+
+  switch (event.type) {
+    case "task.created": {
+      const { task } = event;
+      const exists = board.columns.some((col) => col.tasks.some((t) => t.id === task.id));
+      const target = board.columns.find((col) => col.id === task.columnId);
+
+      if (exists || !target) {
+        return board;
+      }
+
+      const index = Math.min(Math.max(task.position, 0), target.tasks.length);
+      const inserted = [...target.tasks.slice(0, index), task, ...target.tasks.slice(index)];
+
+      return {
+        ...board,
+        columns: board.columns.map((col) =>
+          col.id === target.id ? { ...col, tasks: renumberTasks(inserted) } : col,
+        ),
+      };
+    }
+
+    case "task.updated": {
+      const owner = board.columns.find((col) => col.tasks.some((t) => t.id === event.task.id));
+      const current = owner?.tasks.find((t) => t.id === event.task.id);
+
+      if (!owner || !current) {
+        return board;
+      }
+
+      const replaced: Task = {
+        ...event.task,
+        columnId: current.columnId,
+        position: current.position,
+      };
+
+      if (sameTask(current, replaced)) {
+        return board;
+      }
+
+      return {
+        ...board,
+        columns: board.columns.map((col) =>
+          col.id === owner.id
+            ? { ...col, tasks: col.tasks.map((t) => (t.id === replaced.id ? replaced : t)) }
+            : col,
+        ),
+      };
+    }
+
+    case "task.deleted": {
+      const owner = board.columns.find((col) => col.tasks.some((t) => t.id === event.taskId));
+
+      if (!owner) {
+        return board;
+      }
+
+      return {
+        ...board,
+        columns: board.columns.map((col) =>
+          col.id === owner.id
+            ? { ...col, tasks: renumberTasks(col.tasks.filter((t) => t.id !== event.taskId)) }
+            : col,
+        ),
+      };
+    }
+
+    case "task.moved":
+      return applyBoardMove(board, {
+        taskId: event.taskId,
+        columnId: event.columnId,
+        position: event.position,
+      });
+  }
 }

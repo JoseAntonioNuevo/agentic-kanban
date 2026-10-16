@@ -60,6 +60,19 @@ data keeps the board on screen (full-screen error only without data). dnd-kit
 reorders DOM nodes while dragging, so `KanbanBoard` remounts the provider with a
 `key` derived from the board's order. Never keep a copy of the board in state.
 
+Realtime: `useBoardEvents(projectId, userId)` (mounted by `BoardScreen`, one
+`EventSource` per board) uses the relative URL
+`/api/projects/${projectId}/events` (same origin, never `:3000`), validates
+each message with `boardEventSchema.safeParse` (ignores what does not parse)
+and patches the board query with `setQueryData` + the pure `applyBoardEvent`.
+Events whose `actorUserId` is the current user are ignored only when
+`queryClient.isMutating({ mutationKey: ["board", projectId] }) > 0` (the
+mutation's `onSettled` reconciles); otherwise they are applied (idempotent,
+keeps another tab of the same user in sync). On `onopen` after an error it
+invalidates the board query (the hub does not replay). It closes on unmount or
+project change. No realtime toasts yet, no new realtime libraries; Session 4 extends
+this hook instead of opening another connection.
+
 Cache convention: every query of user data puts the `userId` in its queryKey
 (`workspacesQueryKey(userId)` → `["workspaces", userId]`), and sign-out calls
 `queryClient.clear()`, so switching users in one tab never shows the previous
