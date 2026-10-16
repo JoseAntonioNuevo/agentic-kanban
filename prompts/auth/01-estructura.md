@@ -58,7 +58,10 @@ desde el navegador y a través del proxy de Vite+.
 - **Migración.** `bun run db:generate` en el host; el SQL se versiona. Para
   aplicarla, `docker compose exec api bun run db:migrate` si Compose está
   arriba; si no, `bun run db:migrate` en el host. Después de borrar
-  `data/*.db*` hay que migrar otra vez.
+  `data/*.db*` hay que migrar otra vez. drizzle-kit escribe
+  `migrations/meta/*.json` sin el formato de Oxfmt y los regenera en cada
+  `db:generate`: excluye `packages/db/migrations/**` de `fmt` en el
+  `vite.config.ts` raíz para que `vp check` siga en verde.
 
 ## Fuera de alcance
 

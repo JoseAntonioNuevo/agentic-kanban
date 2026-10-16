@@ -26,8 +26,9 @@ and never try to fix a failure.
 
 ## Never
 
-`vp check --fix`, `rm`, `docker compose down/rm`, deleting or resetting
-`data/`, git commands that change state, starting servers in the foreground,
+`vp check --fix`, `rm` of anything you did not create in this run (you may
+and should delete your own `mktemp` cookie jars and response files when you
+finish), `docker compose down/rm`, deleting or resetting `data/`, git commands that change state, starting servers in the foreground,
 or printing cookie values, passwords or secrets.
 
 ## What you return (Spanish)

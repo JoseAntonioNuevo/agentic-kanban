@@ -22,7 +22,7 @@ optimista de Ana.
   `packages/schemas/src/board.ts`. Es idempotente: `task.created` inserta si
   el id no está; `task.updated` reemplaza por id; `task.deleted` elimina si
   está y renumera; `task.moved` reutiliza `applyBoardMove`.
-- `useBoardEvents(projectId, userId)` en
+- `useBoardEvents(projectId, userId)` → `{ setDragging }` en
   `apps/web/src/hooks/use-board-events.ts`, montado por `BoardScreen`. La
   Sesión 4 lo ampliará en lugar de abrir otra conexión.
 
@@ -40,8 +40,14 @@ optimista de Ana.
   (`queryClient.isMutating({ mutationKey: ["board", projectId] }) > 0`),
   ignóralos, porque su `onSettled` ya reconcilia. Si no, aplícalos: son
   idempotentes y mantienen sincronizada otra pestaña del mismo usuario.
-- Al reconectar (`onopen` después de un error), invalida la query del board:
-  el hub vive en memoria y no repite lo que se perdió durante el corte.
+- En cada `onopen` (también el primero: el `GET` del board y el stream
+  arrancan a la vez), invalida la query del board: el hub vive en memoria y no
+  repite lo que pasó sin conexión.
+- Mientras Ana arrastra, no apliques eventos: cambiar el orden de la caché
+  remonta el `DragDropProvider` (su `key`, Sesión 2 · 07) y corta el
+  arrastre. El tablero avisa al empezar y al terminar (`onDragStart` /
+  `onDragEnd`), el hook encola y aplica al soltar. `useBoardEvents` devuelve
+  `{ setDragging }` para eso.
 - Cierra el `EventSource` al desmontar o al cambiar de project.
 - TanStack Query sigue siendo la única fuente del estado del servidor: no
   copies el board a `useState`. Sin toasts todavía y sin librerías nuevas de

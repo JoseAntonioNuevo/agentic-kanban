@@ -43,7 +43,9 @@ report instead of guessing.
 ## Checks before you report
 
 Run `vp check --fix <your files>`, then `vp check <your files>` and the tests
-related to your slice (`vp test <filter>`). If a failure comes from a file you
+related to your slice (`vp test <filter>`). Pass only code files to
+`vp check <files>` (with `.md`/`.mdc` it can fail with "Expected at least one
+target file"); finish with a plain `vp check`. If a failure comes from a file you
 do not own, report it with the exact message; do not fix it.
 
 ## What you return (Spanish, at most 25 lines)

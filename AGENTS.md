@@ -129,7 +129,9 @@ fixes itself.
   second API on the host. Tests never touch `data/`.
 - Keep this file short: update the current-state and contract sections in
   place and delete statements that stopped being true, here and in
-  `.cursor/rules/`. Layer detail belongs in the rules.
+  `.cursor/rules/`, always including `scope.mdc` (its Implemented and
+  Do-not-implement lists must match the tree after every step). Layer detail
+  belongs in the rules.
 - Do not commit or push. End every step with: files changed, checks run with
   their real result, what the teacher should verify by hand, deviations or
   risks, and a Conventional Commit message.

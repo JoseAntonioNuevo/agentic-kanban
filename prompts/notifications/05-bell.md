@@ -35,9 +35,9 @@ no leídas y la opción de marcarlas como leídas.
 
 - Autorización de siempre: 401 sin sesión, 404 nunca 403, `workspace_id` de la
   fila.
-- La campana usa `popover`, `badge` y `button` de shadcn, que ya existen. Va en
-  la cabecera del dashboard y en la del tablero: Luis puede no tener el
-  tablero abierto.
+- La campana usa `popover`, `badge` y `button` de shadcn, que ya existen. Va
+  una sola vez en la cabecera de `App.tsx`, que se ve en el dashboard y en el
+  tablero: Luis puede no tener el tablero abierto.
 - TanStack Query con `refetchOnWindowFocus` y un `refetchInterval` corto
   (~5 s). El popover pinta el JSON de ese `GET` parseado con el mismo schema.
 - Estados, sin confundirlos:
@@ -48,6 +48,9 @@ no leídas y la opción de marcarlas como leídas.
     menciones.».
   - «Nada pendiente» solo cuando la query fue bien y no hay no leídas; un
     error nunca se pinta como bandeja vacía.
+  - Con el `refetchInterval`, un refetch puede fallar con filas en caché:
+    sigue la lista con un aviso de que no se pudo actualizar (ni error a
+    pantalla completa ni «Nada pendiente»).
 - La campana no es el toast: solo muestra menciones persistidas. Quien escribe
   `@Luis` no ve esa fila en su propia campana.
 - Tests de API: Luis ve la mención de Ana; Ana obtiene `[]` para esa mención;

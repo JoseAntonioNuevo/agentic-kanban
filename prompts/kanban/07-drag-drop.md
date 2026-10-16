@@ -37,7 +37,14 @@ servidor falla.
   ignora las operaciones canceladas y calcula columna y posición de destino a
   partir de `operation.source` y `operation.target` (`isSortable`, `group`,
   `index`, `initialGroup`, `initialIndex`); si no cambió nada, no llames a la
-  API.
+  API. El `OptimisticSortingPlugin` (activo por defecto) solo actúa al pasar
+  sobre otra tarjeta: mueve la fuente en el DOM, actualiza `source.group` y
+  `source.index`, y no lo revierte al soltar. Por eso: soltada sobre el hueco
+  de una columna distinta de `source.group` → al final de esa columna; si no,
+  y la fuente cambió de grupo o de índice → `source.group`/`source.index`
+  (también con `target` nulo); si no → nada. El sensor de puntero por defecto
+  no arranca un arrastre desde un `<button>`: configúralo en `useSortable` si
+  la tarjeta es un botón.
 - **Optimista con TanStack Query.** En `onMutate`: cancela las queries del
   board, guarda la instantánea y aplica `applyBoardMove` a la caché. En
   `onError`: restaura la instantánea y muestra `toast.error`. En `onSettled`:

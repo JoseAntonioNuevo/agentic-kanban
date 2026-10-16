@@ -43,6 +43,9 @@ arnés de tests de API que usarán todas las sesiones siguientes.
 
 Validación: `@hono/zod-validator` en los params; las respuestas se construyen y
 pasan por `.parse()` del schema compartido antes de `c.json`, igual que health.
+Un input inválido responde el 400 por defecto de `zValidator`
+(`{ success: false, error: {…} }`, no `{ error: string }`): los tests de 400
+comprueban solo el status.
 La API no importa `drizzle-orm` ni `@libsql/client`.
 
 ## Arnés de tests (nuevo)

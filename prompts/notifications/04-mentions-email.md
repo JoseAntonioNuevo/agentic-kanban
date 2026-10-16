@@ -26,11 +26,14 @@ notificación persistida y un email generado en un outbox local.
 - **Parser.** Una mención es `@` seguido de letras (`\p{L}+`, también con
   tildes), con el `@` al principio del texto o tras un carácter que no sea
   letra ni número (así `ana@demo.test` no menciona a nadie). La puntuación
-  corta el nombre: `@Luis,` → `Luis`. Sin duplicados, sin distinguir
+  corta el nombre: `@Luis,` → `Luis`; un número o `_` pegados al nombre
+  anulan la mención (`@Luis2` no es `@Luis`). Sin duplicados, sin distinguir
   mayúsculas.
 - **Resolución.** Se compara sin distinguir mayúsculas con `user.name` de los
   miembros del **mismo** workspace que la tarea, en una sola consulta. Se
-  ignoran los desconocidos y la automención.
+  ignoran los desconocidos y la automención. Compara en JS (NFC y
+  `toLocaleLowerCase`): `lower()` de SQLite solo cambia el ASCII y `@álvaro`
+  no encontraría a «Álvaro».
 - **Transacción.** En la misma transacción que el comentario, una fila
   `notification` por mención válida: `kind = "mention"`, destinatario,
   `actor_user_id` (el autor), `task_id`, `comment_id`, el `workspace_id` de la
@@ -46,6 +49,9 @@ notificación persistida y un email generado en un outbox local.
   se queda vacío y el comentario igualmente responde 201.
 - Sin Resend, SMTP, contenedor de correo ni dotenv. El contrato HTTP del
   `POST` no cambia.
+- `data/outbox.jsonl` está versionado con líneas de un ensayo anterior y la
+  prueba en vivo lo modifica: añádelo a `.gitignore` y sácalo del índice con
+  `git rm --cached data/outbox.jsonl`, sin borrar el fichero local.
 - **Tests** con la base de test y un `OUTBOX_PATH` temporal, con fixtures como
   las de la demo (usuarios `Ana` y `Luis`, un workspace compartido y otro solo
   de Ana): Ana comenta `@Luis mira esto` → una notificación para Luis, una
@@ -64,7 +70,7 @@ Sigue el flujo con subagentes de `AGENTS.md` (Agent workflow). En este paso:
 
 - **Investigar** (Haiku): el `POST` de comentarios, la tabla `notification`, cómo se resuelve `DATABASE_URL` y el arnés de tests.
 - **Planificar** (Opus): detalla en los briefs la transacción y el orden (transacción → outbox → `emailed_at`).
-- **Implementar** (Sonnet): dos en paralelo: A, `extractMentionTokens` y sus tests; B, el módulo del outbox y sus tests con `OUTBOX_PATH` temporal. Después, un tercero integra la resolución y la transacción en el `POST`, escribe los tests de extremo a extremo y actualiza la documentación de «Al terminar».
+- **Implementar** (Sonnet): dos en paralelo: A, `extractMentionTokens` y sus tests; B, el módulo del outbox y sus tests con `OUTBOX_PATH` temporal. Después, un tercero integra la resolución y la transacción en el `POST`, escribe los tests de extremo a extremo, saca el outbox de Git (su brief le autoriza `git rm --cached data/outbox.jsonl`) y actualiza la documentación de «Al terminar».
 - **Verificar** (Haiku): puerta de calidad y prueba en vivo: Ana comenta `@Luis mira esto` en `task_kanban_1` y la última línea de `data/outbox.jsonl` va a `luis@demo.test`.
 - **Revisar** (Opus): mira con lupa la transacción y el orden del outbox.
 

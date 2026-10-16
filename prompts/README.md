@@ -113,8 +113,14 @@ Ya están resueltas en los prompts; conviene conocerlas por si salen.
 | libSQL aplica las FK: sin cascada, borrar una tarea con comentarios falla                          | 2·01, 4·01                          |
 | `ana@demo.test` contiene una `@`: el parser no debe tomarlo por mención                            | 4·04                                |
 | Fechas ISO que Zod rechaza y una campana que pinta el éxito vacío como error                       | 4·05                                |
-| `data/outbox.jsonl` está versionado con líneas del ensayo                                          | 4·07                                |
+| `data/outbox.jsonl` está versionado con líneas del ensayo                                          | 4·04                                |
 | `AGENTS.md` pasó de 66 a 386 líneas y entra en cada sesión y subagente                             | cada prompt (se actualiza en sitio) |
+| Ensayo de octubre: `scope.mdc` (`alwaysApply`) se quedaba atrás y prohibía lo ya hecho             | `AGENTS.md` (Agent workflow)        |
+| Ensayo de octubre: drizzle-kit genera `migrations/meta/*.json` sin formato y `vp check` falla      | 1·01                                |
+| Ensayo de octubre: Vite en Docker no ve cambios de `packages/` cuando el fichero se reemplaza      | `apps/web/vite.config.ts` (starter) |
+| Ensayo de octubre: un error de refetch con datos en caché tapaba el tablero o la campana           | 2·05, 4·05                          |
+| Ensayo de octubre: un evento ajeno a mitad de arrastre remontaba el proveedor de dnd-kit           | 3·04                                |
+| Ensayo de octubre: `lower()` de SQLite no baja tildes; `@Luis2` contaba como `@Luis`               | 4·04                                |
 
 ## Contratos entre prompts
 

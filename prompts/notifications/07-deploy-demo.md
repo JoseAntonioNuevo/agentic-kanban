@@ -18,9 +18,8 @@ de la demo y seguir un guion de dos navegadores.
 - El deploy de aula es `docker compose up --build` con los dos servicios de
   siempre, `web` y `api`. Nada de Fly, Vercel, Resend, contenedor de correo ni
   tags `sesion-*`.
-- `data/outbox.jsonl` fuera de Git: añádelo a `.gitignore` y, como ahora mismo
-  está versionado (con líneas de un ensayo anterior), sácalo del índice con
-  `git rm --cached data/outbox.jsonl` sin borrar el fichero local. El volumen
+- `data/outbox.jsonl` fuera de Git: lo hizo el prompt 04; comprueba que está
+  en `.gitignore` y que `git ls-files data/` solo lista `.gitkeep`. El volumen
   `./data` ya lo monta en la API.
 - README con:
   - reset (`docker compose down`, borrar `data/*.db*` y `data/outbox.jsonl`);
@@ -62,8 +61,7 @@ Sigue el flujo con subagentes de `AGENTS.md` (Agent workflow). En este paso:
 
 - [ ] `vp check`, `vp test` y `vp build apps/web` en verde;
       `docker compose config` es válido.
-- [ ] `git status` muestra `data/outbox.jsonl` como eliminado del índice y ya
-      no como modificado.
+- [ ] `data/outbox.jsonl` está ignorado y fuera del índice.
 - [ ] Los comandos del README coinciden con los scripts reales.
 
 ## Al terminar
