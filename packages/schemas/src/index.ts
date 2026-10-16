@@ -9,6 +9,7 @@ export {
   type SignUpInput,
 } from "./auth.ts";
 export {
+  applyBoardMove,
   boardColumnSchema,
   boardResponseSchema,
   createTaskBodySchema,
@@ -17,6 +18,7 @@ export {
   taskSchema,
   updateTaskBodySchema,
   type BoardColumn,
+  type BoardMove,
   type BoardResponse,
   type CreateTaskBody,
   type MoveTaskBody,

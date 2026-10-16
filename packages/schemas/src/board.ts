@@ -79,3 +79,58 @@ export type CreateTaskBody = z.infer<typeof createTaskBodySchema>;
 export type UpdateTaskBody = z.infer<typeof updateTaskBodySchema>;
 export type MoveTaskBody = z.infer<typeof moveTaskBodySchema>;
 export type TaskIdParam = z.infer<typeof taskIdParamSchema>;
+
+/** Movimiento de una tarea: columna destino y posición (se acota a `0..n`). */
+export type BoardMove = { taskId: string; columnId: string; position: number };
+
+/**
+ * Aplica un movimiento a un tablero y devuelve un tablero nuevo (inmutable).
+ *
+ * Sigue el mismo orden que el servidor (`moveTaskForMember`): saca la tarea de
+ * su columna, acota `position` a `0..n` sobre la lista destino, la inserta y
+ * renumera `position` 0..n-1 en las columnas afectadas. Las columnas no
+ * afectadas conservan su referencia. Si la tarea o la columna destino no
+ * existen, devuelve el mismo `board` sin cambios.
+ *
+ * La reutilizan la actualización optimista del navegador y, en la Sesión 3,
+ * la aplicación de los eventos de otros usuarios.
+ */
+export function applyBoardMove(board: BoardResponse, move: BoardMove): BoardResponse {
+  const sourceColumn = board.columns.find((col) => col.tasks.some((t) => t.id === move.taskId));
+  const targetColumn = board.columns.find((col) => col.id === move.columnId);
+  const moved = sourceColumn?.tasks.find((t) => t.id === move.taskId);
+
+  if (!sourceColumn || !targetColumn || !moved) {
+    return board;
+  }
+
+  const sameColumn = sourceColumn.id === targetColumn.id;
+  const withoutMoved = sourceColumn.tasks.filter((t) => t.id !== move.taskId);
+  const targetTasks = sameColumn ? withoutMoved : targetColumn.tasks;
+
+  const index = Math.min(Math.max(move.position, 0), targetTasks.length);
+  const inserted = [
+    ...targetTasks.slice(0, index),
+    { ...moved, columnId: targetColumn.id },
+    ...targetTasks.slice(index),
+  ];
+
+  // Renumera 0..n-1 reutilizando la referencia de las tareas que no cambian.
+  const renumber = (tasks: Task[]): Task[] =>
+    tasks.map((t, position) => (t.position === position ? t : { ...t, position }));
+
+  return {
+    ...board,
+    columns: board.columns.map((col) => {
+      if (col.id === targetColumn.id) {
+        return { ...col, tasks: renumber(inserted) };
+      }
+
+      if (col.id === sourceColumn.id) {
+        return { ...col, tasks: renumber(withoutMoved) };
+      }
+
+      return col;
+    }),
+  };
+}

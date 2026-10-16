@@ -5,6 +5,7 @@
 import { describe, expect, it } from "vite-plus/test";
 
 import {
+  applyBoardMove,
   boardColumnSchema,
   boardResponseSchema,
   createTaskBodySchema,
@@ -12,6 +13,7 @@ import {
   taskIdParamSchema,
   taskSchema,
   updateTaskBodySchema,
+  type BoardResponse,
 } from "./board.ts";
 
 const task = {
@@ -161,5 +163,102 @@ describe("taskIdParamSchema", () => {
 
   it("rechaza un taskId vacío", () => {
     expect(() => taskIdParamSchema.parse({ taskId: "" })).toThrow();
+  });
+});
+
+describe("applyBoardMove", () => {
+  const makeTask = (id: string, columnId: string, position: number) => ({
+    ...task,
+    id,
+    columnId,
+    position,
+  });
+  const makeColumn = (id: string, position: number, taskIds: string[]) => ({
+    ...column,
+    id,
+    position,
+    tasks: taskIds.map((taskId, index) => makeTask(taskId, id, index)),
+  });
+  const makeBoard = (): BoardResponse => ({
+    project,
+    columns: [
+      makeColumn("c_1", 0, ["a", "b", "c"]),
+      makeColumn("c_2", 1, ["d", "e"]),
+      makeColumn("c_3", 2, []),
+    ],
+  });
+  const idsOf = (board: BoardResponse, columnId: string) =>
+    board.columns.find((col) => col.id === columnId)?.tasks.map((t) => t.id);
+  const positionsOf = (board: BoardResponse, columnId: string) =>
+    board.columns.find((col) => col.id === columnId)?.tasks.map((t) => t.position);
+
+  it("mueve dentro de la misma columna de la posición 0 a la 2", () => {
+    const next = applyBoardMove(makeBoard(), { taskId: "a", columnId: "c_1", position: 2 });
+
+    expect(idsOf(next, "c_1")).toEqual(["b", "c", "a"]);
+    expect(positionsOf(next, "c_1")).toEqual([0, 1, 2]);
+  });
+
+  it("mueve dentro de la misma columna de la posición 2 a la 0", () => {
+    const next = applyBoardMove(makeBoard(), { taskId: "c", columnId: "c_1", position: 0 });
+
+    expect(idsOf(next, "c_1")).toEqual(["c", "a", "b"]);
+    expect(positionsOf(next, "c_1")).toEqual([0, 1, 2]);
+  });
+
+  it("mueve a otra columna, en medio, y renumera origen y destino", () => {
+    const board = makeBoard();
+    const next = applyBoardMove(board, { taskId: "a", columnId: "c_2", position: 1 });
+
+    expect(idsOf(next, "c_1")).toEqual(["b", "c"]);
+    expect(positionsOf(next, "c_1")).toEqual([0, 1]);
+    expect(idsOf(next, "c_2")).toEqual(["d", "a", "e"]);
+    expect(positionsOf(next, "c_2")).toEqual([0, 1, 2]);
+    expect(next.columns[1]?.tasks[1]?.columnId).toBe("c_2");
+    expect(next.columns[2]).toBe(board.columns[2]);
+  });
+
+  it("mueve a una columna vacía", () => {
+    const next = applyBoardMove(makeBoard(), { taskId: "e", columnId: "c_3", position: 0 });
+
+    expect(idsOf(next, "c_2")).toEqual(["d"]);
+    expect(idsOf(next, "c_3")).toEqual(["e"]);
+    expect(positionsOf(next, "c_3")).toEqual([0]);
+    expect(next.columns[2]?.tasks[0]?.columnId).toBe("c_3");
+  });
+
+  it("acota una posición mayor que el final al final", () => {
+    const next = applyBoardMove(makeBoard(), { taskId: "a", columnId: "c_2", position: 99 });
+
+    expect(idsOf(next, "c_2")).toEqual(["d", "e", "a"]);
+    expect(positionsOf(next, "c_2")).toEqual([0, 1, 2]);
+  });
+
+  it("acota una posición negativa al principio", () => {
+    const next = applyBoardMove(makeBoard(), { taskId: "e", columnId: "c_1", position: -5 });
+
+    expect(idsOf(next, "c_1")).toEqual(["e", "a", "b", "c"]);
+    expect(positionsOf(next, "c_1")).toEqual([0, 1, 2, 3]);
+  });
+
+  it("devuelve el mismo objeto si la tarea no existe", () => {
+    const board = makeBoard();
+
+    expect(applyBoardMove(board, { taskId: "x", columnId: "c_1", position: 0 })).toBe(board);
+  });
+
+  it("devuelve el mismo objeto si la columna destino no existe", () => {
+    const board = makeBoard();
+
+    expect(applyBoardMove(board, { taskId: "a", columnId: "c_x", position: 0 })).toBe(board);
+  });
+
+  it("no muta el tablero original", () => {
+    const board = makeBoard();
+    const snapshot = boardResponseSchema.parse(JSON.parse(JSON.stringify(board)));
+    const next = applyBoardMove(board, { taskId: "a", columnId: "c_2", position: 0 });
+
+    expect(next).not.toBe(board);
+    expect(board).toEqual(snapshot);
   });
 });

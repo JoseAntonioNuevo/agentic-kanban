@@ -3,8 +3,9 @@
  *
  * `useBoard` (TanStack Query) es la única fuente del board: aquí no se copia
  * a `useState`. El estado local es solo el diálogo (crear/editar/cerrado).
+ * Los movimientos por arrastre pasan por `useMoveTask` (optimista, con rollback).
  * Estados: cargando, 404 («Proyecto no encontrado»), error genérico con
- * reintento y el tablero. El botón «Volver» devuelve al dashboard.
+ * reintento (solo sin datos en caché) y el tablero. El botón «Volver» devuelve al dashboard.
  */
 import { useState } from "react";
 import type { Task } from "@agentic-kanban/schemas";
@@ -14,6 +15,7 @@ import { TaskFormDialog, type TaskDialogState } from "@/components/task-form-dia
 import { Button } from "@/components/ui/button.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { BoardNotFoundError, useBoard } from "@/hooks/use-board.ts";
+import { useMoveTask } from "@/hooks/use-move-task.ts";
 
 /** Cabecera + estado de carga/error/404 + tablero con su diálogo. */
 export function BoardScreen({
@@ -26,6 +28,7 @@ export function BoardScreen({
   onBack: () => void;
 }) {
   const board = useBoard(projectId, userId);
+  const moveTask = useMoveTask(projectId, userId);
   const [dialog, setDialog] = useState<TaskDialogState>(null);
 
   const backButton = (
@@ -50,7 +53,9 @@ export function BoardScreen({
     );
   }
 
-  if (board.isError) {
+  // Solo sin datos en caché: si falla un refetch (p. ej. tras un rollback con
+  // la API caída), se sigue pintando el último tablero bueno.
+  if (board.data === undefined) {
     const notFound = board.error instanceof BoardNotFoundError;
 
     return (
@@ -78,10 +83,16 @@ export function BoardScreen({
         {backButton}
         <h1 className="text-xl font-semibold break-words">{board.data.project.name}</h1>
       </div>
+      {board.isError ? (
+        <p role="alert" className="text-sm text-destructive">
+          No se pudo actualizar el tablero; se muestra la última versión.
+        </p>
+      ) : null}
       <KanbanBoard
         board={board.data}
         onCreateTask={(columnId) => setDialog({ mode: "create", columnId })}
         onEditTask={(task: Task) => setDialog({ mode: "edit", task })}
+        onMoveTask={(move) => moveTask.mutate(move)}
       />
       <TaskFormDialog
         projectId={projectId}

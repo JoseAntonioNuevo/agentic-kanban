@@ -24,7 +24,7 @@ import { boardQueryKey } from "./use-board.ts";
 export const boardMutationKey = (projectId: string) => ["board", projectId] as const;
 
 /** Lanza un `Error` con el mensaje del API si el cuerpo es válido, o con el status. */
-async function assertOk(response: Response, action: string): Promise<void> {
+export async function assertOk(response: Response, action: string): Promise<void> {
   if (response.ok) {
     return;
   }
@@ -46,7 +46,7 @@ async function assertOk(response: Response, action: string): Promise<void> {
 }
 
 /** Envía una petición JSON con la cookie de sesión. */
-function sendJson(url: string, method: string, body?: unknown): Promise<Response> {
+export function sendJson(url: string, method: string, body?: unknown): Promise<Response> {
   return fetch(url, {
     method,
     credentials: "include",

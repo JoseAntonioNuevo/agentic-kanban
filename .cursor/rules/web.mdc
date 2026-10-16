@@ -40,7 +40,21 @@ form text. `useTaskMutations(projectId, userId)` returns `createTask`,
 with `useIsMutating`. After each mutation update the cache and invalidate the
 board query. Components in `src/components/`: `board-screen`, `kanban-board`,
 `kanban-column`, `kanban-card` and `task-form-dialog` (one dialog, create and
-edit modes). Moving tasks and drag-and-drop are not implemented.
+edit modes).
+
+Drag-and-drop uses `@dnd-kit/react` 0.5.1 only (`DragDropProvider`,
+`useDroppable` in the column `<section>` with `collisionPriority: 1`,
+`useSortable` from `@dnd-kit/react/sortable` in the card with
+`group = column.id`); never `@dnd-kit/helpers`, `@dnd-kit/core` or
+`@dnd-kit/sortable`, and do not import from `@dnd-kit/dom`. `onDragEnd` ignores
+canceled operations, derives column and position from `operation.source`
+/`target` and skips the API when nothing changed. `useMoveTask(projectId,
+userId)` (`mutationKey: ["board", projectId, "move"]`) is optimistic:
+`onMutate` cancels the board query, snapshots it and applies the pure
+`applyBoardMove` from `@agentic-kanban/schemas`; `onError` restores the
+snapshot and calls `toast.error`; `onSettled` invalidates the board. dnd-kit
+reorders DOM nodes while dragging, so `KanbanBoard` remounts the provider with a
+`key` derived from the board's order. Never keep a copy of the board in state.
 
 Cache convention: every query of user data puts the `userId` in its queryKey
 (`workspacesQueryKey(userId)` → `["workspaces", userId]`), and sign-out calls
@@ -54,6 +68,5 @@ pure and depends only on `workspace.id`, never on names or user data.
 - Compose classes with `cn()` from `@/lib/utils`.
 - Tailwind 4 via `@import "tailwindcss"` in `src/index.css`. No `tailwind.config`.
 - `next-themes` is the theme helper, not Next.js. Do not add Next, React Router,
-  or React Hook Form. Do not implement drag-and-drop (`@dnd-kit/react` is
-  installed only).
+  or React Hook Form.
 - After `bunx shadcn@4.22.0 add …`, re-pin every new dependency (never `@latest`).

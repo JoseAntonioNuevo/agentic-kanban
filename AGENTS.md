@@ -52,18 +52,25 @@ belong to the task's own project and workspace (else 404, so no cross-project
 or cross-workspace moves). Create appends at the end of the column; delete
 compacts the column's positions (0..n-1) in a transaction; move takes the task
 out, inserts it at `position` and renumbers the affected columns 0..n-1 in one
-transaction. Drag-and-drop does not exist yet.
+transaction.
 Board UI: the dashboard opens each project in its board (columns and tasks in
 order) and the user can create, edit and delete tasks (`useBoard`,
 `useTaskMutations`; layer detail in `.cursor/rules/web.mdc`). Every board
 mutation uses a `mutationKey` that starts with `["board", projectId, …]`.
-Drag-and-drop and moving tasks are not in the UI yet (the move endpoint exists).
+Tasks move by drag-and-drop (`@dnd-kit/react` 0.5.1, no `@dnd-kit/helpers`, no
+legacy `@dnd-kit/core`/`sortable`) within a column, across columns or into an
+empty one. The move is optimistic: the pure `applyBoardMove(board, { taskId,
+columnId, position })` in `@agentic-kanban/schemas` (same order as the server)
+updates the board cache in `useMoveTask(projectId, userId)`
+(`mutationKey: ["board", projectId, "move"]`); on error the snapshot is
+restored with a `toast.error`, and on settle the board query is invalidated.
+The cache stays the only source of the board, never copied into `useState`.
 Postman: `postman/agentic-kanban-session2.postman_collection.json` and
 `postman/agentic-kanban-local.postman_environment.json` (import both; `baseUrl`
 defaults to `http://localhost:3000`, session cookie only, `Origin: {{origin}}`
 is mandatory on every `/api/auth/*` request).
 Do not invent other product tables, other demo users, other CRUD,
-drag-and-drop, realtime, comments, mentions, email, deployment,
+realtime, comments, mentions, email, deployment,
 or session tags before the course work asks for them.
 
 Out of scope: billing, RBAC, attachments, mobile, SSO, automations,
