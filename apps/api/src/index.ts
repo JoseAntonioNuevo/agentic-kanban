@@ -1,13 +1,15 @@
 /**
  * Servidor HTTP de la API: Hono sobre Bun (no Node).
  *
- * Monta `GET /api/health`, `/api/auth/*` (Better Auth) y las lecturas
- * autorizadas de workspaces y projects. `app` se exporta para los tests; Bun
+ * Monta `GET /api/health`, `/api/auth/*` (Better Auth), las lecturas
+ * autorizadas de workspaces y projects y las rutas del tablero (leer el
+ * board y crear, editar y borrar tareas). `app` se exporta para los tests; Bun
  * usa el `export default` (`port`, `hostname`, `fetch`) para escuchar.
  */
 import { Hono } from "hono";
 
 import { authRoutes } from "./routes/auth.ts";
+import { boardRoutes } from "./routes/board.ts";
 import { healthRoutes } from "./routes/health.ts";
 import { projectRoutes } from "./routes/projects.ts";
 import { workspaceRoutes } from "./routes/workspaces.ts";
@@ -19,6 +21,7 @@ app.route("/", healthRoutes);
 app.route("/", authRoutes);
 app.route("/", workspaceRoutes);
 app.route("/", projectRoutes);
+app.route("/", boardRoutes);
 
 const port = Number(process.env.API_PORT ?? 3000);
 

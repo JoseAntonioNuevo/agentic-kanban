@@ -14,6 +14,7 @@ app.route("/", healthRoutes);
 app.route("/", authRoutes);
 app.route("/", workspaceRoutes);
 app.route("/", projectRoutes);
+app.route("/", boardRoutes);
 ```
 
 `src/index.ts` also exports `app` for tests (keep the Bun `export default`).
@@ -27,7 +28,14 @@ app.route("/", projectRoutes);
   every tenant query filters by it. Params use `@hono/zod-validator`.
 - Build every response (including 401/404 `{ error }`) and pass it through
   `.parse()` of the shared schema before `c.json`; dates go out as ISO strings.
-- Validate responses (and later inputs) with `@agentic-kanban/schemas`.
+- Validate inputs (param/json via `zValidator` → 400) and responses with
+  `@agentic-kanban/schemas`.
+- `src/routes/board.ts` (`boardRoutes`): `GET /api/projects/:projectId/board`,
+  `POST /api/projects/:projectId/tasks`, `PATCH`/`DELETE /api/tasks/:taskId`.
+  Data comes from the `*ForMember` queries in `@agentic-kanban/db`. Client ids
+  only identify: `columnId` is validated against the authorized project (else
+  404, no IDOR). `DELETE` answers 204 (`c.body(null, 204)`). Session 3 will
+  publish realtime events from these write routes.
 - Database access only through `@agentic-kanban/db`. Never import
   `@libsql/client` or `drizzle-orm` from the API.
 - Better Auth (`src/auth/index.ts`, email/password, cookie session) is served

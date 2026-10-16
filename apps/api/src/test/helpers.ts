@@ -2,7 +2,14 @@
  * Helpers compartidos de los tests de API: registro de usuarios con cookie de
  * sesión, fixtures de workspace/membresía/project y peticiones contra `app`.
  */
-import { getDb, project, workspace, workspaceMember } from "@agentic-kanban/db";
+import {
+  getDb,
+  project,
+  upsertColumn,
+  upsertTask,
+  workspace,
+  workspaceMember,
+} from "@agentic-kanban/db";
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
 
@@ -83,6 +90,53 @@ export async function createWorkspaceFixture(input: {
   }
 
   return { workspaceId, projectIds };
+}
+
+/**
+ * Crea columnas y tareas de un project directamente en la base, con ids
+ * aleatorios y posiciones 0..n-1 según el orden recibido.
+ */
+export async function createBoardFixture(input: {
+  workspaceId: string;
+  projectId: string;
+  columns: { name: string; tasks?: string[] }[];
+}): Promise<{ columnIds: string[]; taskIds: string[][] }> {
+  const columnIds: string[] = [];
+  const taskIds: string[][] = [];
+
+  for (const [columnIndex, columnInput] of input.columns.entries()) {
+    const columnId = randomUUID();
+
+    await upsertColumn({
+      id: columnId,
+      workspaceId: input.workspaceId,
+      projectId: input.projectId,
+      name: columnInput.name,
+      position: columnIndex,
+    });
+
+    const ids: string[] = [];
+
+    for (const [taskIndex, title] of (columnInput.tasks ?? []).entries()) {
+      const taskId = randomUUID();
+
+      await upsertTask({
+        id: taskId,
+        workspaceId: input.workspaceId,
+        projectId: input.projectId,
+        columnId,
+        title,
+        description: "",
+        position: taskIndex,
+      });
+      ids.push(taskId);
+    }
+
+    columnIds.push(columnId);
+    taskIds.push(ids);
+  }
+
+  return { columnIds, taskIds };
 }
 
 /** Petición contra `app` con la cookie de sesión (o sin ella si es `null`). */

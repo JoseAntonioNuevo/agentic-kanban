@@ -9,6 +9,20 @@ export {
   type SignUpInput,
 } from "./auth.ts";
 export {
+  boardColumnSchema,
+  boardResponseSchema,
+  createTaskBodySchema,
+  taskIdParamSchema,
+  taskSchema,
+  updateTaskBodySchema,
+  type BoardColumn,
+  type BoardResponse,
+  type CreateTaskBody,
+  type Task,
+  type TaskIdParam,
+  type UpdateTaskBody,
+} from "./board.ts";
+export {
   healthResponseSchema,
   serviceStatusSchema,
   type HealthResponse,

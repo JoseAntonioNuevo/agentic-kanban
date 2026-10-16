@@ -18,6 +18,14 @@ export {
 } from "./schema/index.ts";
 export type { ColumnRow, TaskRow } from "./schema/board.ts";
 export { migrateDatabase } from "./migrate.ts";
+export {
+  createTaskForMember,
+  deleteTaskForMember,
+  getBoardForMember,
+  getTaskForMember,
+  updateTaskForMember,
+} from "./queries/board.ts";
+export type { BoardColumnWithTasks, BoardData } from "./queries/board.ts";
 export { getProjectForMember, listWorkspacesForUser } from "./queries/workspaces.ts";
 export type {
   ProjectRow,

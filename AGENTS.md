@@ -11,7 +11,7 @@ repository documentation are authoritative.
 
 ## Current scope
 
-Implemented: the health path, email/password authentication and the two authorized read endpoints.
+Implemented: the health path, email/password authentication, the two authorized read endpoints and the board API.
 
 ```text
 React → TanStack Query → /api/health → Vite+ proxy
@@ -24,13 +24,12 @@ The workspace is the tenant: the `workspace`, `workspace_member` (unique per
 workspace and user, no role) and `project` tables exist with cascading foreign
 keys. The board tables `column` and `task` also exist (each row carries its own
 `workspace_id`, cascading foreign keys, `position` with no UNIQUE so reordering
-in a transaction works); there is still no HTTP for them. Read contracts (all
-require a session, `requireSession`):
+in a transaction works). Workspace contracts (all routes require a session,
+`requireSession`):
 `GET /api/workspaces` (the user's workspaces, each with `projects: [{ id,
 name }]`, `[]` if none) and `GET /api/projects/:projectId` (the project if the
 user is a member of its workspace); not a member or not found → 404, never
-403 (authorization order in `.cursor/rules/api.mdc`). There are no write
-endpoints. The web dashboard lists the user's workspaces and projects
+403 (authorization order in `.cursor/rules/api.mdc`). The web dashboard lists the user's workspaces and projects
 (`useWorkspaces`, cache convention in `.cursor/rules/web.mdc`).
 A deterministic, idempotent seed (`bun run db:seed`, upserts only, never run
 on API start) creates the classroom accounts through Better Auth's
@@ -39,9 +38,20 @@ password `Demo1234!`. `ws_thepower_demo` (project `proj_agentic_kanban`) has
 Ana and Luis; `ws_ana_demo` (project `proj_ana_notes`) only Ana. Demo board:
 columns `To Do`, `In Progress`, `Done` (`col_kanban_*`, `col_ana_*`), tasks
 `task_kanban_1..5` and `task_ana_1`; re-seeding restores those rows.
-Do not invent other product tables, other demo users, CRUD beyond these
-reads, board endpoints or UI, drag-and-drop, realtime, comments, mentions,
-email, deployment, or session tags before the course work asks for them.
+Board contract (`boardRoutes`, queries `*ForMember` in `@agentic-kanban/db`):
+`GET /api/projects/:projectId/board` (200 `{ project, columns: [{ …, tasks }] }`
+by `position`), `POST /api/projects/:projectId/tasks` (`{ columnId, title,
+description? }` → 201 task), `PATCH /api/tasks/:taskId` (`{ title?,
+description? }`, at least one → 200 task) and `DELETE /api/tasks/:taskId`
+(→ 204). No session → 401; not a member or not found → 404, never 403; invalid
+input → 400. Client ids (`projectId`, `columnId`, `taskId`) only identify rows:
+membership is checked with the row's `workspace_id`, and on create `columnId`
+must belong to the same project (else 404). Create appends at the end of the
+column; delete compacts the column's positions (0..n-1) in a transaction.
+Moving tasks and drag-and-drop do not exist yet.
+Do not invent other product tables, other demo users, other CRUD, the board UI,
+drag-and-drop, moving tasks, realtime, comments, mentions, email, deployment,
+or session tags before the course work asks for them.
 
 Out of scope: billing, RBAC, attachments, mobile, SSO, automations,
 microservices, queues, Redis, extra cloud services, and additional architecture
