@@ -40,6 +40,9 @@ export default defineConfig({
       "/api": {
         target: process.env.API_PROXY_TARGET ?? "http://localhost:3000",
         changeOrigin: true,
+        // El proxy de desarrollo no corta conexiones largas (SSE de `/events`).
+        timeout: 0,
+        proxyTimeout: 0,
       },
     },
   },

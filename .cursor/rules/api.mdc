@@ -15,6 +15,7 @@ app.route("/", authRoutes);
 app.route("/", workspaceRoutes);
 app.route("/", projectRoutes);
 app.route("/", boardRoutes);
+app.route("/", eventRoutes);
 ```
 
 `src/index.ts` also exports `app` for tests (keep the Bun `export default`).
@@ -46,7 +47,24 @@ app.route("/", boardRoutes);
 - `authRateLimit` (`src/auth/rate-limit.ts`): in-memory, 10/min per route on
   `POST` sign-up/sign-in, then 429. Off with `NODE_ENV=test` or
   `AUTH_RATE_LIMIT_DISABLED=1`. `get-session` is never limited.
-- `src/realtime/index.ts` stays a placeholder. Realtime must stay in this
-  process (SSE or WebSocket). No Socket.IO, Redis, or extra service.
+- Realtime stays in this process. No Socket.IO, Redis, or extra service.
+  `src/realtime/index.ts` is the in-memory hub: `subscribe(projectId,
+  listener)` returns the unsubscribe function (empty sets are deleted) and
+  `publish(event)` parses with `boardEventSchema` and delivers only to that
+  `projectId`; a throwing listener is logged and does not stop the others.
+  The write routes do not publish yet.
+- `src/routes/events.ts` (`eventRoutes`): `GET /api/projects/:projectId/events`
+  (`requireSession` → `getProjectForMember`, else 404) answers with
+  `streamSSE`. Only the `streamSSE` callback loop writes to the stream: hub
+  listeners and the keepalive timer just enqueue/flag and wake the loop
+  (writing from another request's context did not reach the client in Bun).
+  Frames carry only `data: JSON` (no `event:`); comments `: connected` on open
+  and `: keepalive` every 15 s. Headers `Cache-Control: no-cache, no-transform`
+  (set after `streamSSE`, which overwrites it) and `X-Accel-Buffering: no`.
+  `onAbort` unsubscribes and clears the timer.
+- Bun idles out requests after 10 s: `src/index.ts` sets `idleTimeout: 0` and
+  `fetch(request, server)` calls `server.timeout(request, 0)` for paths ending
+  in `/events` (never pass `server` to `app.fetch`, its 2nd arg is `env`). The
+  Vite+ `/api` proxy uses `timeout: 0` and `proxyTimeout: 0` (no `ws`).
 - Do not auto-run migrations or seed (apply with `docker compose exec api bun run db:migrate`, then `bun run db:seed`). Dev: `bun run --hot`. Listen
   `0.0.0.0:${API_PORT:-3000}`.

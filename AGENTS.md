@@ -26,7 +26,8 @@ React → TanStack Query / authClient → /api/* → Vite+ proxy
   `position` without UNIQUE). Foreign keys cascade.
 - Routes: `GET /api/workspaces`, `GET /api/projects/:projectId`,
   `GET /api/projects/:projectId/board`, `POST /api/projects/:projectId/tasks`,
-  `PATCH`/`DELETE /api/tasks/:taskId`, `POST /api/tasks/:taskId/move`. No
+  `PATCH`/`DELETE /api/tasks/:taskId`, `POST /api/tasks/:taskId/move`,
+  `GET /api/projects/:projectId/events` (SSE). No
   session → 401; not a member or not found → 404, never 403; invalid input → 400. Client ids only identify rows (details in `.cursor/rules/api.mdc` and
   `db.mdc`).
 - Web: dashboard → board (`selectedProjectId`, no router). Server state only in
@@ -35,8 +36,10 @@ React → TanStack Query / authClient → /api/* → Vite+ proxy
   `applyBoardMove` (in `@agentic-kanban/schemas`) and `useMoveTask` are the
   optimistic move (details in `.cursor/rules/web.mdc`).
 - Events: `boardEventSchema` (`packages/schemas/src/events.ts`) is the contract
-  with 4 types (`task.created`, `task.updated`, `task.deleted`, `task.moved`);
-  there is no stream or publishing yet, writes stay HTTP.
+  with 4 types (`task.created`, `task.updated`, `task.deleted`, `task.moved`).
+  `GET /api/projects/:projectId/events` is an SSE stream fed by the in-memory
+  hub (`subscribe`/`publish`, `apps/api/src/realtime/index.ts`); the write
+  routes do not publish yet and the web client does not consume it yet.
 - Seed: `bun run db:seed`, idempotent upserts by fixed id, never on API start.
   Ana (`ana@demo.test`) and Luis (`luis@demo.test`), fictitious password
   `Demo1234!`; `ws_thepower_demo`/`proj_agentic_kanban` has both,
@@ -47,7 +50,7 @@ React → TanStack Query / authClient → /api/* → Vite+ proxy
   and `postman/agentic-kanban-local.postman_environment.json`; `Origin:
   {{origin}}` is mandatory on `/api/auth/*`.
 
-Do not invent other product tables, demo users, CRUD, realtime, comments,
+Do not invent other product tables, demo users, CRUD, comments,
 mentions, email, deployment or session tags before the course asks for them.
 
 Out of scope: billing, RBAC, attachments, mobile, SSO, automations,
