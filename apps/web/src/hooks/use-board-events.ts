@@ -8,7 +8,9 @@
 import { applyBoardEvent, boardEventSchema, type BoardResponse } from "@agentic-kanban/schemas";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
+import { toast } from "sonner";
 
+import { boardEventToastMessage } from "../lib/board-event-toast.ts";
 import { boardQueryKey } from "./use-board.ts";
 import { boardMutationKey } from "./use-task-mutations.ts";
 
@@ -59,6 +61,23 @@ export function useBoardEvents(projectId: string, userId: string): void {
         queryClient.isMutating({ mutationKey: boardMutationKey(projectId) }) > 0
       ) {
         return;
+      }
+
+      // Aviso solo de cambios ajenos, nunca de los propios. Se decide antes de
+      // parchear la caché: `deleted` y `moved` solo traen `taskId`, y el título
+      // sale del board todavía sin el evento.
+      if (event.actorUserId !== userId) {
+        let title: string | undefined;
+
+        if (event.type === "task.deleted" || event.type === "task.moved") {
+          const board = queryClient.getQueryData<BoardResponse>(boardQueryKey(projectId, userId));
+
+          title = board?.columns
+            .flatMap((column) => column.tasks)
+            .find((task) => task.id === event.taskId)?.title;
+        }
+
+        toast.info(boardEventToastMessage(event, title));
       }
 
       queryClient.setQueryData<BoardResponse>(

@@ -46,7 +46,11 @@ React → TanStack Query / authClient → /api/* → Vite+ proxy
   board query with the pure `applyBoardEvent` (`@agentic-kanban/schemas`).
   Own-actor events are ignored only while a board mutation is in flight in
   that tab (otherwise applied; idempotent); after a reconnect the board query
-  is invalidated. No realtime toasts yet.
+  is invalidated. Changes by other users also show an in-app `toast.info`
+  (sonner) with the text from `boardEventToastMessage` (`apps/web/src/lib`;
+  title from the event, or from the board cache before applying it for
+  `deleted`/`moved`); own events never toast, and there is no history, bell or
+  email: the toast is lost when closed.
 - Seed: `bun run db:seed`, idempotent upserts by fixed id, never on API start.
   Ana (`ana@demo.test`) and Luis (`luis@demo.test`), fictitious password
   `Demo1234!`; `ws_thepower_demo`/`proj_agentic_kanban` has both,
