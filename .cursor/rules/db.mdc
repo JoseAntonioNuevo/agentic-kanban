@@ -22,7 +22,12 @@ Hono → drizzle-orm/libsql → @libsql/client → file:…/agentic-kanban.db
   `account`, `verification`) plus the tenant tables `workspace` and
   `workspace_member` (`workspace.ts`, unique `(workspace_id, user_id)`, no
   role), `project` (`project.ts`) and the board tables `column` and `task`
-  (`board.ts`, each with its own `workspace_id`). Board queries live in
+  (`board.ts`, each with its own `workspace_id`), plus `comment` (`comment.ts`,
+  index `(task_id, created_at)`) and `notification` (`notification.ts`: recipient
+  and actor FK to `user`, `comment_id` NOT NULL, `kind` enum `mention` guarded by
+  CHECK `notification_kind_check`, nullable `read_at`/`emailed_at`, index
+  `(recipient_user_id, created_at)`). Deleting a task cascades to its comments
+  and notifications (and a comment to its notifications). Board queries live in
   `queries/board.ts` with the `*ForMember` suffix (membership join on the row's
   `workspace_id`; create, delete and move run in `getDb().transaction`). One file per
   aggregate, re-exported from `schema/index.ts` and `src/index.ts`.

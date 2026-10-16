@@ -8,6 +8,8 @@ export * as schema from "./schema/index.ts";
 export {
   account,
   column,
+  comment,
+  notification,
   project,
   session,
   task,
@@ -17,6 +19,8 @@ export {
   workspaceMember,
 } from "./schema/index.ts";
 export type { ColumnRow, TaskRow } from "./schema/board.ts";
+export type { CommentRow } from "./schema/comment.ts";
+export type { NotificationRow } from "./schema/notification.ts";
 export { migrateDatabase } from "./migrate.ts";
 export {
   createTaskForMember,

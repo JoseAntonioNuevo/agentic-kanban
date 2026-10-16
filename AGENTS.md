@@ -23,8 +23,11 @@ React → TanStack Query / authClient → /api/* → Vite+ proxy
 
 - Tables: Better Auth (`user`, `session`, `account`, `verification`), tenant
   (`workspace`, `workspace_member` unique per workspace and user, no role,
-  `project`) and board (`column`, `task`, each with its own `workspace_id`,
-  `position` without UNIQUE). Foreign keys cascade.
+  `project`), board (`column`, `task`, each with its own `workspace_id`,
+  `position` without UNIQUE), `comment` and `notification` (own `workspace_id`;
+  `notification.comment_id` NOT NULL, `kind` only `mention`). Foreign keys
+  cascade: deleting a task deletes its comments and notifications. Tables only:
+  no HTTP for comments or notifications yet.
 - Routes: `GET /api/workspaces`, `GET /api/projects/:projectId`,
   `GET /api/projects/:projectId/board`, `POST /api/projects/:projectId/tasks`,
   `PATCH`/`DELETE /api/tasks/:taskId`, `POST /api/tasks/:taskId/move`,
@@ -51,7 +54,7 @@ React → TanStack Query / authClient → /api/* → Vite+ proxy
   and `postman/agentic-kanban-local.postman_environment.json`; `Origin:
   {{origin}}` is mandatory on `/api/auth/*`.
 
-Do not invent other product tables, demo users, CRUD, comments,
+Do not invent other product tables, demo users, comment/notification HTTP,
 mentions, email, deployment or session tags before the course asks for them.
 
 Out of scope: billing, RBAC, attachments, mobile, SSO, automations,
