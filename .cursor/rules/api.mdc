@@ -11,15 +11,20 @@ Bun-native server. Do not add Node, `@hono/node-server`, Express, or CORS.
 ```ts
 // ✅ src/index.ts
 app.route("/", healthRoutes);
+app.route("/", authRoutes);
 ```
 
 - One Hono app per route file (`new Hono()`), then `app.route("/", …)`.
 - Validate responses (and later inputs) with `@agentic-kanban/schemas`.
 - Database access only through `@agentic-kanban/db`. Never import
   `@libsql/client` or `drizzle-orm` from the API.
-- Better Auth is installed only. `src/auth/index.ts` stays a placeholder until
-  Session 1. Do not mount `/api/auth/*` yet.
+- Better Auth (`src/auth/index.ts`, email/password, cookie session) is served
+  by `src/routes/auth.ts` on `/api/auth/*` via `auth.handler(c.req.raw)`. Do
+  not wrap those routes with `@hono/zod-validator`; Better Auth validates.
+- `authRateLimit` (`src/auth/rate-limit.ts`): in-memory, 10/min per route on
+  `POST` sign-up/sign-in, then 429. Off with `NODE_ENV=test` or
+  `AUTH_RATE_LIMIT_DISABLED=1`. `get-session` is never limited.
 - `src/realtime/index.ts` stays a placeholder. Realtime must stay in this
   process (SSE or WebSocket). No Socket.IO, Redis, or extra service.
-- Do not auto-run migrations or seed. Dev: `bun run --hot`. Listen
+- Do not auto-run migrations or seed (apply with `docker compose exec api bun run db:migrate`). Dev: `bun run --hot`. Listen
   `0.0.0.0:${API_PORT:-3000}`.

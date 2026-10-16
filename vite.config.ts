@@ -8,7 +8,10 @@
 import { defineConfig } from "vite-plus";
 
 export default defineConfig({
-  fmt: {},
+  // drizzle-kit regenera migrations/meta/*.json sin formato en cada db:generate.
+  fmt: {
+    ignorePatterns: ["packages/db/migrations/**"],
+  },
   lint: {
     jsPlugins: [{ name: "vite-plus", specifier: "vite-plus/oxlint-plugin" }],
     plugins: ["typescript"],

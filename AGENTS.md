@@ -11,16 +11,18 @@ repository documentation are authoritative.
 
 ## Current scope
 
-The implemented slice is only:
+Implemented: the health path and email/password authentication.
 
 ```text
 React → TanStack Query → /api/health → Vite+ proxy
   → Hono on Bun → Drizzle → local libSQL
+React → authClient → /api/auth/* → Vite+ proxy → Better Auth (httpOnly cookie)
 ```
 
-Do not invent product tables, auth wiring, demo users, CRUD, a Kanban board,
-drag-and-drop, realtime, comments, mentions, email, deployment, or session tags
-before the corresponding course work asks for them.
+Better Auth owns the `user`, `session`, `account` and `verification` tables.
+There are no workspaces or tenants yet. Do not invent other product tables,
+demo users, CRUD, a Kanban board, drag-and-drop, realtime, comments, mentions,
+email, deployment, or session tags before the course work asks for them.
 
 Out of scope: billing, RBAC, attachments, mobile, SSO, automations,
 microservices, queues, Redis, extra cloud services, and additional architecture
@@ -37,9 +39,9 @@ or state-management frameworks.
   Redux or Zustand.
 - Runtime inputs and API responses use shared Zod schemas from
   `@agentic-kanban/schemas`; the browser parses responses instead of casting.
-- Authentication will belong to Better Auth; authorization and every
-  tenant-owned `workspace_id` filter belong to the API. The browser never
-  decides tenant access.
+- Authentication belongs to Better Auth (cookie session, `/api/auth/*`);
+  authorization and every tenant-owned `workspace_id` filter belong to the
+  API. The browser never decides tenant access.
 - Database access goes through `@agentic-kanban/db` using Drizzle and local
   libSQL. Do not add Prisma, Postgres, Supabase, Turso Cloud, or a database
   container.
@@ -98,6 +100,6 @@ vp build apps/web
 docker compose up --build
 ```
 
-Do not run schema generation or migrations until product tables are explicitly
-in scope. Do not add dependencies or implement future course sessions as
-cleanup.
+Migrations: `bun run db:generate` on the host, apply with
+`docker compose exec api bun run db:migrate`. Do not add dependencies or
+implement future course sessions as cleanup.

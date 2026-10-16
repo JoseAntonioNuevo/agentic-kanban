@@ -4,3 +4,5 @@
  * ni `drizzle-orm` desde `apps/api`.
  */
 export { db, getDb, getLibsql, libsql, pingDatabase } from "./client.ts";
+export * as schema from "./schema/index.ts";
+export { account, session, user, verification } from "./schema/index.ts";

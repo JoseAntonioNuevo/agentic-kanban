@@ -1,4 +1,4 @@
-/** Input de texto de shadcn/ui. Se usará en el login de la Sesión 1. */
+/** Input de texto de shadcn/ui. Lo usan los formularios de registro y login. */
 import * as React from "react";
 
 import { cn } from "@/lib/utils";

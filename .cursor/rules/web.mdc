@@ -22,9 +22,10 @@ const data = (await res.json()) as HealthResponse;
 await fetch("http://localhost:3000/api/health");
 ```
 
-The starter UI is the health screen (`useHealth`). Better Auth is installed
-only — do not add `createAuthClient()`, login, or workspace UI yet. No React
-Router.
+The UI is the auth form plus the health card (`useHealth`). `authClient`
+(`src/lib/auth-client.ts`) is the only `createAuthClient()`, without `baseURL`
+(same origin through the proxy). Form state is local React state, validated
+with the shared sign-up/sign-in schemas. No workspace UI yet. No React Router.
 
 - App imports: `@/hooks/...`, `@/components/ui/...` with `.tsx` where the file
   uses that style. Generated shadcn under `src/components/ui` — do not restyle

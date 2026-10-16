@@ -1,10 +1,7 @@
 /**
- * Esquema Drizzle del producto.
+ * Esquema Drizzle del proyecto (lo lee `drizzle-kit` y el adapter de Better Auth).
  *
- * Está vacío a propósito: no hay tablas `user`, `workspace` ni `project`
- * hasta la Sesión 1. Cuando se añadan, usa `sqliteTable` / `text` / `integer`
- * de `drizzle-orm/sqlite-core` y scopea cada query de tenant con
- * `workspace_id` autorizado.
+ * Hoy solo contiene las tablas de autenticación. Los workspaces y el producto
+ * llegarán en sesiones posteriores; cada query de tenant llevará `workspace_id`.
  */
-
-export {};
+export * from "./auth.ts";
