@@ -2,7 +2,9 @@
  * Tests del tablero: `GET /api/projects/:projectId/board` y las escrituras de
  * tareas (`POST`, `PATCH`, `DELETE`). Cubren 401 sin sesión, 404 (nunca 403)
  * ante recursos ajenos o inexistentes, 400 con input inválido, el orden por
- * `position` y la compactación de posiciones tras borrar.
+ * `position` y la compactación de posiciones tras borrar. También cubren
+ * `POST /api/tasks/:taskId/move`: reordenar, mover entre columnas, posiciones
+ * sin huecos y rechazo de columnas de otro project.
  */
 import { boardResponseSchema, errorResponseSchema, taskSchema } from "@agentic-kanban/schemas";
 import { describe, expect, it } from "vite-plus/test";
@@ -63,6 +65,14 @@ function postTask(cookie: string | null, projectId: string, body: unknown) {
 function patchTask(cookie: string | null, taskId: string, body: unknown) {
   return requestAs(cookie, `/api/tasks/${taskId}`, {
     method: "PATCH",
+    headers: JSON_HEADERS,
+    body: JSON.stringify(body),
+  });
+}
+
+function postMove(cookie: string | null, taskId: string, body: unknown) {
+  return requestAs(cookie, `/api/tasks/${taskId}/move`, {
+    method: "POST",
     headers: JSON_HEADERS,
     body: JSON.stringify(body),
   });
@@ -371,5 +381,256 @@ describe("DELETE /api/tasks/:taskId", () => {
     const board = await getBoard(luis.cookie, luisProjectId);
 
     expect(board.columns[0]?.tasks).toHaveLength(1);
+  });
+});
+
+describe("POST /api/tasks/:taskId/move", () => {
+  /** Relee el board y comprueba que TODAS las columnas tienen posiciones 0..n-1. */
+  async function expectNoGaps(cookie: string, projectId: string) {
+    const board = await getBoard(cookie, projectId);
+
+    for (const column of board.columns) {
+      expect(column.tasks.map((item) => item.position)).toEqual(column.tasks.map((_, i) => i));
+    }
+
+    return board;
+  }
+
+  it("responde 401 sin cookie", async () => {
+    const response = await postMove(null, "cualquier-id", { columnId: "x", position: 0 });
+
+    expect(response.status).toBe(401);
+    errorResponseSchema.parse(await response.json());
+  });
+
+  it("reordena dentro de la misma columna (de 0 a 2)", async () => {
+    const { ana, anaProjectId, anaBoard } = await setup();
+    const [a0, a1, a2] = anaBoard.taskIds[0] ?? [];
+
+    const response = await postMove(ana.cookie, a0 ?? "", {
+      columnId: anaBoard.columnIds[0],
+      position: 2,
+    });
+
+    expect(response.status).toBe(200);
+    const moved = taskSchema.parse(await response.json());
+
+    expect(moved.id).toBe(a0);
+    expect(moved.columnId).toBe(anaBoard.columnIds[0]);
+    expect(moved.position).toBe(2);
+
+    const board = await expectNoGaps(ana.cookie, anaProjectId);
+
+    expect(board.columns[0]?.tasks.map((item) => item.id)).toEqual([a1, a2, a0]);
+    expect(board.columns[1]?.tasks.map((item) => item.title)).toEqual(["B0"]);
+    expect(board.columns[2]?.tasks).toEqual([]);
+  });
+
+  it("reordena hacia arriba dentro de la misma columna (de 2 a 0)", async () => {
+    const { ana, anaProjectId, anaBoard } = await setup();
+    const [a0, a1, a2] = anaBoard.taskIds[0] ?? [];
+
+    const response = await postMove(ana.cookie, a2 ?? "", {
+      columnId: anaBoard.columnIds[0],
+      position: 0,
+    });
+
+    expect(response.status).toBe(200);
+    expect(taskSchema.parse(await response.json()).position).toBe(0);
+
+    const board = await expectNoGaps(ana.cookie, anaProjectId);
+
+    expect(board.columns[0]?.tasks.map((item) => item.id)).toEqual([a2, a0, a1]);
+  });
+
+  it("mueve a otra columna insertando en medio y compacta el origen", async () => {
+    const { ana, anaProjectId, anaBoard } = await setup();
+    const [a0, a1, a2] = anaBoard.taskIds[0] ?? [];
+    const b0 = anaBoard.taskIds[1]?.[0] ?? "";
+
+    // Primero B0 pasa a "Por hacer" en medio: [A0, B0, A1, A2] y "En curso" queda vacía.
+    const response = await postMove(ana.cookie, b0, {
+      columnId: anaBoard.columnIds[0],
+      position: 1,
+    });
+
+    expect(response.status).toBe(200);
+    const moved = taskSchema.parse(await response.json());
+
+    expect(moved.columnId).toBe(anaBoard.columnIds[0]);
+    expect(moved.position).toBe(1);
+
+    const board = await expectNoGaps(ana.cookie, anaProjectId);
+
+    expect(board.columns[0]?.tasks.map((item) => item.id)).toEqual([a0, b0, a1, a2]);
+    expect(board.columns[1]?.tasks).toEqual([]);
+    expect(board.columns[2]?.tasks).toEqual([]);
+  });
+
+  it("mueve una tarea del medio a otra columna y cierra el hueco del origen", async () => {
+    const { ana, anaProjectId, anaBoard } = await setup();
+    const [a0, a1, a2] = anaBoard.taskIds[0] ?? [];
+    const b0 = anaBoard.taskIds[1]?.[0] ?? "";
+
+    const response = await postMove(ana.cookie, a1 ?? "", {
+      columnId: anaBoard.columnIds[1],
+      position: 0,
+    });
+
+    expect(response.status).toBe(200);
+    const moved = taskSchema.parse(await response.json());
+
+    expect(moved.columnId).toBe(anaBoard.columnIds[1]);
+    expect(moved.position).toBe(0);
+
+    const board = await expectNoGaps(ana.cookie, anaProjectId);
+
+    expect(board.columns[0]?.tasks.map((item) => item.id)).toEqual([a0, a2]);
+    expect(board.columns[1]?.tasks.map((item) => item.id)).toEqual([a1, b0]);
+  });
+
+  it("mueve a una columna vacía con position 0", async () => {
+    const { ana, anaProjectId, anaBoard } = await setup();
+    const [a0, a1, a2] = anaBoard.taskIds[0] ?? [];
+
+    const response = await postMove(ana.cookie, a0 ?? "", {
+      columnId: anaBoard.columnIds[2],
+      position: 0,
+    });
+
+    expect(response.status).toBe(200);
+    const moved = taskSchema.parse(await response.json());
+
+    expect(moved.columnId).toBe(anaBoard.columnIds[2]);
+    expect(moved.position).toBe(0);
+
+    const board = await expectNoGaps(ana.cookie, anaProjectId);
+
+    expect(board.columns[0]?.tasks.map((item) => item.id)).toEqual([a1, a2]);
+    expect(board.columns[2]?.tasks.map((item) => item.id)).toEqual([a0]);
+  });
+
+  it("acota una posición mayor que n: la tarea queda al final", async () => {
+    const { ana, anaProjectId, anaBoard } = await setup();
+    const [a0, a1, a2] = anaBoard.taskIds[0] ?? [];
+    const b0 = anaBoard.taskIds[1]?.[0] ?? "";
+
+    // A otra columna con 1 tarea.
+    const toOther = await postMove(ana.cookie, a0 ?? "", {
+      columnId: anaBoard.columnIds[1],
+      position: 99,
+    });
+
+    expect(toOther.status).toBe(200);
+    expect(taskSchema.parse(await toOther.json()).position).toBe(1);
+
+    let board = await expectNoGaps(ana.cookie, anaProjectId);
+
+    expect(board.columns[0]?.tasks.map((item) => item.id)).toEqual([a1, a2]);
+    expect(board.columns[1]?.tasks.map((item) => item.id)).toEqual([b0, a0]);
+
+    // Dentro de la misma columna (queda [a2, a1]).
+    const sameColumn = await postMove(ana.cookie, a1 ?? "", {
+      columnId: anaBoard.columnIds[0],
+      position: 99,
+    });
+
+    expect(sameColumn.status).toBe(200);
+    expect(taskSchema.parse(await sameColumn.json()).position).toBe(1);
+
+    board = await expectNoGaps(ana.cookie, anaProjectId);
+
+    expect(board.columns[0]?.tasks.map((item) => item.id)).toEqual([a2, a1]);
+  });
+
+  it("devuelve 404 al mover a una columna de otro project del mismo usuario y no cambia nada", async () => {
+    const user = await signUpUser();
+    const first = await createWorkspaceFixture({
+      name: "Notas",
+      memberUserIds: [user.userId],
+      projects: ["Kanban"],
+    });
+    const second = await createWorkspaceFixture({
+      name: "Personal",
+      memberUserIds: [user.userId],
+      projects: ["Notas"],
+    });
+    const firstProjectId = first.projectIds[0] ?? "";
+    const secondProjectId = second.projectIds[0] ?? "";
+    const firstBoard = await createBoardFixture({
+      workspaceId: first.workspaceId,
+      projectId: firstProjectId,
+      columns: [{ name: "Por hacer", tasks: ["K0", "K1"] }],
+    });
+    const secondBoard = await createBoardFixture({
+      workspaceId: second.workspaceId,
+      projectId: secondProjectId,
+      columns: [{ name: "Por hacer", tasks: ["N0"] }],
+    });
+    const [k0, k1] = firstBoard.taskIds[0] ?? [];
+
+    const response = await postMove(user.cookie, k0 ?? "", {
+      columnId: secondBoard.columnIds[0],
+      position: 0,
+    });
+
+    expect(response.status).toBe(404);
+    errorResponseSchema.parse(await response.json());
+
+    const firstAfter = await expectNoGaps(user.cookie, firstProjectId);
+    const secondAfter = await expectNoGaps(user.cookie, secondProjectId);
+
+    expect(firstAfter.columns[0]?.tasks.map((item) => item.id)).toEqual([k0, k1]);
+    expect(secondAfter.columns[0]?.tasks.map((item) => item.title)).toEqual(["N0"]);
+  });
+
+  it("devuelve 404 a un usuario no miembro y no mueve la tarea", async () => {
+    const { ana, luis, anaProjectId, anaBoard } = await setup();
+    const [a0, a1, a2] = anaBoard.taskIds[0] ?? [];
+
+    const response = await postMove(luis.cookie, a0 ?? "", {
+      columnId: anaBoard.columnIds[2],
+      position: 0,
+    });
+
+    expect(response.status).toBe(404);
+    errorResponseSchema.parse(await response.json());
+
+    const board = await expectNoGaps(ana.cookie, anaProjectId);
+
+    expect(board.columns[0]?.tasks.map((item) => item.id)).toEqual([a0, a1, a2]);
+    expect(board.columns[2]?.tasks).toEqual([]);
+  });
+
+  it("devuelve 404 para una tarea inexistente", async () => {
+    const { ana, anaBoard } = await setup();
+
+    const response = await postMove(ana.cookie, "no-existe", {
+      columnId: anaBoard.columnIds[0],
+      position: 0,
+    });
+
+    expect(response.status).toBe(404);
+    errorResponseSchema.parse(await response.json());
+  });
+
+  it("devuelve 400 con position negativa, no entera o columnId vacío", async () => {
+    const { ana, anaProjectId, anaBoard } = await setup();
+    const [a0, a1, a2] = anaBoard.taskIds[0] ?? [];
+    const columnId = anaBoard.columnIds[0];
+
+    for (const body of [
+      { columnId, position: -1 },
+      { columnId, position: 1.5 },
+      { columnId: "", position: 0 },
+    ]) {
+      const response = await postMove(ana.cookie, a0 ?? "", body);
+
+      expect(response.status).toBe(400);
+    }
+
+    const board = await expectNoGaps(ana.cookie, anaProjectId);
+
+    expect(board.columns[0]?.tasks.map((item) => item.id)).toEqual([a0, a1, a2]);
   });
 });

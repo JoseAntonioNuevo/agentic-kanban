@@ -243,3 +243,90 @@ export async function deleteTaskForMember(taskId: string, userId: string): Promi
     return current;
   });
 }
+
+/**
+ * Mueve una tarea autorizada a `target.columnId` en `target.position`.
+ *
+ * Todo ocurre en una transacción:
+ * 1. La tarea se busca por membresía del `workspace_id` de su fila.
+ * 2. La columna destino debe existir en el mismo project y workspace que la
+ *    tarea; si no, `null` (cubre otro project y otro workspace).
+ * 3. Se leen las tareas de la columna origen (por `position`, `id`) sin la
+ *    tarea movida; el destino es esa misma lista o las tareas de la otra columna.
+ * 4. La tarea se inserta en el destino en `position` acotada a `0..n`.
+ * 5. Se renumera 0..n-1 el destino (con su `column_id`) y, si cambió de
+ *    columna, también el origen. UPDATE fila a fila: determinista y sin
+ *    conflictos porque `position` no es única.
+ * Devuelve la fila ya movida, releída de la base.
+ */
+export async function moveTaskForMember(
+  taskId: string,
+  userId: string,
+  target: { columnId: string; position: number },
+): Promise<TaskRow | null> {
+  return getDb().transaction(async (tx) => {
+    const current = await getTaskForMemberTx(tx, taskId, userId);
+
+    if (!current) {
+      return null;
+    }
+
+    const targetColumns = await tx
+      .select({ id: column.id })
+      .from(column)
+      .where(
+        and(
+          eq(column.id, target.columnId),
+          eq(column.projectId, current.projectId),
+          eq(column.workspaceId, current.workspaceId),
+        ),
+      )
+      .limit(1);
+
+    if (!targetColumns[0]) {
+      return null;
+    }
+
+    // Ids de las tareas de una columna en orden estable (`position`, luego `id`).
+    const idsOfColumn = async (columnId: string): Promise<string[]> => {
+      const rows = await tx
+        .select({ id: task.id })
+        .from(task)
+        .where(and(eq(task.columnId, columnId), eq(task.workspaceId, current.workspaceId)))
+        .orderBy(asc(task.position), asc(task.id));
+
+      return rows.map((row) => row.id);
+    };
+
+    const sameColumn = target.columnId === current.columnId;
+    const sourceIds = (await idsOfColumn(current.columnId)).filter((id) => id !== current.id);
+    const targetIds = sameColumn ? [...sourceIds] : await idsOfColumn(target.columnId);
+
+    const index = Math.min(Math.max(target.position, 0), targetIds.length);
+    targetIds.splice(index, 0, current.id);
+
+    // Renumera una lista 0..n-1 y fija su `column_id` (la tarea movida cambia de columna).
+    const renumber = async (columnId: string, ids: string[]): Promise<void> => {
+      for (const [position, id] of ids.entries()) {
+        await tx
+          .update(task)
+          .set({ position, columnId })
+          .where(and(eq(task.id, id), eq(task.workspaceId, current.workspaceId)));
+      }
+    };
+
+    await renumber(target.columnId, targetIds);
+
+    if (!sameColumn) {
+      await renumber(current.columnId, sourceIds);
+    }
+
+    const moved = await tx
+      .select()
+      .from(task)
+      .where(and(eq(task.id, current.id), eq(task.workspaceId, current.workspaceId)))
+      .limit(1);
+
+    return moved[0] ?? null;
+  });
+}

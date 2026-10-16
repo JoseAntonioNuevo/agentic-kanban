@@ -31,7 +31,9 @@ app.route("/", boardRoutes);
 - Validate inputs (param/json via `zValidator` → 400) and responses with
   `@agentic-kanban/schemas`.
 - `src/routes/board.ts` (`boardRoutes`): `GET /api/projects/:projectId/board`,
-  `POST /api/projects/:projectId/tasks`, `PATCH`/`DELETE /api/tasks/:taskId`.
+  `POST /api/projects/:projectId/tasks`, `PATCH`/`DELETE /api/tasks/:taskId`,
+  `POST /api/tasks/:taskId/move` (`moveTaskBodySchema` → 200 task; the target
+  column is validated against the task's own project, else 404).
   Data comes from the `*ForMember` queries in `@agentic-kanban/db`. Client ids
   only identify: `columnId` is validated against the authorized project (else
   404, no IDOR). `DELETE` answers 204 (`c.body(null, 204)`). Session 3 will

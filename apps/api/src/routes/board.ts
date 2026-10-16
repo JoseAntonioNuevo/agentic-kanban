@@ -5,6 +5,7 @@
  * - `POST /api/projects/:projectId/tasks`: crea al final de la columna.
  * - `PATCH /api/tasks/:taskId`: edita título y/o descripción.
  * - `DELETE /api/tasks/:taskId`: borra y compacta las posiciones.
+ * - `POST /api/tasks/:taskId/move`: reordena o mueve a otra columna del mismo project.
  *
  * Todas pasan por `requireSession` y por una consulta `*ForMember`: sin
  * membresía o sin fila responden 404 (nunca 403). Los ids del cliente solo
@@ -15,6 +16,7 @@ import {
   createTaskForMember,
   deleteTaskForMember,
   getBoardForMember,
+  moveTaskForMember,
   updateTaskForMember,
   type TaskRow,
 } from "@agentic-kanban/db";
@@ -22,6 +24,7 @@ import {
   boardResponseSchema,
   createTaskBodySchema,
   errorResponseSchema,
+  moveTaskBodySchema,
   projectIdParamSchema,
   taskIdParamSchema,
   taskSchema,
@@ -85,7 +88,7 @@ boardRoutes.get(
   },
 );
 
-// La Sesión 3 publicará eventos de tiempo real desde las tres rutas de escritura.
+// La Sesión 3 publicará eventos de tiempo real desde las rutas de escritura.
 boardRoutes.post(
   "/api/projects/:projectId/tasks",
   requireSession,
@@ -141,5 +144,24 @@ boardRoutes.delete(
     }
 
     return c.body(null, 204);
+  },
+);
+
+// La columna destino se valida en la consulta contra el project de la tarea (404 si no).
+boardRoutes.post(
+  "/api/tasks/:taskId/move",
+  requireSession,
+  zValidator("param", taskIdParamSchema),
+  zValidator("json", moveTaskBodySchema),
+  async (c) => {
+    const { taskId } = c.req.valid("param");
+    const body = c.req.valid("json");
+    const row = await moveTaskForMember(taskId, c.get("userId"), body);
+
+    if (!row) {
+      return c.json(notFoundBody(), 404);
+    }
+
+    return c.json(toTaskResponse(row));
   },
 );

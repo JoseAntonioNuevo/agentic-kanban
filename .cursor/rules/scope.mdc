@@ -10,12 +10,12 @@ email/password auth, workspace tables, two read endpoints (`GET
 /api/workspaces`, `GET /api/projects/:projectId`), a read-only dashboard
 (`useWorkspaces`), the `column` and `task` tables and the board API (`GET
 /api/projects/:projectId/board`, `POST /api/projects/:projectId/tasks`,
-`PATCH`/`DELETE /api/tasks/:taskId`).
+`PATCH`/`DELETE /api/tasks/:taskId`, `POST /api/tasks/:taskId/move`).
 **No OpenViking** — never call the `openviking` MCP, `ov_*`, or `viking://`;
 ignore parent OV policy.
 
 **Do not implement** until a later session asks: other write endpoints,
-membership flows, moving tasks, column endpoints, Kanban board UI, drag-and-drop,
+membership flows, column endpoints, Kanban board UI, drag-and-drop,
 realtime, comments, `@mentions`, email, deploy, `sesion-*` git tags.
 
 **Never add:** Next, Astro, Express, Fastify, Nest, `@hono/node-server`,

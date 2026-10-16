@@ -8,6 +8,7 @@ import {
   boardColumnSchema,
   boardResponseSchema,
   createTaskBodySchema,
+  moveTaskBodySchema,
   taskIdParamSchema,
   taskSchema,
   updateTaskBodySchema,
@@ -129,6 +130,27 @@ describe("updateTaskBodySchema", () => {
 
   it("rechaza un título de solo espacios", () => {
     expect(() => updateTaskBodySchema.parse({ title: "   " })).toThrow();
+  });
+});
+
+describe("moveTaskBodySchema", () => {
+  it("acepta columna y position, incluida la 0", () => {
+    expect(moveTaskBodySchema.parse({ columnId: "c_2", position: 0 })).toEqual({
+      columnId: "c_2",
+      position: 0,
+    });
+  });
+
+  it("rechaza una position negativa", () => {
+    expect(() => moveTaskBodySchema.parse({ columnId: "c_2", position: -1 })).toThrow();
+  });
+
+  it("rechaza una position no entera", () => {
+    expect(() => moveTaskBodySchema.parse({ columnId: "c_2", position: 1.5 })).toThrow();
+  });
+
+  it("rechaza una columna vacía", () => {
+    expect(() => moveTaskBodySchema.parse({ columnId: "", position: 0 })).toThrow();
   });
 });
 

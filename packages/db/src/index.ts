@@ -23,6 +23,7 @@ export {
   deleteTaskForMember,
   getBoardForMember,
   getTaskForMember,
+  moveTaskForMember,
   updateTaskForMember,
 } from "./queries/board.ts";
 export type { BoardColumnWithTasks, BoardData } from "./queries/board.ts";

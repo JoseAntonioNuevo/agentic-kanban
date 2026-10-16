@@ -42,24 +42,28 @@ Board contract (`boardRoutes`, queries `*ForMember` in `@agentic-kanban/db`):
 `GET /api/projects/:projectId/board` (200 `{ project, columns: [{ …, tasks }] }`
 by `position`), `POST /api/projects/:projectId/tasks` (`{ columnId, title,
 description? }` → 201 task), `PATCH /api/tasks/:taskId` (`{ title?,
-description? }`, at least one → 200 task) and `DELETE /api/tasks/:taskId`
-(→ 204). No session → 401; not a member or not found → 404, never 403; invalid
+description? }`, at least one → 200 task), `DELETE /api/tasks/:taskId`
+(→ 204) and `POST /api/tasks/:taskId/move` (`{ columnId, position }`, position
+an integer ≥ 0 clamped to `0..n` → 200 moved task). No session → 401; not a member or not found → 404, never 403; invalid
 input → 400. Client ids (`projectId`, `columnId`, `taskId`) only identify rows:
 membership is checked with the row's `workspace_id`, and on create `columnId`
-must belong to the same project (else 404). Create appends at the end of the
-column; delete compacts the column's positions (0..n-1) in a transaction.
-Moving tasks and drag-and-drop do not exist yet.
+must belong to the same project (else 404); on move the target column must
+belong to the task's own project and workspace (else 404, so no cross-project
+or cross-workspace moves). Create appends at the end of the column; delete
+compacts the column's positions (0..n-1) in a transaction; move takes the task
+out, inserts it at `position` and renumbers the affected columns 0..n-1 in one
+transaction. Drag-and-drop does not exist yet.
 Board UI: the dashboard opens each project in its board (columns and tasks in
 order) and the user can create, edit and delete tasks (`useBoard`,
 `useTaskMutations`; layer detail in `.cursor/rules/web.mdc`). Every board
 mutation uses a `mutationKey` that starts with `["board", projectId, …]`.
-Drag-and-drop and moving tasks are not in the UI yet.
+Drag-and-drop and moving tasks are not in the UI yet (the move endpoint exists).
 Postman: `postman/agentic-kanban-session2.postman_collection.json` and
 `postman/agentic-kanban-local.postman_environment.json` (import both; `baseUrl`
 defaults to `http://localhost:3000`, session cookie only, `Origin: {{origin}}`
 is mandatory on every `/api/auth/*` request).
 Do not invent other product tables, other demo users, other CRUD,
-drag-and-drop, moving tasks, realtime, comments, mentions, email, deployment,
+drag-and-drop, realtime, comments, mentions, email, deployment,
 or session tags before the course work asks for them.
 
 Out of scope: billing, RBAC, attachments, mobile, SSO, automations,

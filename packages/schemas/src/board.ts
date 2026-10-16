@@ -61,6 +61,12 @@ export const updateTaskBodySchema = z
     message: "Indica al menos el título o la descripción",
   });
 
+/** Cuerpo de `POST` de mover: columna destino y posición (se acota a `0..n` en la consulta). */
+export const moveTaskBodySchema = z.object({
+  columnId: z.string().min(1),
+  position: z.number().int().min(0),
+});
+
 /** Parámetro de ruta `:taskId`. */
 export const taskIdParamSchema = z.object({
   taskId: z.string().min(1),
@@ -71,4 +77,5 @@ export type BoardColumn = z.infer<typeof boardColumnSchema>;
 export type BoardResponse = z.infer<typeof boardResponseSchema>;
 export type CreateTaskBody = z.infer<typeof createTaskBodySchema>;
 export type UpdateTaskBody = z.infer<typeof updateTaskBodySchema>;
+export type MoveTaskBody = z.infer<typeof moveTaskBodySchema>;
 export type TaskIdParam = z.infer<typeof taskIdParamSchema>;

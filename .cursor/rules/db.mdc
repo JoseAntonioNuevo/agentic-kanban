@@ -24,7 +24,7 @@ Hono → drizzle-orm/libsql → @libsql/client → file:…/agentic-kanban.db
   role), `project` (`project.ts`) and the board tables `column` and `task`
   (`board.ts`, each with its own `workspace_id`). Board queries live in
   `queries/board.ts` with the `*ForMember` suffix (membership join on the row's
-  `workspace_id`; create and delete run in `getDb().transaction`). One file per
+  `workspace_id`; create, delete and move run in `getDb().transaction`). One file per
   aggregate, re-exported from `schema/index.ts` and `src/index.ts`.
 - Foreign keys use `onDelete: "cascade"` and each FK column is indexed: its own
   `<table>_<column>_idx`, or as the leading column of a composite index
