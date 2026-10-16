@@ -38,5 +38,5 @@ app.route("/", projectRoutes);
   `AUTH_RATE_LIMIT_DISABLED=1`. `get-session` is never limited.
 - `src/realtime/index.ts` stays a placeholder. Realtime must stay in this
   process (SSE or WebSocket). No Socket.IO, Redis, or extra service.
-- Do not auto-run migrations or seed (apply with `docker compose exec api bun run db:migrate`). Dev: `bun run --hot`. Listen
+- Do not auto-run migrations or seed (apply with `docker compose exec api bun run db:migrate`, then `bun run db:seed`). Dev: `bun run --hot`. Listen
   `0.0.0.0:${API_PORT:-3000}`.

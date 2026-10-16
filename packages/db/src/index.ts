@@ -21,3 +21,9 @@ export type {
   WorkspaceProjectSummary,
   WorkspaceWithProjects,
 } from "./queries/workspaces.ts";
+export {
+  ensureWorkspaceMember,
+  findUserIdByEmail,
+  upsertProject,
+  upsertWorkspace,
+} from "./queries/seed.ts";

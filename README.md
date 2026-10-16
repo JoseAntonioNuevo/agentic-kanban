@@ -37,6 +37,19 @@ docker compose down
 
 Eso no borra la base de datos.
 
+## Datos de aula (seed)
+
+Con Compose arriba, aplica las migraciones y luego el seed (repetible, no
+duplica filas):
+
+```bash
+docker compose exec api bun run db:migrate
+docker compose exec api bun run db:seed
+```
+
+Crea `ana@demo.test` y `luis@demo.test` (contraseña ficticia `Demo1234!`).
+`ws_thepower_demo` tiene a Ana y Luis; `ws_ana_demo`, solo a Ana.
+
 ## Resetear la base de datos
 
 ```bash
@@ -44,6 +57,8 @@ docker compose down
 rm -f data/*.db data/*.db-*
 docker compose up --build
 ```
+
+Tras un reset: migrar y luego seedear (los dos comandos de arriba).
 
 ## Cómo está conectado
 

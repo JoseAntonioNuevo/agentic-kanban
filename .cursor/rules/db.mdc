@@ -27,7 +27,7 @@ Hono → drizzle-orm/libsql → @libsql/client → file:…/agentic-kanban.db
   `<table>_<column>_idx`. libSQL enforces FKs (`PRAGMA foreign_keys` is 1), so
   deletes never leave orphans.
 - Every tenant-owned query must include an authorized `workspace_id`.
-- Do not auto-run migrations or seed. `db:generate` runs on the host;
+- Do not auto-run migrations or seed (the seed lives in `apps/api/src/seed.ts`, writes only via upserts in `queries/seed.ts`: no DELETE). `db:generate` runs on the host;
   `migrations/` is versioned (drizzle-kit's `meta/*.json` is excluded from
   formatting, do not format it). Apply with `docker compose exec api bun run
   db:migrate`. Never commit `*.db`.

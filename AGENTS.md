@@ -29,8 +29,14 @@ user is a member of its workspace). Order: session (401 without it) →
 membership in `workspace_member` (not a member or not found → 404, never 403)
 → `workspace_id` always from the database row, never from body/query/params →
 every tenant query filters by it. There is no UI yet and no write endpoints.
-Do not invent other product tables, demo users, CRUD beyond these reads, a Kanban board, drag-and-drop, realtime, comments, mentions,
-email, deployment, or session tags before the course work asks for them.
+A deterministic, idempotent seed (`bun run db:seed`, upserts only, never run
+on API start) creates the classroom accounts through Better Auth's
+`signUpEmail`: Ana (`ana@demo.test`) and Luis (`luis@demo.test`), fictitious
+password `Demo1234!`. `ws_thepower_demo` (project `proj_agentic_kanban`) has
+Ana and Luis; `ws_ana_demo` (project `proj_ana_notes`) only Ana.
+Do not invent other product tables, other demo users, CRUD beyond these
+reads, a Kanban board, drag-and-drop, realtime, comments, mentions, email,
+deployment, or session tags before the course work asks for them.
 
 Out of scope: billing, RBAC, attachments, mobile, SSO, automations,
 microservices, queues, Redis, extra cloud services, and additional architecture

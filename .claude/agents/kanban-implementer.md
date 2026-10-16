@@ -34,6 +34,11 @@ report instead of guessing.
   `data/agentic-kanban.db` or `data/outbox.jsonl`.
 - Do not run migrations, seeds, Docker commands or git commands that change
   state unless the brief says so. Never commit.
+- Never delete, move or reset anything in `data/`: Compose serves
+  `data/agentic-kanban.db` while you work. To try a script against a
+  throwaway database, put `DATABASE_URL=file:<tmp>.db` inline on the same
+  command (not in a separate `export` that a failed step can skip) and
+  delete only that temporary file.
 
 ## Checks before you report
 
