@@ -49,6 +49,10 @@ membership is checked with the row's `workspace_id`, and on create `columnId`
 must belong to the same project (else 404). Create appends at the end of the
 column; delete compacts the column's positions (0..n-1) in a transaction.
 Moving tasks and drag-and-drop do not exist yet.
+Postman: `postman/agentic-kanban-session2.postman_collection.json` and
+`postman/agentic-kanban-local.postman_environment.json` (import both; `baseUrl`
+defaults to `http://localhost:3000`, session cookie only, `Origin: {{origin}}`
+is mandatory on every `/api/auth/*` request).
 Do not invent other product tables, other demo users, other CRUD, the board UI,
 drag-and-drop, moving tasks, realtime, comments, mentions, email, deployment,
 or session tags before the course work asks for them.
