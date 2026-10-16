@@ -1,6 +1,6 @@
 # Sesión 3 · 02 — El stream SSE y el hub
 
-Tiempo en clase: ~15 min. Antes de editar nada, presenta un plan de 15 líneas
+Tiempo en clase: ~15 min. Tú no editas código: orquestas. Antes de lanzar a los implementadores, presenta un plan de 15 líneas
 como máximo (ruta, autorización, cómo se registra y se da de baja un
 suscriptor, ficheros) y espera mi «adelante».
 
@@ -62,19 +62,13 @@ Socket.IO, Redis y cualquier servicio aparte.
 
 ## Cómo trabajar
 
-Usa los subagentes de `.claude/agents/`. Si tu herramienta no los tiene, haz
-tú los pasos en el mismo orden.
+Tú (Opus) orquestas y no editas ficheros: investigan los subagentes Haiku, implementa Sonnet y verifica Haiku. Usa los subagentes de `.claude/agents/`; si tu herramienta no los tiene, haz los mismos pasos en este orden.
 
-1. Tú (Opus): fija la API del hub y cómo cablear el `server.timeout` de Bun.
-2. Dos `kanban-implementer` (Sonnet) en paralelo:
-   - A: hub, ruta, montaje, `index.ts` de Bun y proxy de Vite+.
-   - B: tests del hub y de la autorización de la ruta.
-3. `kanban-verifier` (Haiku): puerta de calidad y estas pruebas por
-   `http://localhost:5173` (Vite se reinicia solo al cambiar su config; si no,
-   `docker compose restart web`): sin cookie → 401; Luis en `/api/projects/proj_ana_notes/events` → 404; Ana
-   en `/api/projects/proj_agentic_kanban/events` con
-   `curl -N --max-time 25` sigue abierta más de 10 s y recibe keepalives.
-4. Tú: revisa el diff (bajas del hub, sin escrituras fuera del bucle).
+1. **Investigar** — `kanban-recon` (Haiku): `apps/api/src/index.ts`, `requireSession`, `getProjectForMember`, el proxy de Vite+ y las firmas instaladas de `streamSSE` (`hono/streaming`), `idleTimeout` y `server.timeout` (`bun-types`).
+2. **Planificar** — tú: API del hub y cómo cablear el `server.timeout` de Bun. Presenta el plan y espera mi «adelante».
+3. **Implementar** — `kanban-implementer` (Sonnet): dos en paralelo: A, hub, ruta, montaje, `index.ts` de Bun y proxy de Vite+; B, tests del hub y de la autorización de la ruta. Uno de ellos actualiza la documentación de «Al terminar».
+4. **Verificar** — `kanban-verifier` (Haiku): puerta de calidad y estas pruebas por `http://localhost:5173` (Vite se reinicia solo al cambiar su config; si no, `docker compose restart web`): sin cookie → 401; Luis en `/api/projects/proj_ana_notes/events` → 404; Ana en `/api/projects/proj_agentic_kanban/events` con `curl -N --max-time 25` sigue abierta más de 10 s y recibe keepalives.
+5. **Revisar** — tú revisas el diff completo (bajas del hub, sin escrituras fuera del bucle). Si algo falla, encarga el arreglo a un `kanban-implementer` y vuelve a verificar.
 
 ## Hecho cuando
 
@@ -84,6 +78,6 @@ tú los pasos en el mismo orden.
 
 ## Al terminar
 
-Actualiza `AGENTS.md` y `.cursor/rules/api.mdc` (stream sí; publicar y cliente
+El implementador encargado de la documentación actualiza `AGENTS.md` y `.cursor/rules/api.mdc` (stream sí; publicar y cliente
 no; quita la frase de realtime como placeholder). No hagas commit. Cierra con
 el resumen que pide `AGENTS.md`.

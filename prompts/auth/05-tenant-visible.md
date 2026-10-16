@@ -1,6 +1,6 @@
 # Sesión 1 · 05 — El tenant visible en el dashboard
 
-Tiempo en clase: ~8 min. Antes de editar nada, presenta un plan de 10 líneas
+Tiempo en clase: ~8 min. Tú no editas código: orquestas. Antes de lanzar a los implementadores, presenta un plan de 10 líneas
 como máximo y espera mi «adelante».
 
 ## Punto de partida
@@ -41,9 +41,13 @@ no se toca.
 
 ## Cómo trabajar
 
-Usa un `kanban-implementer` (Sonnet, de `.claude/agents/`) para la web y
-después `kanban-verifier` (Haiku) para la puerta de calidad y las pruebas HTTP.
-Tú revisas el diff.
+Tú (Opus) orquestas y no editas ficheros: investigan los subagentes Haiku, implementa Sonnet y verifica Haiku. Usa los subagentes de `.claude/agents/`; si tu herramienta no los tiene, haz los mismos pasos en este orden.
+
+1. **Investigar** — `kanban-recon` (Haiku): `use-health.ts`, `App.tsx`, `authClient`, `queryClient` y la respuesta real de `GET /api/workspaces`.
+2. **Planificar** — tú: hook, queryKey, limpieza de la caché y cómo se pinta el acento. Presenta el plan y espera mi «adelante».
+3. **Implementar** — `kanban-implementer` (Sonnet): uno solo: la web y la documentación de «Al terminar».
+4. **Verificar** — `kanban-verifier` (Haiku): puerta de calidad y pruebas HTTP de «Hecho cuando».
+5. **Revisar** — tú revisas el diff completo. Si algo falla, encarga el arreglo a un `kanban-implementer` y vuelve a verificar.
 
 ## Hecho cuando
 
@@ -56,6 +60,6 @@ Tú revisas el diff.
 
 ## Al terminar
 
-Actualiza `AGENTS.md`, `.cursor/rules/web.mdc` y el README (Ana ve dos
+El implementador encargado de la documentación actualiza `AGENTS.md`, `.cursor/rules/web.mdc` y el README (Ana ve dos
 espacios; Luis, uno). No hagas commit. Cierra con el resumen que pide
 `AGENTS.md`.

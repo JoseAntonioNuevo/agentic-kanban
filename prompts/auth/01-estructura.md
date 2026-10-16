@@ -1,6 +1,6 @@
 # Sesión 1 · 01 — Autenticación con Better Auth
 
-Tiempo en clase: ~17 min. Antes de editar nada, presenta un plan de 15 líneas
+Tiempo en clase: ~17 min. Tú no editas código: orquestas. Antes de lanzar a los implementadores, presenta un plan de 15 líneas
 como máximo (archivos, contratos, reparto entre subagentes y verificación) y
 espera mi «adelante».
 
@@ -67,19 +67,13 @@ verificación de email y proveedores OAuth.
 
 ## Cómo trabajar
 
-Usa los subagentes de `.claude/agents/`. Si tu herramienta no los tiene, haz
-tú los pasos en el mismo orden.
+Tú (Opus) orquestas y no editas ficheros: investigan los subagentes Haiku, implementa Sonnet y verifica Haiku. Usa los subagentes de `.claude/agents/`; si tu herramienta no los tiene, haz los mismos pasos en este orden.
 
-1. `kanban-recon` (Haiku): mapa de `apps/api`, `packages/db`,
-   `packages/schemas` y `apps/web`, más las APIs instaladas que vas a usar
-   (`betterAuth`, `drizzleAdapter`, `createAuthClient`, campos de las tablas).
-2. Tú (Opus): plan y nombres. Fija los contratos de arriba antes de repartir.
-3. Dos `kanban-implementer` (Sonnet) en paralelo, con ficheros disjuntos:
-   - A: tablas, instancia `auth`, rutas, rate limit y migración generada.
-   - B: schemas Zod de los formularios con sus tests, `auth-client` y UI.
-4. `kanban-verifier` (Haiku): aplica la migración, pasa la puerta de calidad y
-   hace las pruebas HTTP de abajo contra `http://localhost:5173`.
-5. Tú: revisa el diff completo, monta lo que falte y actualiza la documentación.
+1. **Investigar** — `kanban-recon` (Haiku): mapa de `apps/api`, `packages/db`, `packages/schemas` y `apps/web`, y las APIs instaladas que vas a usar (`betterAuth`, `drizzleAdapter`, `createAuthClient`, campos de las tablas con `getAuthTables`). Lanza dos en paralelo: servidor y web.
+2. **Planificar** — tú: fija los contratos de arriba y el reparto de ficheros en los briefs. Presenta el plan y espera mi «adelante».
+3. **Implementar** — `kanban-implementer` (Sonnet): dos en paralelo, con ficheros disjuntos: A, tablas, instancia `auth`, rutas, rate limit y migración generada; B, schemas Zod de los formularios con sus tests, `auth-client` y UI. Después, uno une las dos partes (barrels, montaje en `index.ts`) y actualiza la documentación de «Al terminar».
+4. **Verificar** — `kanban-verifier` (Haiku): aplica la migración, pasa la puerta de calidad y hace las pruebas HTTP de «Hecho cuando» contra `http://localhost:5173`.
+5. **Revisar** — tú revisas el diff completo. Si algo falla, encarga el arreglo a un `kanban-implementer` y vuelve a verificar.
 
 ## Hecho cuando
 
@@ -93,7 +87,7 @@ tú los pasos en el mismo orden.
 
 ## Al terminar
 
-Actualiza `AGENTS.md` (auth por cookie sí; workspaces no) y borra lo que deja
+El implementador encargado de la documentación actualiza `AGENTS.md` (auth por cookie sí; workspaces no) y borra lo que deja
 de ser cierto en `.cursor/rules/`: `api.mdc`, `web.mdc`, `db.mdc` y `scope.mdc`
 dicen que auth es un placeholder. No hagas commit. Cierra con el resumen que
 pide `AGENTS.md`.

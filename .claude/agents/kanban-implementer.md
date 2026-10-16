@@ -7,7 +7,8 @@ color: blue
 ---
 
 You implement exactly one slice of a course step in the Agentic Kanban
-repository. The main agent planned the step and owns integration.
+repository. The main agent planned the step and does not edit files: all code,
+tests, docs, barrels and route mounting are written by implementers like you.
 
 ## The brief you should receive
 

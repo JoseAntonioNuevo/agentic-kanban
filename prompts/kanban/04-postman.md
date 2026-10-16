@@ -1,6 +1,6 @@
 # Sesión 2 · 04 — Colección de Postman
 
-Tiempo en clase: ~5 min. Antes de crear nada, presenta un plan de 10 líneas
+Tiempo en clase: ~5 min. Tú no editas código: orquestas. Antes de lanzar a los implementadores, presenta un plan de 10 líneas
 como máximo y espera mi «adelante».
 
 ## Punto de partida
@@ -53,10 +53,13 @@ Cambios de funcionalidad en la API, Newman y paquetes nuevos.
 
 ## Cómo trabajar
 
-Encárgalo a un `kanban-implementer` (Sonnet, de `.claude/agents/`). Después,
-`kanban-verifier` (Haiku) comprueba que los dos JSON se parsean, que cada URL
-existe en `apps/api/src/routes/` y reproduce el flujo principal y el bloque 05
-con `curl` contra `http://localhost:3000`.
+Tú (Opus) orquestas y no editas ficheros: investigan los subagentes Haiku, implementa Sonnet y verifica Haiku. Usa los subagentes de `.claude/agents/`; si tu herramienta no los tiene, haz los mismos pasos en este orden.
+
+1. **Investigar** — `kanban-recon` (Haiku): rutas reales en `apps/api/src/routes/`, schemas de los bodies y endpoints de Better Auth montados.
+2. **Planificar** — tú: peticiones, variables y orden de la colección. Presenta el plan y espera mi «adelante».
+3. **Implementar** — `kanban-implementer` (Sonnet): uno solo: los dos JSON y la documentación de «Al terminar».
+4. **Verificar** — `kanban-verifier` (Haiku): comprueba que los dos JSON se parsean y que cada URL existe en `apps/api/src/routes/`, y reproduce con `curl` el flujo principal y el bloque 05 contra `http://localhost:3000`.
+5. **Revisar** — tú revisas el diff completo. Si algo falla, encarga el arreglo a un `kanban-implementer` y vuelve a verificar.
 
 ## Hecho cuando
 
@@ -67,5 +70,5 @@ con `curl` contra `http://localhost:3000`.
 
 ## Al terminar
 
-Actualiza `AGENTS.md` (la colección existe y cómo usarla). No hagas commit.
+El implementador encargado de la documentación actualiza `AGENTS.md` (la colección existe y cómo usarla). No hagas commit.
 Cierra con el resumen que pide `AGENTS.md`.

@@ -1,6 +1,6 @@
 # Sesión 3 · 04 — El cliente parchea la caché
 
-Tiempo en clase: ~15 min. Antes de editar nada, presenta un plan de 12 líneas
+Tiempo en clase: ~15 min. Tú no editas código: orquestas. Antes de lanzar a los implementadores, presenta un plan de 12 líneas
 como máximo (hook, cuándo se abre y se cierra, cómo se parchea la query,
 ficheros) y espera mi «adelante».
 
@@ -55,15 +55,13 @@ Toasts, presencia, comentarios y Socket.IO.
 
 ## Cómo trabajar
 
-Usa los subagentes de `.claude/agents/`. Si tu herramienta no los tiene, haz
-tú los pasos en el mismo orden.
+Tú (Opus) orquestas y no editas ficheros: investigan los subagentes Haiku, implementa Sonnet y verifica Haiku. Usa los subagentes de `.claude/agents/`; si tu herramienta no los tiene, haz los mismos pasos en este orden.
 
-1. Dos `kanban-implementer` (Sonnet) en paralelo:
-   - A: `applyBoardEvent` y sus tests.
-   - B: `useBoardEvents` y su montaje en `BoardScreen`, usando la firma fijada.
-2. `kanban-verifier` (Haiku): puerta de calidad.
-3. Tú: revisa el diff (una sola conexión, cierre, eco propio) y prepara la
-   prueba con dos navegadores.
+1. **Investigar** — `kanban-recon` (Haiku): `use-board`, `boardQueryKey`, la `mutationKey` de las mutations, `BoardScreen` y `applyBoardMove`.
+2. **Planificar** — tú: firma del hook y reglas del eco propio. Presenta el plan y espera mi «adelante».
+3. **Implementar** — `kanban-implementer` (Sonnet): dos en paralelo: A, `applyBoardEvent` y sus tests; B, `useBoardEvents` y su montaje en `BoardScreen` con la firma fijada. Uno de ellos actualiza la documentación de «Al terminar».
+4. **Verificar** — `kanban-verifier` (Haiku): puerta de calidad.
+5. **Revisar** — tú revisas el diff completo (una sola conexión, cierre, eco propio) y me preparas la prueba con dos navegadores. Si algo falla, encarga el arreglo a un `kanban-implementer` y vuelve a verificar.
 
 ## Hecho cuando
 
@@ -75,5 +73,5 @@ tú los pasos en el mismo orden.
 
 ## Al terminar
 
-Actualiza `AGENTS.md` y `.cursor/rules/web.mdc` (cliente realtime sí; toasts
+El implementador encargado de la documentación actualiza `AGENTS.md` y `.cursor/rules/web.mdc` (cliente realtime sí; toasts
 no). No hagas commit. Cierra con el resumen que pide `AGENTS.md`.

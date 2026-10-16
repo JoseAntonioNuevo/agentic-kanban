@@ -1,6 +1,6 @@
 # Sesión 4 · 05 — La campana
 
-Tiempo en clase: ~12 min. Antes de editar nada, presenta un plan de 15 líneas
+Tiempo en clase: ~12 min. Tú no editas código: orquestas. Antes de lanzar a los implementadores, presenta un plan de 15 líneas
 como máximo y espera mi «adelante».
 
 ## Punto de partida
@@ -62,17 +62,13 @@ comentarios.
 
 ## Cómo trabajar
 
-Usa los subagentes de `.claude/agents/`. Si tu herramienta no los tiene, haz
-tú los pasos en el mismo orden.
+Tú (Opus) orquestas y no editas ficheros: investigan los subagentes Haiku, implementa Sonnet y verifica Haiku. Usa los subagentes de `.claude/agents/`; si tu herramienta no los tiene, haz los mismos pasos en este orden.
 
-1. Tú (Opus): schemas y firmas de las consultas.
-2. Dos `kanban-implementer` (Sonnet) en paralelo:
-   - A: consultas, rutas y tests de API.
-   - B: hooks, `NotificationBell` y su montaje en las dos cabeceras.
-3. `kanban-verifier` (Haiku): puerta de calidad y pruebas HTTP: tras una
-   mención de Ana, Luis `GET /api/notifications` → 200 con al menos 1; Ana →
-   200 `[]`.
-4. Tú: revisa los estados del popover contra la lista de arriba.
+1. **Investigar** — `kanban-recon` (Haiku): consultas de notificaciones existentes, cabeceras del dashboard y del tablero, y componentes `popover` y `badge`.
+2. **Planificar** — tú: fija schemas y firmas en los briefs. Presenta el plan y espera mi «adelante».
+3. **Implementar** — `kanban-implementer` (Sonnet): primero uno escribe `notification.ts`; después dos en paralelo: A, consultas, rutas y tests de API; B, hooks, `NotificationBell` y su montaje en las dos cabeceras. Uno de ellos actualiza la documentación de «Al terminar».
+4. **Verificar** — `kanban-verifier` (Haiku): puerta de calidad y pruebas HTTP: tras una mención de Ana, Luis `GET /api/notifications` → 200 con al menos 1; Ana → 200 `[]`.
+5. **Revisar** — tú revisas el diff completo comprobando los estados del popover contra la lista de arriba. Si algo falla, encarga el arreglo a un `kanban-implementer` y vuelve a verificar.
 
 ## Hecho cuando
 
@@ -84,5 +80,5 @@ tú los pasos en el mismo orden.
 
 ## Al terminar
 
-Actualiza `AGENTS.md` (campana sí; realtime de comentarios no). No hagas
+El implementador encargado de la documentación actualiza `AGENTS.md` (campana sí; realtime de comentarios no). No hagas
 commit. Cierra con el resumen que pide `AGENTS.md`.

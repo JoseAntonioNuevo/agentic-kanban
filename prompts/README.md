@@ -18,22 +18,24 @@ presentaciones de `presentaciones/`.
 
 ## Quién hace qué
 
-| Agente               | Modelo | Para qué                                                                             |
-| -------------------- | ------ | ------------------------------------------------------------------------------------ |
-| principal            | Opus   | Plan, contratos compartidos, partes delicadas, integración y revisión final del diff |
-| `kanban-recon`       | Haiku  | Mapa de solo lectura del estado actual y de las APIs instaladas                      |
-| `kanban-implementer` | Sonnet | Una parte acotada del plan, con ficheros propios                                     |
-| `kanban-verifier`    | Haiku  | Puerta de calidad y pruebas HTTP; nunca edita                                        |
-| `kanban-reviewer`    | Sonnet | Revisión de solo lectura de una dimensión, en los prompts de revisión                |
+| Agente               | Modelo | Para qué                                                                                       |
+| -------------------- | ------ | ---------------------------------------------------------------------------------------------- |
+| principal            | Opus   | Orquesta sin editar ficheros: plan, contratos en los briefs, reparto y revisión final del diff |
+| `kanban-recon`       | Haiku  | Mapa de solo lectura del estado actual y de las APIs instaladas                                |
+| `kanban-implementer` | Sonnet | Una parte acotada del plan, con ficheros propios                                               |
+| `kanban-verifier`    | Haiku  | Puerta de calidad y pruebas HTTP; nunca edita                                                  |
+| `kanban-reviewer`    | Sonnet | Revisión de solo lectura de una dimensión, en los prompts de revisión                          |
 
-Por qué este reparto: Opus decide lo que es caro equivocarse (contratos,
-autorización, transacciones); Sonnet ejecuta en paralelo partes con ficheros
-disjuntos; Haiku hace lo mecánico (leer, ejecutar comandos, resumir salidas
-largas) y así el contexto del principal queda limpio. Los prompts piden los
-subagentes de forma explícita porque algunas configuraciones solo delegan
-cuando se pide. Los cambios pequeños los hace Opus directamente: crear un
-subagente cuesta más de lo que ahorra. Si se usa una herramienta sin
-subagentes, cada prompt funciona igual haciendo los pasos en orden.
+Por qué este reparto: Haiku investiga y verifica (leer, ejecutar comandos,
+resumir salidas largas) y así el contexto de Opus queda limpio; Opus decide lo
+que es caro equivocarse (plan, contratos, autorización, transacciones) y lo
+deja escrito en los briefs, pero no edita ficheros; Sonnet implementa todo, en
+paralelo cuando las partes tienen ficheros disjuntos. Cada prompt sigue los
+mismos cinco pasos: investigar (Haiku), planificar (Opus, con tu «adelante»),
+implementar (Sonnet), verificar (Haiku) y revisar (Opus, que devuelve los
+arreglos a Sonnet). Los prompts piden los subagentes de forma explícita
+porque algunas configuraciones solo delegan cuando se pide. Si se usa una
+herramienta sin subagentes, cada prompt funciona haciendo los pasos en orden.
 
 ## Antes de cada clase
 
@@ -58,7 +60,7 @@ subagentes, cada prompt funciona igual haciendo los pasos en orden.
    reglas y el código. Un contexto limpio es más rápido y más barato.
 2. Modo plan (Shift+Tab hasta ver el modo plan) y pega el prompt entero.
 3. Lee el plan en voz alta. Corrige lo que haga falta y aprueba.
-4. Narra el trabajo de los subagentes mientras implementan.
+4. Narra el trabajo: Haiku investiga, Sonnet implementa y Haiku verifica.
 5. Repasa «Hecho cuando»: lo automático lo trae el verificador; lo manual lo
    haces tú en el navegador.
 6. Commit de checkpoint con el mensaje que propone el agente.

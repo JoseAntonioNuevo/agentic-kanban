@@ -1,6 +1,6 @@
 # Sesión 4 · 04 — Menciones y correo de aula
 
-Tiempo en clase: ~14 min. Antes de editar nada, presenta un plan de 15 líneas
+Tiempo en clase: ~14 min. Tú no editas código: orquestas. Antes de lanzar a los implementadores, presenta un plan de 15 líneas
 como máximo (cómo parseas, cómo resuelves miembros, la transacción y el
 outbox) y espera mi «adelante».
 
@@ -60,19 +60,13 @@ Campana, frontend de menciones y despliegue.
 
 ## Cómo trabajar
 
-Usa los subagentes de `.claude/agents/`. Si tu herramienta no los tiene, haz
-tú los pasos en el mismo orden.
+Tú (Opus) orquestas y no editas ficheros: investigan los subagentes Haiku, implementa Sonnet y verifica Haiku. Usa los subagentes de `.claude/agents/`; si tu herramienta no los tiene, haz los mismos pasos en este orden.
 
-1. Tú (Opus): diseña la transacción y el orden (transacción → outbox →
-   `emailed_at`) antes de repartir.
-2. Dos `kanban-implementer` (Sonnet) en paralelo:
-   - A: `extractMentionTokens` y sus tests.
-   - B: el módulo del outbox y sus tests con `OUTBOX_PATH` temporal.
-3. Tú: integra la resolución y la transacción en el `POST` y escribe los tests
-   de extremo a extremo (o encárgalos a un tercer implementador).
-4. `kanban-verifier` (Haiku): puerta de calidad y prueba en vivo: Ana comenta
-   `@Luis mira esto` en `task_kanban_1` y la última línea de
-   `data/outbox.jsonl` va a `luis@demo.test`.
+1. **Investigar** — `kanban-recon` (Haiku): el `POST` de comentarios, la tabla `notification`, cómo se resuelve `DATABASE_URL` y el arnés de tests.
+2. **Planificar** — tú: detalla en los briefs la transacción y el orden (transacción → outbox → `emailed_at`). Presenta el plan y espera mi «adelante».
+3. **Implementar** — `kanban-implementer` (Sonnet): dos en paralelo: A, `extractMentionTokens` y sus tests; B, el módulo del outbox y sus tests con `OUTBOX_PATH` temporal. Después, un tercero integra la resolución y la transacción en el `POST`, escribe los tests de extremo a extremo y actualiza la documentación de «Al terminar».
+4. **Verificar** — `kanban-verifier` (Haiku): puerta de calidad y prueba en vivo: Ana comenta `@Luis mira esto` en `task_kanban_1` y la última línea de `data/outbox.jsonl` va a `luis@demo.test`.
+5. **Revisar** — tú revisas el diff completo con lupa en la transacción y en el orden del outbox. Si algo falla, encarga el arreglo a un `kanban-implementer` y vuelve a verificar.
 
 ## Hecho cuando
 
@@ -81,5 +75,5 @@ tú los pasos en el mismo orden.
 
 ## Al terminar
 
-Actualiza `AGENTS.md` (menciones y outbox sí; campana no). No hagas commit.
+El implementador encargado de la documentación actualiza `AGENTS.md` (menciones y outbox sí; campana no). No hagas commit.
 Cierra con el resumen que pide `AGENTS.md`.

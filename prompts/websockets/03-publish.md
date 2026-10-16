@@ -1,6 +1,6 @@
 # Sesión 3 · 03 — Publicar después de persistir
 
-Tiempo en clase: ~10 min. Antes de editar nada, presenta un plan de 10 líneas
+Tiempo en clase: ~10 min. Tú no editas código: orquestas. Antes de lanzar a los implementadores, presenta un plan de 10 líneas
 como máximo (desde qué punto de `board.ts` se publica, con qué payload y cómo
 garantizas que ya se persistió) y espera mi «adelante».
 
@@ -38,11 +38,13 @@ Frontend y toasts.
 
 ## Cómo trabajar
 
-Encárgalo a un `kanban-implementer` (Sonnet, de `.claude/agents/`) con los
-tests incluidos; tú revisas el diff. Después, `kanban-verifier` (Haiku) pasa
-la puerta de calidad y hace una prueba en vivo: abre el stream de
-`proj_agentic_kanban` con la cookie de Luis (`curl -N`), crea una tarea con la
-cookie de Ana y comprueba que aparece la línea `data:` del evento.
+Tú (Opus) orquestas y no editas ficheros: investigan los subagentes Haiku, implementa Sonnet y verifica Haiku. Usa los subagentes de `.claude/agents/`; si tu herramienta no los tiene, haz los mismos pasos en este orden.
+
+1. **Investigar** — `kanban-recon` (Haiku): escrituras de `board.ts`, dónde termina cada transacción y la API del hub.
+2. **Planificar** — tú: desde qué punto de cada escritura se publica y con qué payload. Presenta el plan y espera mi «adelante».
+3. **Implementar** — `kanban-implementer` (Sonnet): uno solo: publicación, tests y documentación de «Al terminar».
+4. **Verificar** — `kanban-verifier` (Haiku): puerta de calidad y prueba en vivo: abre el stream de `proj_agentic_kanban` con la cookie de Luis (`curl -N`), crea una tarea con la cookie de Ana y comprueba que aparece la línea `data:` del evento.
+5. **Revisar** — tú revisas el diff completo. Si algo falla, encarga el arreglo a un `kanban-implementer` y vuelve a verificar.
 
 ## Hecho cuando
 
@@ -51,5 +53,5 @@ cookie de Ana y comprueba que aparece la línea `data:` del evento.
 
 ## Al terminar
 
-Actualiza `AGENTS.md` (publicar desde las escrituras sí; cliente no). No hagas
+El implementador encargado de la documentación actualiza `AGENTS.md` (publicar desde las escrituras sí; cliente no). No hagas
 commit. Cierra con el resumen que pide `AGENTS.md`.

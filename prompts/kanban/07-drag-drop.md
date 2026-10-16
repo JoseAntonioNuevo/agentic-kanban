@@ -1,6 +1,6 @@
 # Sesión 2 · 07 — Drag-and-drop optimista
 
-Tiempo en clase: ~13 min. Antes de editar nada, presenta un plan de 15 líneas
+Tiempo en clase: ~13 min. Tú no editas código: orquestas. Antes de lanzar a los implementadores, presenta un plan de 15 líneas
 como máximo (flujo desde el arrastre hasta la persistencia, qué caché cambia
 y cómo se hace el rollback) y espera mi «adelante».
 
@@ -57,17 +57,13 @@ Realtime, comentarios y notificaciones de otros usuarios.
 
 ## Cómo trabajar
 
-Usa los subagentes de `.claude/agents/`. Si tu herramienta no los tiene, haz
-tú los pasos en el mismo orden.
+Tú (Opus) orquestas y no editas ficheros: investigan los subagentes Haiku, implementa Sonnet y verifica Haiku. Usa los subagentes de `.claude/agents/`; si tu herramienta no los tiene, haz los mismos pasos en este orden.
 
-1. `kanban-recon` (Haiku): exports reales de `@dnd-kit/react` 0.5.1 y cómo se
-   pinta hoy el tablero.
-2. Dos `kanban-implementer` (Sonnet) en paralelo:
-   - A: `applyBoardMove` y sus tests.
-   - B: `useMoveTask` e integración de dnd-kit en los componentes del tablero.
-3. `kanban-verifier` (Haiku): puerta de calidad.
-4. Tú: revisa el diff (fuente única, rollback completo) y prepara los pasos de
-   la prueba manual, incluido el fallo forzado.
+1. **Investigar** — `kanban-recon` (Haiku): dos en paralelo: uno con los exports reales de `@dnd-kit/react` 0.5.1 (`node_modules/@dnd-kit/react/*.d.ts`) y otro con cómo se pinta hoy el tablero (`use-board`, mutations, componentes).
+2. **Planificar** — tú: flujo arrastre → caché → API → rollback. Presenta el plan y espera mi «adelante».
+3. **Implementar** — `kanban-implementer` (Sonnet): dos en paralelo: A, `applyBoardMove` y sus tests; B, `useMoveTask` e integración de dnd-kit en los componentes del tablero. Uno de ellos actualiza la documentación de «Al terminar».
+4. **Verificar** — `kanban-verifier` (Haiku): puerta de calidad.
+5. **Revisar** — tú revisas el diff completo (fuente única, rollback completo) y me preparas los pasos de la prueba manual, incluido el fallo forzado. Si algo falla, encarga el arreglo a un `kanban-implementer` y vuelve a verificar.
 
 ## Hecho cuando
 
@@ -79,6 +75,6 @@ tú los pasos en el mismo orden.
 
 ## Al terminar
 
-Actualiza `AGENTS.md` (drag-and-drop sí; realtime y comentarios no) y quita de
+El implementador encargado de la documentación actualiza `AGENTS.md` (drag-and-drop sí; realtime y comentarios no) y quita de
 `.cursor/rules/web.mdc` la frase que prohíbe implementar drag-and-drop. No
 hagas commit. Cierra con el resumen que pide `AGENTS.md`.

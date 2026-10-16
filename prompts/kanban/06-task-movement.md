@@ -1,6 +1,6 @@
 # Sesión 2 · 06 — Mover una tarea en el backend
 
-Tiempo en clase: ~10 min. Antes de editar nada, presenta un plan de 12 líneas
+Tiempo en clase: ~10 min. Tú no editas código: orquestas. Antes de lanzar a los implementadores, presenta un plan de 12 líneas
 como máximo (contrato, algoritmo, transacción y tests) y espera mi «adelante».
 
 ## Punto de partida
@@ -43,11 +43,13 @@ Drag-and-drop en el frontend y realtime.
 
 ## Cómo trabajar
 
-Usa los subagentes de `.claude/agents/`. Tú (Opus) escribes el contrato y el
-algoritmo con su transacción: es la parte delicada. En paralelo, un
-`kanban-implementer` (Sonnet) escribe los tests contra el contrato. Después,
-`kanban-verifier` (Haiku) pasa la puerta de calidad y prueba por HTTP el movimiento
-entre projects con la cookie de Ana.
+Tú (Opus) orquestas y no editas ficheros: investigan los subagentes Haiku, implementa Sonnet y verifica Haiku. Usa los subagentes de `.claude/agents/`; si tu herramienta no los tiene, haz los mismos pasos en este orden.
+
+1. **Investigar** — `kanban-recon` (Haiku): rutas y consultas del board, cómo se usan las transacciones en `packages/db` y el arnés de tests.
+2. **Planificar** — tú: describe en el brief el contrato y el algoritmo con su transacción, paso a paso. Presenta el plan y espera mi «adelante».
+3. **Implementar** — `kanban-implementer` (Sonnet): dos en paralelo: A, consulta transaccional, ruta y schema; B, tests contra el contrato. Uno de ellos actualiza la documentación de «Al terminar».
+4. **Verificar** — `kanban-verifier` (Haiku): puerta de calidad y pruebas HTTP de «Hecho cuando» con la cookie de Ana.
+5. **Revisar** — tú revisas el diff completo con lupa en la transacción y en la autorización. Si algo falla, encarga el arreglo a un `kanban-implementer` y vuelve a verificar.
 
 ## Hecho cuando
 
@@ -57,5 +59,5 @@ entre projects con la cookie de Ana.
 
 ## Al terminar
 
-Actualiza `AGENTS.md` (mover sí; drag-and-drop no). No hagas commit. Cierra
+El implementador encargado de la documentación actualiza `AGENTS.md` (mover sí; drag-and-drop no). No hagas commit. Cierra
 con el resumen que pide `AGENTS.md`.

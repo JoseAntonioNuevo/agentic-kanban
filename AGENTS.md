@@ -59,17 +59,19 @@ the `.cursor/rules/*.mdc` of the layers it touches and the code itself.
 
 - Plan first: present a short plan (files, contracts, delegation, checks) and
   wait for approval before editing. Review steps never edit code.
-- The main agent owns the plan, shared contracts (`packages/schemas`, route
-  paths, exported names), integration and the final diff review. When a step
-  asks for subagents, use the project agents in `.claude/agents/`:
-  `kanban-recon` (Haiku, read-only map), `kanban-implementer` (Sonnet, one
-  bounded slice), `kanban-verifier` (Haiku, runs checks and HTTP probes,
-  never edits) and `kanban-reviewer` (Sonnet, read-only review of one
-  dimension). Small changes are faster done directly.
-- Write shared contracts before parallel slices start. Two subagents never
-  edit the same file; the main agent owns barrels (`src/index.ts`), route
-  mounting and docs. A brief states the goal, owned files, exact contract
-  names, constraints, checks and the expected report.
+- Division of labour: Haiku investigates, the main agent (Opus) orchestrates
+  without editing files, Sonnet implements everything and Haiku verifies. Use
+  the project agents in `.claude/agents/`: `kanban-recon` (Haiku, read-only
+  map of the repo and installed APIs), `kanban-implementer` (Sonnet, one
+  bounded slice, including docs, barrels and route mounting when assigned),
+  `kanban-verifier` (Haiku, runs checks and HTTP probes, never edits) and
+  `kanban-reviewer` (Sonnet, read-only review of one dimension).
+- The main agent plans, fixes the shared contracts (`packages/schemas`, route
+  paths, exported names) in the briefs, reviews the final diff and sends any
+  fix back to an implementer. When slices share contracts, one implementer
+  writes them first; then slices run in parallel. Two subagents never edit
+  the same file. A brief states the goal, owned files, exact contract names,
+  constraints, checks and the expected report.
 - Library APIs: the pinned versions installed in `node_modules` (types and
   source) are the source of truth, not memory or `@latest` docs.
 - Done means `vp check` and `vp test` are green (run `vp check --fix` first)

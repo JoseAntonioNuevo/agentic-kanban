@@ -1,6 +1,6 @@
 # Sesión 2 · 03 — La API del tablero
 
-Tiempo en clase: ~10 min. Antes de editar nada, presenta un plan de 15 líneas
+Tiempo en clase: ~10 min. Tú no editas código: orquestas. Antes de lanzar a los implementadores, presenta un plan de 15 líneas
 como máximo y espera mi «adelante».
 
 ## Punto de partida
@@ -56,15 +56,13 @@ Mover tareas, drag-and-drop, realtime y frontend.
 
 ## Cómo trabajar
 
-Usa los subagentes de `.claude/agents/`. Si tu herramienta no los tiene, haz
-tú los pasos en el mismo orden.
+Tú (Opus) orquestas y no editas ficheros: investigan los subagentes Haiku, implementa Sonnet y verifica Haiku. Usa los subagentes de `.claude/agents/`; si tu herramienta no los tiene, haz los mismos pasos en este orden.
 
-1. Tú (Opus): schemas y firmas de las consultas, antes de repartir.
-2. Dos `kanban-implementer` (Sonnet) en paralelo:
-   - A: consultas en `packages/db`, rutas y montaje en `index.ts`.
-   - B: tests contra los contratos de arriba.
-3. `kanban-verifier` (Haiku): puerta de calidad y pruebas HTTP por el proxy.
-4. Tú: revisa el diff buscando cualquier camino sin filtro de tenant.
+1. **Investigar** — `kanban-recon` (Haiku): `requireSession`, `getProjectForMember`, el patrón de rutas, el arnés de tests y la API de transacciones de Drizzle instalada.
+2. **Planificar** — tú: fija schemas, rutas y firmas de las consultas en los briefs. Presenta el plan y espera mi «adelante».
+3. **Implementar** — `kanban-implementer` (Sonnet): primero uno escribe los schemas de `board.ts`; después dos en paralelo: A, consultas en `packages/db`, rutas y montaje; B, tests contra los contratos. Uno de ellos actualiza la documentación de «Al terminar».
+4. **Verificar** — `kanban-verifier` (Haiku): puerta de calidad y pruebas HTTP de «Hecho cuando» por el proxy.
+5. **Revisar** — tú revisas el diff completo buscando cualquier camino sin filtro de tenant. Si algo falla, encarga el arreglo a un `kanban-implementer` y vuelve a verificar.
 
 ## Hecho cuando
 
@@ -75,6 +73,6 @@ tú los pasos en el mismo orden.
 
 ## Al terminar
 
-Actualiza `AGENTS.md` (contrato del tablero; mover y drag-and-drop todavía
+El implementador encargado de la documentación actualiza `AGENTS.md` (contrato del tablero; mover y drag-and-drop todavía
 no) y `.cursor/rules/api.mdc`. No hagas commit. Cierra con el resumen que pide
 `AGENTS.md`.

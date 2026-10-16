@@ -1,6 +1,6 @@
 # Sesión 4 · 06 — `comment.created` por el stream existente
 
-Tiempo en clase: ~10 min. Antes de editar nada, presenta un plan de 12 líneas
+Tiempo en clase: ~10 min. Tú no editas código: orquestas. Antes de lanzar a los implementadores, presenta un plan de 12 líneas
 como máximo (forma del evento, dónde se publica, cómo lo aplica el cliente) y
 espera mi «adelante».
 
@@ -45,10 +45,13 @@ Cambios en la campana, reenviar emails y presencia.
 
 ## Cómo trabajar
 
-Usa los subagentes de `.claude/agents/`. Dos `kanban-implementer` (Sonnet) en
-paralelo: A, schema, publicación y sus tests; B, la gestión del evento en
-`useBoardEvents`. Tú fijas la forma del evento antes de repartir y revisas el
-diff. Al final, `kanban-verifier` (Haiku) pasa la puerta de calidad.
+Tú (Opus) orquestas y no editas ficheros: investigan los subagentes Haiku, implementa Sonnet y verifica Haiku. Usa los subagentes de `.claude/agents/`; si tu herramienta no los tiene, haz los mismos pasos en este orden.
+
+1. **Investigar** — `kanban-recon` (Haiku): `boardEventSchema`, `applyBoardEvent`, el `POST` de comentarios y `useBoardEvents`.
+2. **Planificar** — tú: forma del evento, dónde se publica y cómo lo aplica el cliente. Presenta el plan y espera mi «adelante».
+3. **Implementar** — `kanban-implementer` (Sonnet): primero uno amplía `boardEventSchema` y `applyBoardEvent`; después dos en paralelo: A, publicación y sus tests; B, gestión del evento en `useBoardEvents`. Uno de ellos actualiza la documentación de «Al terminar».
+4. **Verificar** — `kanban-verifier` (Haiku): puerta de calidad.
+5. **Revisar** — tú revisas el diff completo. Si algo falla, encarga el arreglo a un `kanban-implementer` y vuelve a verificar.
 
 ## Hecho cuando
 
@@ -60,5 +63,5 @@ diff. Al final, `kanban-verifier` (Haiku) pasa la puerta de calidad.
 
 ## Al terminar
 
-Actualiza `AGENTS.md` y `.cursor/rules/web.mdc`. No hagas commit. Cierra con el
+El implementador encargado de la documentación actualiza `AGENTS.md` y `.cursor/rules/web.mdc`. No hagas commit. Cierra con el
 resumen que pide `AGENTS.md`.
