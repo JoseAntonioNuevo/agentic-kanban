@@ -1,8 +1,5 @@
 # Sesión 2 · 06 — Mover una tarea en el backend
 
-Tiempo en clase: ~10 min. Antes de lanzar a los implementadores, presenta un plan de 12 líneas
-como máximo (contrato, algoritmo, transacción y tests) y espera mi «adelante».
-
 ## Punto de partida
 
 CRUD de tareas por HTTP (03) y tablero en la interfaz (05). Todavía no se
@@ -43,13 +40,15 @@ Drag-and-drop en el frontend y realtime.
 
 ## Cómo trabajar
 
-Sigue el flujo con subagentes de `AGENTS.md` (Agent workflow). En este paso:
+Sigue los cinco pasos de `AGENTS.md`. Tú planificas y, al final, corriges. Hasta el «adelante» no se editan ficheros. No hagas commit.
 
-- **Investigar** (Haiku): rutas y consultas del board, cómo se usan las transacciones en `packages/db` y el arnés de tests.
-- **Planificar** (Opus): describe en el brief el contrato y el algoritmo con su transacción, paso a paso.
-- **Implementar** (Sonnet): dos en paralelo: A, consulta transaccional, ruta y schema; B, tests contra el contrato. Uno de ellos actualiza la documentación de «Al terminar».
-- **Verificar** (Haiku): puerta de calidad y pruebas HTTP de «Hecho cuando» con la cookie de Ana.
-- **Revisar** (Opus): mira con lupa la transacción y la autorización.
+En este paso:
+
+- **Investigar.** `kanban-recon`: rutas y consultas del board, cómo se usan las transacciones en `packages/db` y el arnés de tests.
+- **Planificar.** Tú, y espera mi «adelante»: describe en el brief el contrato y el algoritmo con su transacción, paso a paso.
+- **Implementar.** `kanban-implementer`: dos en paralelo: A, consulta transaccional, ruta y schema; B, tests contra el contrato. Uno de ellos actualiza la documentación de «Al terminar».
+- **Verificar.** `kanban-verifier`: puerta de calidad y pruebas HTTP de «Hecho cuando» con la cookie de Ana.
+- **Revisar.** Tú: mira con lupa la transacción y la autorización.
 
 ## Hecho cuando
 

@@ -1,8 +1,5 @@
 # Sesión 4 · 01 — Comentarios y notificaciones en la base de datos
 
-Tiempo en clase: ~5 min. Antes de lanzar a los implementadores, presenta un plan de 10 líneas
-como máximo y espera mi «adelante».
-
 ## Punto de partida
 
 Las Sesiones 1 a 3 están completas: auth y tenants, tablero con
@@ -37,12 +34,14 @@ API, UI, parser de menciones, Resend, Socket.IO y despliegue.
 
 ## Cómo trabajar
 
-Sigue el flujo con subagentes de `AGENTS.md` (Agent workflow). En este paso:
+Sigue los cinco pasos de `AGENTS.md`. Tú planificas y, al final, corriges. Hasta el «adelante» no se editan ficheros. No hagas commit.
 
-- **Investigar** (Haiku): schema actual, FK existentes y modo de timestamp.
-- **Planificar** (Opus): columnas, FK con cascada e índices.
-- **Implementar** (Sonnet): uno solo: tablas, reexport, migración generada y documentación de «Al terminar».
-- **Verificar** (Haiku): aplica la migración, pasa la puerta de calidad y comprueba health.
+En este paso:
+
+- **Investigar.** `kanban-recon`: schema actual, FK existentes y modo de timestamp.
+- **Planificar.** Tú, y espera mi «adelante»: columnas, FK con cascada e índices.
+- **Implementar.** `kanban-implementer`: uno solo: tablas, reexport, migración generada y documentación de «Al terminar».
+- **Verificar.** `kanban-verifier`: aplica la migración, pasa la puerta de calidad y comprueba health.
 
 ## Hecho cuando
 

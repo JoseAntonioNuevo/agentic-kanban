@@ -1,6 +1,6 @@
 # Sesión 1 · 06 — Revisión como una PR
 
-Tiempo en clase: ~9 min. Es una revisión: no modifiques código hasta que
+Es una revisión: no modifiques código hasta que
 apruebe el plan de corrección.
 
 ## Alcance
@@ -10,16 +10,20 @@ Todo lo implementado en la Sesión 1 (prompts 01–05), contrastado con
 
 ## Cómo trabajar
 
-Usa los subagentes de `.claude/agents/`. Lanza en paralelo:
+Sigue el flujo de revisión de `AGENTS.md`. No uses `kanban-implementer`.
+No hagas commit.
 
-- `kanban-verifier` (Haiku): `vp check`, `vp test` y estas pruebas por
+Lanza en un solo mensaje, en paralelo:
+
+- Un `kanban-verifier`: `vp check`, `vp test` y estas pruebas por
   `http://localhost:5173`: `GET /api/workspaces` sin cookie → 401; Ana → 2
   workspaces; Luis → 1; Luis `GET /api/projects/proj_ana_notes` → 404;
   `GET /api/health` → 200.
-- Cuatro `kanban-reviewer` (Sonnet), uno por dimensión, con la lista de abajo.
+- Cuatro `kanban-reviewer`, uno por dimensión, cada uno con solo la lista de
+  su número de abajo.
 
-Después, tú (Opus) compruebas cada hallazgo en el código. Descarta lo que no
-se sostenga con `ruta:línea` y un escenario concreto, y consolida.
+Después comprueba cada hallazgo en el código. Quédate con los que tengan
+`ruta:línea` y un escenario concreto, y consolida.
 
 ## Qué revisa cada dimensión
 
@@ -46,7 +50,9 @@ se sostenga con `ruta:línea` y un escenario concreto, y consolida.
 ## Entrega
 
 Una línea por problema real, del más grave al menos grave:
-`severidad (alta/media/baja) | ruta:línea | problema | escenario | corrección mínima`.
+
+`severidad (alta/media/baja) | ruta:línea | problema | escenario | corrección mínima`
+
 Añade el resultado del verificador. Si no hay problemas reales, dilo. Después
-propón el plan mínimo de corrección y espera mi aprobación. Si lo apruebo, aplica tú las correcciones y vuelve a pasar `kanban-verifier`
-(Haiku).
+propón el plan mínimo de corrección y espera mi aprobación. Si lo apruebo,
+aplicas tú las correcciones y vuelves a lanzar `kanban-verifier`.

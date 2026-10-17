@@ -1,8 +1,5 @@
 # Sesión 4 · 07 — Deploy de aula y guion de la demo
 
-Tiempo en clase: ~8 min. Antes de lanzar a los implementadores, dime qué cambiarás en el README,
-`.gitignore` y `AGENTS.md`, y espera mi «adelante».
-
 ## Punto de partida
 
 El producto del bloque está completo (Sesiones 1–4, prompts 01–06). Falta
@@ -50,13 +47,15 @@ Funcionalidades de producto nuevas y despliegues públicos.
 
 ## Cómo trabajar
 
-Sigue el flujo con subagentes de `AGENTS.md` (Agent workflow). En este paso:
+Sigue los cinco pasos de `AGENTS.md`. Tú planificas y, al final, corriges. Hasta el «adelante» no se editan ficheros. No hagas commit.
 
-- **Investigar** (Haiku): README, `.gitignore`, scripts de `package.json`, `docker-compose.yml` y el estado de `data/outbox.jsonl` en Git.
-- **Planificar** (Opus): qué cambia en el README, `.gitignore` y `AGENTS.md`.
-- **Implementar** (Sonnet): uno solo: README, `.gitignore`, `git rm --cached data/outbox.jsonl` y `AGENTS.md`.
-- **Verificar** (Haiku): puerta de calidad completa, `docker compose config` y que cada comando del README existe en `package.json` o en Docker Compose.
-- **Revisar** (Opus): el README y `AGENTS.md`.
+En este paso:
+
+- **Investigar.** `kanban-recon`: README, `.gitignore`, scripts de `package.json`, `docker-compose.yml` y el estado de `data/outbox.jsonl` en Git.
+- **Planificar.** Tú, y espera mi «adelante»: qué cambia en el README, `.gitignore` y `AGENTS.md`.
+- **Implementar.** `kanban-implementer`: uno solo: README, `.gitignore`, `git rm --cached data/outbox.jsonl` y `AGENTS.md`.
+- **Verificar.** `kanban-verifier`: puerta de calidad completa, `docker compose config` y que cada comando del README existe en `package.json` o en Docker Compose.
+- **Revisar.** Tú: el README y `AGENTS.md`.
 
 ## Hecho cuando
 

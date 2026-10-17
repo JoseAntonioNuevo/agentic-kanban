@@ -13,9 +13,6 @@ como agente principal y subagentes Sonnet y Haiku definidos en
 | 3 (S11) | Mié 28 oct | `websockets/`    | 01–06   | Dos sesiones sincronizadas por SSE, con toasts    |
 | 4 (S12) | Mié 4 nov  | `notifications/` | 01–08   | Comentarios, menciones, campana, outbox y demo    |
 
-Cada prompt indica su tiempo objetivo, coherente con el guion de las
-presentaciones de `presentaciones/`.
-
 ## Quién hace qué
 
 | Agente               | Modelo | Para qué                                                                              |

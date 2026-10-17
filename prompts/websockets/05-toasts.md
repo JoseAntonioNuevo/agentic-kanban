@@ -1,8 +1,5 @@
 # Sesión 3 · 05 — Toasts para los cambios de otros
 
-Tiempo en clase: ~8 min. Antes de lanzar a los implementadores, dime qué texto mostrarás para
-cada tipo y cuándo no habrá toast, y espera mi «adelante».
-
 ## Punto de partida
 
 `useBoardEvents` aplica los eventos a la caché y ya distingue los eventos
@@ -36,12 +33,14 @@ Presencia, comentarios y menciones.
 
 ## Cómo trabajar
 
-Sigue el flujo con subagentes de `AGENTS.md` (Agent workflow). En este paso:
+Sigue los cinco pasos de `AGENTS.md`. Tú planificas y, al final, corriges. Hasta el «adelante» no se editan ficheros. No hagas commit.
 
-- **Investigar** (Haiku): dónde `useBoardEvents` reconoce los eventos propios y cómo está montado `sonner`.
-- **Planificar** (Opus): textos y cuándo no hay toast.
-- **Implementar** (Sonnet): uno solo: toasts, función pura con tests y documentación de «Al terminar».
-- **Verificar** (Haiku): puerta de calidad.
+En este paso:
+
+- **Investigar.** `kanban-recon`: dónde `useBoardEvents` reconoce los eventos propios y cómo está montado `sonner`.
+- **Planificar.** Tú, y espera mi «adelante»: textos y cuándo no hay toast.
+- **Implementar.** `kanban-implementer`: uno solo: toasts, función pura con tests y documentación de «Al terminar».
+- **Verificar.** `kanban-verifier`: puerta de calidad.
 
 ## Hecho cuando
 

@@ -1,8 +1,5 @@
 # Sesión 4 · 05 — La campana
 
-Tiempo en clase: ~12 min. Antes de lanzar a los implementadores, presenta un plan de 15 líneas
-como máximo y espera mi «adelante».
-
 ## Punto de partida
 
 Las menciones crean filas `notification` para su destinatario (04). Todavía
@@ -62,13 +59,15 @@ comentarios.
 
 ## Cómo trabajar
 
-Sigue el flujo con subagentes de `AGENTS.md` (Agent workflow). En este paso:
+Sigue los cinco pasos de `AGENTS.md`. Tú planificas y, al final, corriges. Hasta el «adelante» no se editan ficheros. No hagas commit.
 
-- **Investigar** (Haiku): consultas de notificaciones existentes, cabeceras del dashboard y del tablero, y componentes `popover` y `badge`.
-- **Planificar** (Opus): fija schemas y firmas en los briefs.
-- **Implementar** (Sonnet): primero uno escribe `notification.ts`; después dos en paralelo: A, consultas, rutas y tests de API; B, hooks, `NotificationBell` y su montaje en las dos cabeceras. Uno de ellos actualiza la documentación de «Al terminar».
-- **Verificar** (Haiku): puerta de calidad y pruebas HTTP: tras una mención de Ana, Luis `GET /api/notifications` → 200 con al menos 1; Ana → 200 `[]`.
-- **Revisar** (Opus): comprueba los estados del popover contra la lista de arriba.
+En este paso:
+
+- **Investigar.** `kanban-recon`: consultas de notificaciones existentes, cabeceras del dashboard y del tablero, y componentes `popover` y `badge`.
+- **Planificar.** Tú, y espera mi «adelante»: fija schemas y firmas en los briefs.
+- **Implementar.** `kanban-implementer`: primero uno escribe `notification.ts`; después dos en paralelo: A, consultas, rutas y tests de API; B, hooks, `NotificationBell` y su montaje en las dos cabeceras. Uno de ellos actualiza la documentación de «Al terminar».
+- **Verificar.** `kanban-verifier`: puerta de calidad y pruebas HTTP: tras una mención de Ana, Luis `GET /api/notifications` → 200 con al menos 1; Ana → 200 `[]`.
+- **Revisar.** Tú: comprueba los estados del popover contra la lista de arriba.
 
 ## Hecho cuando
 

@@ -1,6 +1,6 @@
 # Sesión 2 · 08 — Revisión como una PR
 
-Tiempo en clase: ~5–10 min. Es una revisión: no modifiques código hasta que
+Es una revisión: no modifiques código hasta que
 apruebe el plan de corrección.
 
 ## Alcance
@@ -13,14 +13,14 @@ No añadas funcionalidades.
 
 Usa los subagentes de `.claude/agents/`. Lanza en paralelo:
 
-- `kanban-verifier` (Haiku): `vp check`, `vp test` y estas pruebas por
+- Un `kanban-verifier`: `vp check`, `vp test` y estas pruebas por
   `http://localhost:5173`: Ana `GET /api/projects/proj_agentic_kanban/board` →
   200; Luis `GET /api/projects/proj_ana_notes/board` → 404; Ana mueve
   `task_kanban_1` a `col_ana_todo` → 404; sin cookie → 401; Luis
   `GET /api/projects/proj_ana_notes` → 404 (regresión de la Sesión 1).
-- Cuatro `kanban-reviewer` (Sonnet), uno por dimensión, con la lista de abajo.
+- Cuatro `kanban-reviewer`, uno por dimensión, con la lista de abajo.
 
-Después, tú (Opus) compruebas cada hallazgo en el código. Descarta lo que no
+Después compruebas cada hallazgo en el código. Descarta lo que no
 se sostenga con `ruta:línea` y un escenario concreto, y consolida.
 
 ## Qué revisa cada dimensión
@@ -43,5 +43,4 @@ se sostenga con `ruta:línea` y un escenario concreto, y consolida.
 Una línea por problema real, del más grave al menos grave:
 `severidad (alta/media/baja) | ruta:línea | problema | escenario | corrección mínima`.
 Añade el resultado del verificador. Si no hay problemas reales, dilo. Después
-propón el plan mínimo de corrección y espera mi aprobación. Si lo apruebo, aplica tú las correcciones y vuelve a pasar `kanban-verifier`
-(Haiku).
+propón el plan mínimo de corrección y espera mi aprobación. Si lo apruebo, aplica tú las correcciones y vuelve a lanzar `kanban-verifier`.

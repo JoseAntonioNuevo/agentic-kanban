@@ -1,8 +1,5 @@
 # Sesión 2 · 01 — Columnas y tareas
 
-Tiempo en clase: ~6 min. Antes de lanzar a los implementadores, presenta un plan de 10 líneas
-como máximo y espera mi «adelante».
-
 ## Punto de partida
 
 La Sesión 1 está completa: auth con Better Auth, `workspace`,
@@ -39,12 +36,14 @@ API, frontend, seed, responsables, etiquetas y fechas límite.
 
 ## Cómo trabajar
 
-Sigue el flujo con subagentes de `AGENTS.md` (Agent workflow). En este paso:
+Sigue los cinco pasos de `AGENTS.md`. Tú planificas y, al final, corriges. Hasta el «adelante» no se editan ficheros. No hagas commit.
 
-- **Investigar** (Haiku): schema actual, modo de timestamp, FK existentes y cómo se generan las migraciones.
-- **Planificar** (Opus): columnas, FK con cascada e índices.
-- **Implementar** (Sonnet): uno solo: tablas, reexport, migración generada y documentación de «Al terminar».
-- **Verificar** (Haiku): aplica la migración, pasa la puerta de calidad y comprueba health.
+En este paso:
+
+- **Investigar.** `kanban-recon`: schema actual, modo de timestamp, FK existentes y cómo se generan las migraciones.
+- **Planificar.** Tú, y espera mi «adelante»: columnas, FK con cascada e índices.
+- **Implementar.** `kanban-implementer`: uno solo: tablas, reexport, migración generada y documentación de «Al terminar».
+- **Verificar.** `kanban-verifier`: aplica la migración, pasa la puerta de calidad y comprueba health.
 
 ## Hecho cuando
 

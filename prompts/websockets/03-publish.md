@@ -1,9 +1,5 @@
 # Sesión 3 · 03 — Publicar después de persistir
 
-Tiempo en clase: ~10 min. Antes de lanzar a los implementadores, presenta un plan de 10 líneas
-como máximo (desde qué punto de `board.ts` se publica, con qué payload y cómo
-garantizas que ya se persistió) y espera mi «adelante».
-
 ## Punto de partida
 
 El hub y el stream funcionan (02); nadie publica todavía. Las escrituras del
@@ -38,12 +34,14 @@ Frontend y toasts.
 
 ## Cómo trabajar
 
-Sigue el flujo con subagentes de `AGENTS.md` (Agent workflow). En este paso:
+Sigue los cinco pasos de `AGENTS.md`. Tú planificas y, al final, corriges. Hasta el «adelante» no se editan ficheros. No hagas commit.
 
-- **Investigar** (Haiku): escrituras de `board.ts`, dónde termina cada transacción y la API del hub.
-- **Planificar** (Opus): desde qué punto de cada escritura se publica y con qué payload.
-- **Implementar** (Sonnet): uno solo: publicación, tests y documentación de «Al terminar».
-- **Verificar** (Haiku): puerta de calidad y prueba en vivo: abre el stream de `proj_agentic_kanban` con la cookie de Luis (`curl -N`), crea una tarea con la cookie de Ana y comprueba que aparece la línea `data:` del evento.
+En este paso:
+
+- **Investigar.** `kanban-recon`: escrituras de `board.ts`, dónde termina cada transacción y la API del hub.
+- **Planificar.** Tú, y espera mi «adelante»: desde qué punto de cada escritura se publica y con qué payload.
+- **Implementar.** `kanban-implementer`: uno solo: publicación, tests y documentación de «Al terminar».
+- **Verificar.** `kanban-verifier`: puerta de calidad y prueba en vivo: abre el stream de `proj_agentic_kanban` con la cookie de Luis (`curl -N`), crea una tarea con la cookie de Ana y comprueba que aparece la línea `data:` del evento.
 
 ## Hecho cuando
 

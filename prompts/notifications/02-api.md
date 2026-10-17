@@ -1,8 +1,5 @@
 # Sesión 4 · 02 — La API de comentarios
 
-Tiempo en clase: ~5 min. Antes de lanzar a los implementadores, presenta un plan de 12 líneas
-como máximo y espera mi «adelante».
-
 ## Punto de partida
 
 Tablas `comment` y `notification` (01). `requireSession`, el patrón de rutas y
@@ -45,12 +42,14 @@ rutas del tablero ni el stream.
 
 ## Cómo trabajar
 
-Sigue el flujo con subagentes de `AGENTS.md` (Agent workflow). En este paso:
+Sigue los cinco pasos de `AGENTS.md`. Tú planificas y, al final, corriges. Hasta el «adelante» no se editan ficheros. No hagas commit.
 
-- **Investigar** (Haiku): patrón de rutas, `requireSession`, consultas `ForMember` y arnés de tests.
-- **Planificar** (Opus): fija schemas, rutas y firmas en los briefs.
-- **Implementar** (Sonnet): primero uno escribe los schemas de `comment.ts`; después dos en paralelo: A, consultas y rutas; B, tests. Uno de ellos actualiza la documentación de «Al terminar».
-- **Verificar** (Haiku): puerta de calidad y pruebas HTTP: Ana comenta en `task_kanban_1` → 201; Luis `GET /api/tasks/task_ana_1/comments` → 404.
+En este paso:
+
+- **Investigar.** `kanban-recon`: patrón de rutas, `requireSession`, consultas `ForMember` y arnés de tests.
+- **Planificar.** Tú, y espera mi «adelante»: fija schemas, rutas y firmas en los briefs.
+- **Implementar.** `kanban-implementer`: primero uno escribe los schemas de `comment.ts`; después dos en paralelo: A, consultas y rutas; B, tests. Uno de ellos actualiza la documentación de «Al terminar».
+- **Verificar.** `kanban-verifier`: puerta de calidad y pruebas HTTP: Ana comenta en `task_kanban_1` → 201; Luis `GET /api/tasks/task_ana_1/comments` → 404.
 
 ## Hecho cuando
 

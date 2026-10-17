@@ -1,9 +1,5 @@
 # Sesión 4 · 04 — Menciones y correo de aula
 
-Tiempo en clase: ~14 min. Antes de lanzar a los implementadores, presenta un plan de 15 líneas
-como máximo (cómo parseas, cómo resuelves miembros, la transacción y el
-outbox) y espera mi «adelante».
-
 ## Punto de partida
 
 Comentarios por HTTP (02) y en la interfaz (03). La tabla `notification` ya
@@ -60,13 +56,15 @@ Campana, frontend de menciones y despliegue.
 
 ## Cómo trabajar
 
-Sigue el flujo con subagentes de `AGENTS.md` (Agent workflow). En este paso:
+Sigue los cinco pasos de `AGENTS.md`. Tú planificas y, al final, corriges. Hasta el «adelante» no se editan ficheros. No hagas commit.
 
-- **Investigar** (Haiku): el `POST` de comentarios, la tabla `notification`, cómo se resuelve `DATABASE_URL` y el arnés de tests.
-- **Planificar** (Opus): detalla en los briefs la transacción y el orden (transacción → outbox → `emailed_at`).
-- **Implementar** (Sonnet): dos en paralelo: A, `extractMentionTokens` y sus tests; B, el módulo del outbox y sus tests con `OUTBOX_PATH` temporal. Después, un tercero integra la resolución y la transacción en el `POST`, escribe los tests de extremo a extremo y actualiza la documentación de «Al terminar».
-- **Verificar** (Haiku): puerta de calidad y prueba en vivo: Ana comenta `@Luis mira esto` en `task_kanban_1` y la última línea de `data/outbox.jsonl` va a `luis@demo.test`.
-- **Revisar** (Opus): mira con lupa la transacción y el orden del outbox.
+En este paso:
+
+- **Investigar.** `kanban-recon`: el `POST` de comentarios, la tabla `notification`, cómo se resuelve `DATABASE_URL` y el arnés de tests.
+- **Planificar.** Tú, y espera mi «adelante»: detalla en los briefs la transacción y el orden (transacción → outbox → `emailed_at`).
+- **Implementar.** `kanban-implementer`: dos en paralelo: A, `extractMentionTokens` y sus tests; B, el módulo del outbox y sus tests con `OUTBOX_PATH` temporal. Después, un tercero integra la resolución y la transacción en el `POST`, escribe los tests de extremo a extremo y actualiza la documentación de «Al terminar».
+- **Verificar.** `kanban-verifier`: puerta de calidad y prueba en vivo: Ana comenta `@Luis mira esto` en `task_kanban_1` y la última línea de `data/outbox.jsonl` va a `luis@demo.test`.
+- **Revisar.** Tú: mira con lupa la transacción y el orden del outbox.
 
 ## Hecho cuando
 

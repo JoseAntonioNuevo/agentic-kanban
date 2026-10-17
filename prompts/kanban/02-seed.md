@@ -1,8 +1,5 @@
 # Sesión 2 · 02 — El seed del tablero
 
-Tiempo en clase: ~6 min. Antes de lanzar a los implementadores, presenta un plan de 8 líneas
-como máximo y espera mi «adelante».
-
 ## Punto de partida
 
 El seed de la Sesión 1 crea a Ana, a Luis, `proj_agentic_kanban` (compartido)
@@ -34,12 +31,14 @@ API y frontend.
 
 ## Cómo trabajar
 
-Sigue el flujo con subagentes de `AGENTS.md` (Agent workflow). En este paso:
+Sigue los cinco pasos de `AGENTS.md`. Tú planificas y, al final, corriges. Hasta el «adelante» no se editan ficheros. No hagas commit.
 
-- **Investigar** (Haiku): estructura del seed actual y consultas de upsert disponibles.
-- **Planificar** (Opus): IDs y posiciones de columnas y tareas.
-- **Implementar** (Sonnet): uno solo: seed y documentación de «Al terminar».
-- **Verificar** (Haiku): ejecuta el seed dos veces y cuenta filas por project.
+En este paso:
+
+- **Investigar.** `kanban-recon`: estructura del seed actual y consultas de upsert disponibles.
+- **Planificar.** Tú, y espera mi «adelante»: IDs y posiciones de columnas y tareas.
+- **Implementar.** `kanban-implementer`: uno solo: seed y documentación de «Al terminar».
+- **Verificar.** `kanban-verifier`: ejecuta el seed dos veces y cuenta filas por project.
 
 ## Hecho cuando
 

@@ -1,8 +1,5 @@
 # Sesión 1 · 04 — Datos de aula repetibles
 
-Tiempo en clase: ~8 min. Antes de lanzar a los implementadores, presenta un plan de 10 líneas
-como máximo y espera mi «adelante».
-
 ## Punto de partida
 
 Auth, tablas multi-tenant y lecturas autorizadas (prompts 01–03).
@@ -27,6 +24,28 @@ conocidos. La API nunca seedea al arrancar.
 El tenant es el workspace, no el usuario. Los nombres `Ana` y `Luis` importan:
 en la Sesión 4 las menciones `@Ana` y `@Luis` se resuelven por `user.name`.
 
+## Fuera de alcance
+
+Endpoints, UI, CORS, paquetes nuevos y más filas de las de la tabla.
+
+## Cómo trabajar
+
+Sigue los cinco pasos de `AGENTS.md`. Tú planificas y, al final, corriges.
+Hasta el «adelante» no se editan ficheros. Durante la implementación solo
+escriben los `kanban-implementer`. No hagas commit.
+
+1. **Investigar.** Un `kanban-recon`: `auth.api.signUpEmail` instalado,
+   consultas reutilizables de `packages/db` y scripts de `package.json`.
+2. **Planificar.** Tú. Como máximo 10 líneas: cómo se crean los usuarios sin
+   saltarse Better Auth y cómo un segundo seed no duplica. Para y espera mi
+   «adelante».
+3. **Implementar.** Un `kanban-implementer`: seed, scripts, consultas de
+   upsert que falten y documentación de «Al terminar».
+4. **Verificar.** Un `kanban-verifier`: ejecuta el seed dos veces, cuenta
+   filas y hace los logins y lecturas de «Hecho cuando».
+5. **Revisar.** Tú lees el diff y el informe, corriges y pules, y vuelves a
+   lanzar `kanban-verifier`.
+
 ## Requisitos
 
 - Usuarios con `auth.api.signUpEmail` de Better Auth: sin INSERT en `user` o
@@ -42,19 +61,6 @@ en la Sesión 4 las menciones `@Ana` y `@Luis` se resuelven por `user.name`.
   `docker compose exec api bun run db:seed`. Después de un reset: migrar y
   luego seedear.
 
-## Fuera de alcance
-
-Endpoints, UI, CORS, paquetes nuevos y más filas de las de la tabla.
-
-## Cómo trabajar
-
-Sigue el flujo con subagentes de `AGENTS.md` (Agent workflow). En este paso:
-
-- **Investigar** (Haiku): `auth.api.signUpEmail` instalado, consultas reutilizables de `packages/db` y scripts de `package.json`.
-- **Planificar** (Opus): cómo se crean los usuarios sin saltarse Better Auth y cómo un segundo seed no duplica.
-- **Implementar** (Sonnet): uno solo: seed, scripts, consultas de upsert que falten y documentación de «Al terminar».
-- **Verificar** (Haiku): ejecuta el seed dos veces, cuenta filas y hace los logins y lecturas de «Hecho cuando».
-
 ## Hecho cuando
 
 - [ ] El seed corre dos veces sin errores y sin duplicar: Ana y Luis existen
@@ -67,6 +73,6 @@ Sigue el flujo con subagentes de `AGENTS.md` (Agent workflow). En este paso:
 
 ## Al terminar
 
-El implementador que cierra el paso actualiza `AGENTS.md` (seed y cuentas demo) y el README (cómo seedear y el
-orden migrar → seedear). No hagas commit. Cierra con el resumen que pide
-`AGENTS.md`.
+El implementador que cierra el paso actualiza `AGENTS.md` (seed y cuentas
+demo) y el README (cómo seedear y el orden migrar → seedear). No hagas
+commit. Cierra con el resumen que pide `AGENTS.md`.

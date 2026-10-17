@@ -1,8 +1,5 @@
 # Sesión 1 · 02 — El modelo multi-tenant
 
-Tiempo en clase: ~12 min. Antes de lanzar a los implementadores, presenta un plan de 12 líneas
-como máximo y espera mi «adelante».
-
 ## Punto de partida
 
 La autenticación con Better Auth funciona (prompt 01). Las tablas `user`,
@@ -13,6 +10,27 @@ La autenticación con Better Auth funciona (prompt 01). Las tablas `user`,
 
 Las tablas que convierten el workspace en el tenant: `workspace`,
 `workspace_member` y `project`, con una migración nueva.
+
+## Fuera de alcance
+
+Endpoints, UI, seed, schemas Zod de API, `slug`, `owner`, columnas y tareas.
+
+## Cómo trabajar
+
+Sigue los cinco pasos de `AGENTS.md`. Tú planificas y, al final, corriges.
+Hasta el «adelante» no se editan ficheros. Durante la implementación solo
+escriben los `kanban-implementer`. No hagas commit.
+
+1. **Investigar.** Un `kanban-recon`: tablas de auth existentes, su modo de
+   timestamp, cómo se exporta el schema y cómo se generan las migraciones.
+2. **Planificar.** Tú. Como máximo 12 líneas: tablas, FK, índices y
+   restricción única. Para y espera mi «adelante».
+3. **Implementar.** Un `kanban-implementer`: tablas, reexport, migración
+   generada y documentación de «Al terminar».
+4. **Verificar.** Un `kanban-verifier`: aplica la migración, pasa la puerta
+   de calidad y comprueba health.
+5. **Revisar.** Tú lees el diff y el informe, corriges y pules, y vuelves a
+   lanzar `kanban-verifier`.
 
 ## Requisitos
 
@@ -35,19 +53,6 @@ Drizzle con `sqliteTable`, `text` e `integer` de `drizzle-orm/sqlite-core`, en
   Aplícala con `docker compose exec api bun run db:migrate` si Compose está
   arriba (si no, en el host). La API nunca migra al arrancar.
 
-## Fuera de alcance
-
-Endpoints, UI, seed, schemas Zod de API, `slug`, `owner`, columnas y tareas.
-
-## Cómo trabajar
-
-Sigue el flujo con subagentes de `AGENTS.md` (Agent workflow). En este paso:
-
-- **Investigar** (Haiku): tablas de auth existentes, su modo de timestamp, cómo se exporta el schema y cómo se generan las migraciones.
-- **Planificar** (Opus): tablas, FK, índices y restricción única.
-- **Implementar** (Sonnet): uno solo: tablas, reexport, migración generada y documentación de «Al terminar».
-- **Verificar** (Haiku): aplica la migración, pasa la puerta de calidad y comprueba health.
-
 ## Hecho cuando
 
 - [ ] `vp check` y `vp test` en verde.
@@ -57,5 +62,6 @@ Sigue el flujo con subagentes de `AGENTS.md` (Agent workflow). En este paso:
 
 ## Al terminar
 
-El implementador que cierra el paso actualiza `AGENTS.md` (tablas sí; endpoints no) y `.cursor/rules/db.mdc`.
-No hagas commit. Cierra con el resumen que pide `AGENTS.md`.
+El implementador que cierra el paso actualiza `AGENTS.md` (tablas sí;
+endpoints no) y `.cursor/rules/db.mdc`. No hagas commit. Cierra con el resumen
+que pide `AGENTS.md`.

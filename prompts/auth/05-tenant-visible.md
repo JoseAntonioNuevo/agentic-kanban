@@ -1,8 +1,5 @@
 # Sesión 1 · 05 — El tenant visible en el dashboard
 
-Tiempo en clase: ~8 min. Antes de lanzar a los implementadores, presenta un plan de 10 líneas
-como máximo y espera mi «adelante».
-
 ## Punto de partida
 
 El seed crea a Ana (dos workspaces) y a Luis (uno). `GET /api/workspaces`
@@ -21,6 +18,28 @@ con un acento de color que identifica a cada workspace.
 - Convención para todas las queries de datos del usuario: la queryKey incluye
   el `userId`, y al cerrar sesión se vacía la caché con `queryClient.clear()`.
 
+## Fuera de alcance
+
+Tablero, React Router, escrituras HTTP, CORS, RBAC y paquetes nuevos. Health
+no se toca.
+
+## Cómo trabajar
+
+Sigue los cinco pasos de `AGENTS.md`. Tú planificas y, al final, corriges.
+Hasta el «adelante» no se editan ficheros. Durante la implementación solo
+escriben los `kanban-implementer`. No hagas commit.
+
+1. **Investigar.** Un `kanban-recon`: `use-health.ts`, `App.tsx`,
+   `authClient`, `queryClient` y la respuesta real de `GET /api/workspaces`.
+2. **Planificar.** Tú. Como máximo 10 líneas: hook, queryKey, limpieza de la
+   caché y cómo se pinta el acento. Para y espera mi «adelante».
+3. **Implementar.** Un `kanban-implementer`: la web y la documentación de
+   «Al terminar».
+4. **Verificar.** Un `kanban-verifier`: puerta de calidad y pruebas HTTP de
+   «Hecho cuando».
+5. **Revisar.** Tú lees el diff y el informe, corriges y pules, y vuelves a
+   lanzar `kanban-verifier`.
+
 ## Requisitos
 
 - Copia el patrón de `apps/web/src/hooks/use-health.ts`: `useQuery`, `fetch`
@@ -34,20 +53,6 @@ con un acento de color que identifica a cada workspace.
   usuario: Ana y Luis ven el mismo color en `ws_thepower_demo`.
 - Estados con mensajes distintos: cargando, error y lista vacía (que es válida).
 
-## Fuera de alcance
-
-Tablero, React Router, escrituras HTTP, CORS, RBAC y paquetes nuevos. Health
-no se toca.
-
-## Cómo trabajar
-
-Sigue el flujo con subagentes de `AGENTS.md` (Agent workflow). En este paso:
-
-- **Investigar** (Haiku): `use-health.ts`, `App.tsx`, `authClient`, `queryClient` y la respuesta real de `GET /api/workspaces`.
-- **Planificar** (Opus): hook, queryKey, limpieza de la caché y cómo se pinta el acento.
-- **Implementar** (Sonnet): uno solo: la web y la documentación de «Al terminar».
-- **Verificar** (Haiku): puerta de calidad y pruebas HTTP de «Hecho cuando».
-
 ## Hecho cuando
 
 - [ ] `vp check` y `vp test` en verde.
@@ -59,6 +64,6 @@ Sigue el flujo con subagentes de `AGENTS.md` (Agent workflow). En este paso:
 
 ## Al terminar
 
-El implementador que cierra el paso actualiza `AGENTS.md`, `.cursor/rules/web.mdc` y el README (Ana ve dos
-espacios; Luis, uno). No hagas commit. Cierra con el resumen que pide
-`AGENTS.md`.
+El implementador que cierra el paso actualiza `AGENTS.md`,
+`.cursor/rules/web.mdc` y el README (Ana ve dos espacios; Luis, uno). No
+hagas commit. Cierra con el resumen que pide `AGENTS.md`.

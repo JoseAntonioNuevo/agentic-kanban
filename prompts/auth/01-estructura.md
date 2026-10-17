@@ -1,9 +1,5 @@
 # Sesión 1 · 01 — Autenticación con Better Auth
 
-Tiempo en clase: ~17 min. Antes de lanzar a los implementadores, presenta un plan de 15 líneas
-como máximo (archivos, contratos, reparto entre subagentes y verificación) y
-espera mi «adelante».
-
 ## Punto de partida
 
 El starter solo tiene el camino de `GET /api/health` de extremo a extremo.
@@ -24,6 +20,36 @@ desde el navegador y a través del proxy de Vite+.
   `@agentic-kanban/db`.
 - `signUpInputSchema` y `signInInputSchema` en `@agentic-kanban/schemas`.
 - `authClient` en `apps/web/src/lib/auth-client.ts`.
+
+## Fuera de alcance
+
+Workspaces, membresías, `workspace_id`, tablero, React Router, paquetes nuevos,
+verificación de email y proveedores OAuth.
+
+## Cómo trabajar
+
+Sigue los cinco pasos de `AGENTS.md`. Tú planificas y, al final, corriges.
+Hasta el «adelante» no se editan ficheros. Durante la implementación solo
+escriben los `kanban-implementer`. No hagas commit.
+
+1. **Investigar.** Dos `kanban-recon` en paralelo, en un solo mensaje:
+   - Servidor: `apps/api`, `packages/db`, `packages/schemas` y las APIs
+     instaladas (`betterAuth`, `drizzleAdapter`, campos de las tablas con
+     `getAuthTables`).
+   - Web: `apps/web` y `createAuthClient`.
+2. **Planificar.** Tú. Como máximo 15 líneas: archivos, los contratos de
+   arriba, briefs con ficheros disjuntos y verificación. Para y espera mi
+   «adelante».
+3. **Implementar.** Dos `kanban-implementer` en paralelo, con ficheros disjuntos:
+   - A: tablas, instancia `auth`, rutas, rate limit y migración generada.
+   - B: schemas Zod de los formularios con sus tests, `auth-client` y UI.
+   Después, un tercer `kanban-implementer` une las dos partes (barrels,
+   montaje en `index.ts`) y actualiza la documentación de «Al terminar».
+4. **Verificar.** Un `kanban-verifier`: aplica la migración, pasa la puerta
+   de calidad y hace las pruebas HTTP de «Hecho cuando» contra
+   `http://localhost:5173`.
+5. **Revisar.** Tú lees el diff y los informes, corriges y pules, y vuelves
+   a lanzar `kanban-verifier`.
 
 ## Requisitos
 
@@ -60,20 +86,6 @@ desde el navegador y a través del proxy de Vite+.
   arriba; si no, `bun run db:migrate` en el host. Después de borrar
   `data/*.db*` hay que migrar otra vez.
 
-## Fuera de alcance
-
-Workspaces, membresías, `workspace_id`, tablero, React Router, paquetes nuevos,
-verificación de email y proveedores OAuth.
-
-## Cómo trabajar
-
-Sigue el flujo con subagentes de `AGENTS.md` (Agent workflow). En este paso:
-
-- **Investigar** (Haiku): mapa de `apps/api`, `packages/db`, `packages/schemas` y `apps/web`, y las APIs instaladas que vas a usar (`betterAuth`, `drizzleAdapter`, `createAuthClient`, campos de las tablas con `getAuthTables`). Lanza dos en paralelo: servidor y web.
-- **Planificar** (Opus): fija los contratos de arriba y el reparto de ficheros en los briefs.
-- **Implementar** (Sonnet): dos en paralelo, con ficheros disjuntos: A, tablas, instancia `auth`, rutas, rate limit y migración generada; B, schemas Zod de los formularios con sus tests, `auth-client` y UI. Después, uno une las dos partes (barrels, montaje en `index.ts`) y actualiza la documentación de «Al terminar».
-- **Verificar** (Haiku): aplica la migración, pasa la puerta de calidad y hace las pruebas HTTP de «Hecho cuando» contra `http://localhost:5173`.
-
 ## Hecho cuando
 
 - [ ] `vp check` y `vp test` en verde.
@@ -86,7 +98,7 @@ Sigue el flujo con subagentes de `AGENTS.md` (Agent workflow). En este paso:
 
 ## Al terminar
 
-El implementador que cierra el paso actualiza `AGENTS.md` (auth por cookie sí; workspaces no) y borra lo que deja
-de ser cierto en `.cursor/rules/`: `api.mdc`, `web.mdc`, `db.mdc` y `scope.mdc`
-dicen que auth es un placeholder. No hagas commit. Cierra con el resumen que
-pide `AGENTS.md`.
+El implementador que cierra el paso actualiza `AGENTS.md` (auth por cookie sí;
+workspaces no) y quita de `.cursor/rules/` lo que ya no es cierto: `api.mdc`,
+`web.mdc`, `db.mdc` y `scope.mdc` dicen que auth es un placeholder. No hagas
+commit. Cierra con el resumen que pide `AGENTS.md`.

@@ -1,9 +1,5 @@
 # Sesión 3 · 02 — El stream SSE y el hub
 
-Tiempo en clase: ~15 min. Antes de lanzar a los implementadores, presenta un plan de 15 líneas
-como máximo (ruta, autorización, cómo se registra y se da de baja un
-suscriptor, ficheros) y espera mi «adelante».
-
 ## Punto de partida
 
 `boardEventSchema` existe (01). `apps/api/src/realtime/index.ts` es un
@@ -62,13 +58,15 @@ Socket.IO, Redis y cualquier servicio aparte.
 
 ## Cómo trabajar
 
-Sigue el flujo con subagentes de `AGENTS.md` (Agent workflow). En este paso:
+Sigue los cinco pasos de `AGENTS.md`. Tú planificas y, al final, corriges. Hasta el «adelante» no se editan ficheros. No hagas commit.
 
-- **Investigar** (Haiku): `apps/api/src/index.ts`, `requireSession`, `getProjectForMember`, el proxy de Vite+ y las firmas instaladas de `streamSSE` (`hono/streaming`), `idleTimeout` y `server.timeout` (`bun-types`).
-- **Planificar** (Opus): API del hub y cómo cablear el `server.timeout` de Bun.
-- **Implementar** (Sonnet): dos en paralelo: A, hub, ruta, montaje, `index.ts` de Bun y proxy de Vite+; B, tests del hub y de la autorización de la ruta. Uno de ellos actualiza la documentación de «Al terminar».
-- **Verificar** (Haiku): puerta de calidad y estas pruebas por `http://localhost:5173` (Vite se reinicia solo al cambiar su config; si no, `docker compose restart web`): sin cookie → 401; Luis en `/api/projects/proj_ana_notes/events` → 404; Ana en `/api/projects/proj_agentic_kanban/events` con `curl -N --max-time 25` sigue abierta más de 10 s y recibe keepalives.
-- **Revisar** (Opus): bajas del hub y ninguna escritura fuera del bucle.
+En este paso:
+
+- **Investigar.** `kanban-recon`: `apps/api/src/index.ts`, `requireSession`, `getProjectForMember`, el proxy de Vite+ y las firmas instaladas de `streamSSE` (`hono/streaming`), `idleTimeout` y `server.timeout` (`bun-types`).
+- **Planificar.** Tú, y espera mi «adelante»: API del hub y cómo cablear el `server.timeout` de Bun.
+- **Implementar.** `kanban-implementer`: dos en paralelo: A, hub, ruta, montaje, `index.ts` de Bun y proxy de Vite+; B, tests del hub y de la autorización de la ruta. Uno de ellos actualiza la documentación de «Al terminar».
+- **Verificar.** `kanban-verifier`: puerta de calidad y estas pruebas por `http://localhost:5173` (Vite se reinicia solo al cambiar su config; si no, `docker compose restart web`): sin cookie → 401; Luis en `/api/projects/proj_ana_notes/events` → 404; Ana en `/api/projects/proj_agentic_kanban/events` con `curl -N --max-time 25` sigue abierta más de 10 s y recibe keepalives.
+- **Revisar.** Tú: bajas del hub y ninguna escritura fuera del bucle.
 
 ## Hecho cuando
 

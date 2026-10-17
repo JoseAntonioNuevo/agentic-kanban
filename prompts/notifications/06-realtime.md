@@ -1,9 +1,5 @@
 # Sesión 4 · 06 — `comment.created` por el stream existente
 
-Tiempo en clase: ~10 min. Antes de lanzar a los implementadores, presenta un plan de 12 líneas
-como máximo (forma del evento, dónde se publica, cómo lo aplica el cliente) y
-espera mi «adelante».
-
 ## Punto de partida
 
 El stream SSE por project, el hub y `useBoardEvents` funcionan desde la
@@ -45,12 +41,14 @@ Cambios en la campana, reenviar emails y presencia.
 
 ## Cómo trabajar
 
-Sigue el flujo con subagentes de `AGENTS.md` (Agent workflow). En este paso:
+Sigue los cinco pasos de `AGENTS.md`. Tú planificas y, al final, corriges. Hasta el «adelante» no se editan ficheros. No hagas commit.
 
-- **Investigar** (Haiku): `boardEventSchema`, `applyBoardEvent`, el `POST` de comentarios y `useBoardEvents`.
-- **Planificar** (Opus): forma del evento, dónde se publica y cómo lo aplica el cliente.
-- **Implementar** (Sonnet): primero uno amplía `boardEventSchema` y `applyBoardEvent`; después dos en paralelo: A, publicación y sus tests; B, gestión del evento en `useBoardEvents`. Uno de ellos actualiza la documentación de «Al terminar».
-- **Verificar** (Haiku): puerta de calidad.
+En este paso:
+
+- **Investigar.** `kanban-recon`: `boardEventSchema`, `applyBoardEvent`, el `POST` de comentarios y `useBoardEvents`.
+- **Planificar.** Tú, y espera mi «adelante»: forma del evento, dónde se publica y cómo lo aplica el cliente.
+- **Implementar.** `kanban-implementer`: primero uno amplía `boardEventSchema` y `applyBoardEvent`; después dos en paralelo: A, publicación y sus tests; B, gestión del evento en `useBoardEvents`. Uno de ellos actualiza la documentación de «Al terminar».
+- **Verificar.** `kanban-verifier`: puerta de calidad.
 
 ## Hecho cuando
 

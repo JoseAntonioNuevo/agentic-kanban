@@ -1,9 +1,5 @@
 # Sesión 3 · 04 — El cliente parchea la caché
 
-Tiempo en clase: ~15 min. Antes de lanzar a los implementadores, presenta un plan de 12 líneas
-como máximo (hook, cuándo se abre y se cierra, cómo se parchea la query,
-ficheros) y espera mi «adelante».
-
 ## Punto de partida
 
 El servidor publica `task.created`, `task.updated`, `task.deleted` y
@@ -55,13 +51,15 @@ Toasts, presencia, comentarios y Socket.IO.
 
 ## Cómo trabajar
 
-Sigue el flujo con subagentes de `AGENTS.md` (Agent workflow). En este paso:
+Sigue los cinco pasos de `AGENTS.md`. Tú planificas y, al final, corriges. Hasta el «adelante» no se editan ficheros. No hagas commit.
 
-- **Investigar** (Haiku): `use-board`, `boardQueryKey`, la `mutationKey` de las mutations, `BoardScreen` y `applyBoardMove`.
-- **Planificar** (Opus): firma del hook y reglas del eco propio.
-- **Implementar** (Sonnet): dos en paralelo: A, `applyBoardEvent` y sus tests; B, `useBoardEvents` y su montaje en `BoardScreen` con la firma fijada. Uno de ellos actualiza la documentación de «Al terminar».
-- **Verificar** (Haiku): puerta de calidad.
-- **Revisar** (Opus): una sola conexión, cierre y eco propio; después prepárame la prueba con dos navegadores.
+En este paso:
+
+- **Investigar.** `kanban-recon`: `use-board`, `boardQueryKey`, la `mutationKey` de las mutations, `BoardScreen` y `applyBoardMove`.
+- **Planificar.** Tú, y espera mi «adelante»: firma del hook y reglas del eco propio.
+- **Implementar.** `kanban-implementer`: dos en paralelo: A, `applyBoardEvent` y sus tests; B, `useBoardEvents` y su montaje en `BoardScreen` con la firma fijada. Uno de ellos actualiza la documentación de «Al terminar».
+- **Verificar.** `kanban-verifier`: puerta de calidad.
+- **Revisar.** Tú: una sola conexión, cierre y eco propio; después prepárame la prueba con dos navegadores.
 
 ## Hecho cuando
 

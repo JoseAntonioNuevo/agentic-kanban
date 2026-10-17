@@ -1,9 +1,5 @@
 # Sesión 2 · 07 — Drag-and-drop optimista
 
-Tiempo en clase: ~13 min. Antes de lanzar a los implementadores, presenta un plan de 15 líneas
-como máximo (flujo desde el arrastre hasta la persistencia, qué caché cambia
-y cómo se hace el rollback) y espera mi «adelante».
-
 ## Punto de partida
 
 `POST /api/tasks/:taskId/move` funciona (06). El tablero se pinta desde
@@ -57,13 +53,15 @@ Realtime, comentarios y notificaciones de otros usuarios.
 
 ## Cómo trabajar
 
-Sigue el flujo con subagentes de `AGENTS.md` (Agent workflow). En este paso:
+Sigue los cinco pasos de `AGENTS.md`. Tú planificas y, al final, corriges. Hasta el «adelante» no se editan ficheros. No hagas commit.
 
-- **Investigar** (Haiku): dos en paralelo: uno con los exports reales de `@dnd-kit/react` 0.5.1 (`node_modules/@dnd-kit/react/*.d.ts`) y otro con cómo se pinta hoy el tablero (`use-board`, mutations, componentes).
-- **Planificar** (Opus): flujo arrastre → caché → API → rollback.
-- **Implementar** (Sonnet): dos en paralelo: A, `applyBoardMove` y sus tests; B, `useMoveTask` e integración de dnd-kit en los componentes del tablero. Uno de ellos actualiza la documentación de «Al terminar».
-- **Verificar** (Haiku): puerta de calidad.
-- **Revisar** (Opus): fuente única y rollback completo; después prepárame los pasos de la prueba manual, incluido el fallo forzado.
+En este paso:
+
+- **Investigar.** `kanban-recon`: dos en paralelo: uno con los exports reales de `@dnd-kit/react` 0.5.1 (`node_modules/@dnd-kit/react/*.d.ts`) y otro con cómo se pinta hoy el tablero (`use-board`, mutations, componentes).
+- **Planificar.** Tú, y espera mi «adelante»: flujo arrastre → caché → API → rollback.
+- **Implementar.** `kanban-implementer`: dos en paralelo: A, `applyBoardMove` y sus tests; B, `useMoveTask` e integración de dnd-kit en los componentes del tablero. Uno de ellos actualiza la documentación de «Al terminar».
+- **Verificar.** `kanban-verifier`: puerta de calidad.
+- **Revisar.** Tú: fuente única y rollback completo; después prepárame los pasos de la prueba manual, incluido el fallo forzado.
 
 ## Hecho cuando
 

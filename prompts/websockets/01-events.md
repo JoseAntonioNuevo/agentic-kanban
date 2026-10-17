@@ -1,8 +1,5 @@
 # Sesión 3 · 01 — El contrato de eventos
 
-Tiempo en clase: ~10 min. Antes de lanzar a los implementadores, presenta un plan de 10 líneas
-como máximo y espera mi «adelante».
-
 ## Punto de partida
 
 La Sesión 2 está completa: CRUD de tareas, `POST /api/tasks/:taskId/move`,
@@ -45,12 +42,14 @@ comentarios y Socket.IO.
 
 ## Cómo trabajar
 
-Sigue el flujo con subagentes de `AGENTS.md` (Agent workflow). En este paso:
+Sigue los cinco pasos de `AGENTS.md`. Tú planificas y, al final, corriges. Hasta el «adelante» no se editan ficheros. No hagas commit.
 
-- **Investigar** (Haiku): `taskSchema`, `moveTaskBodySchema` y la API de `z.discriminatedUnion` en el Zod 4.6.7 instalado.
-- **Planificar** (Opus): forma exacta de cada evento.
-- **Implementar** (Sonnet): uno solo: schema, tests y documentación de «Al terminar».
-- **Verificar** (Haiku): puerta de calidad.
+En este paso:
+
+- **Investigar.** `kanban-recon`: `taskSchema`, `moveTaskBodySchema` y la API de `z.discriminatedUnion` en el Zod 4.6.7 instalado.
+- **Planificar.** Tú, y espera mi «adelante»: forma exacta de cada evento.
+- **Implementar.** `kanban-implementer`: uno solo: schema, tests y documentación de «Al terminar».
+- **Verificar.** `kanban-verifier`: puerta de calidad.
 
 ## Hecho cuando
 

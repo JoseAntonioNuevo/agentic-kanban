@@ -1,8 +1,5 @@
 # Sesión 2 · 03 — La API del tablero
 
-Tiempo en clase: ~10 min. Antes de lanzar a los implementadores, presenta un plan de 15 líneas
-como máximo y espera mi «adelante».
-
 ## Punto de partida
 
 Tablas `column` y `task` (01) y seed del tablero (02). De la Sesión 1 ya
@@ -56,13 +53,15 @@ Mover tareas, drag-and-drop, realtime y frontend.
 
 ## Cómo trabajar
 
-Sigue el flujo con subagentes de `AGENTS.md` (Agent workflow). En este paso:
+Sigue los cinco pasos de `AGENTS.md`. Tú planificas y, al final, corriges. Hasta el «adelante» no se editan ficheros. No hagas commit.
 
-- **Investigar** (Haiku): `requireSession`, `getProjectForMember`, el patrón de rutas, el arnés de tests y la API de transacciones de Drizzle instalada.
-- **Planificar** (Opus): fija schemas, rutas y firmas de las consultas en los briefs.
-- **Implementar** (Sonnet): primero uno escribe los schemas de `board.ts`; después dos en paralelo: A, consultas en `packages/db`, rutas y montaje; B, tests contra los contratos. Uno de ellos actualiza la documentación de «Al terminar».
-- **Verificar** (Haiku): puerta de calidad y pruebas HTTP de «Hecho cuando» por el proxy.
-- **Revisar** (Opus): busca cualquier camino sin filtro de tenant.
+En este paso:
+
+- **Investigar.** `kanban-recon`: `requireSession`, `getProjectForMember`, el patrón de rutas, el arnés de tests y la API de transacciones de Drizzle instalada.
+- **Planificar.** Tú, y espera mi «adelante»: fija schemas, rutas y firmas de las consultas en los briefs.
+- **Implementar.** `kanban-implementer`: primero uno escribe los schemas de `board.ts`; después dos en paralelo: A, consultas en `packages/db`, rutas y montaje; B, tests contra los contratos. Uno de ellos actualiza la documentación de «Al terminar».
+- **Verificar.** `kanban-verifier`: puerta de calidad y pruebas HTTP de «Hecho cuando» por el proxy.
+- **Revisar.** Tú: busca cualquier camino sin filtro de tenant.
 
 ## Hecho cuando
 

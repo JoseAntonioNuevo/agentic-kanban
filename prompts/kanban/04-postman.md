@@ -1,8 +1,5 @@
 # Sesión 2 · 04 — Colección de Postman
 
-Tiempo en clase: ~5 min. Antes de lanzar a los implementadores, presenta un plan de 10 líneas
-como máximo y espera mi «adelante».
-
 ## Punto de partida
 
 La API del tablero (03) funciona y tiene tests. Queremos ver el contrato HTTP
@@ -53,12 +50,14 @@ Cambios de funcionalidad en la API, Newman y paquetes nuevos.
 
 ## Cómo trabajar
 
-Sigue el flujo con subagentes de `AGENTS.md` (Agent workflow). En este paso:
+Sigue los cinco pasos de `AGENTS.md`. Tú planificas y, al final, corriges. Hasta el «adelante» no se editan ficheros. No hagas commit.
 
-- **Investigar** (Haiku): rutas reales en `apps/api/src/routes/`, schemas de los bodies y endpoints de Better Auth montados.
-- **Planificar** (Opus): peticiones, variables y orden de la colección.
-- **Implementar** (Sonnet): uno solo: los dos JSON y la documentación de «Al terminar».
-- **Verificar** (Haiku): comprueba que los dos JSON se parsean y que cada URL existe en `apps/api/src/routes/`, y reproduce con `curl` el flujo principal y el bloque 05 contra `http://localhost:3000`.
+En este paso:
+
+- **Investigar.** `kanban-recon`: rutas reales en `apps/api/src/routes/`, schemas de los bodies y endpoints de Better Auth montados.
+- **Planificar.** Tú, y espera mi «adelante»: peticiones, variables y orden de la colección.
+- **Implementar.** `kanban-implementer`: uno solo: los dos JSON y la documentación de «Al terminar».
+- **Verificar.** `kanban-verifier`: comprueba que los dos JSON se parsean y que cada URL existe en `apps/api/src/routes/`, y reproduce con `curl` el flujo principal y el bloque 05 contra `http://localhost:3000`.
 
 ## Hecho cuando
 
