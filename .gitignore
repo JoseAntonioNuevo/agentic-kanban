@@ -18,6 +18,7 @@ pnpm-debug.log*
 .codex/
 .codex-tmp/
 presentaciones/
+docs/obsidian/
 
 data/*.db
 data/*.db-*
