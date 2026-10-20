@@ -61,9 +61,10 @@ y las pruebas de idempotencia observadas.
 
 - Usuarios con `auth.api.signUpEmail` de Better Auth: sin INSERT en `user` o
   `account`, sin hash propio y sin HTTP a `/api/auth`. Si el email ya existe,
-  reutiliza su `user.id`.
-- Workspaces, projects y memberships con upsert por `id` y por
-  `UNIQUE (workspace_id, user_id)`. Nunca DELETE masivo.
+  reutiliza su `user.id` (mediante una consulta en `@agentic-kanban/db`).
+- Workspaces, projects y memberships con `upsertWorkspace`, `upsertProject` y
+  `addWorkspaceMember` de `@agentic-kanban/db` (upsert por `id` y por
+  `UNIQUE (workspace_id, user_id)`). Nunca DELETE masivo.
 - Script en `apps/api/src/seed.ts` (los datos de tenant solo vía
   `@agentic-kanban/db`), script `seed` en `apps/api/package.json` y `db:seed`
   en la raíz (`bun --filter @agentic-kanban/api seed`). Organízalo por bloques:

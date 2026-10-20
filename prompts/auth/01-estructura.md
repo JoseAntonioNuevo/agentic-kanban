@@ -41,11 +41,12 @@ No hagas commit ni implementes los pasos siguientes.
    líneas con archivos, contratos, integración, migración y comprobaciones.
    Explica por qué aquí compensa orquestar: auth cruza varias capas. Espera
    mi «adelante» antes de editar.
-2. **Implementación (Grok).** Delega explícitamente en `s1-grok-implementer`.
-   El brief incluye tablas, instancia `auth`, rutas y montaje, rate limit,
-   schemas con tests, cliente, formularios, migración y documentación.
-   Un implementador por defecto; divide solo con independencia real,
-   contratos acordados y archivos disjuntos. Asigna también los barrels.
+2. **Implementación (Grok).** Delega explícitamente en `s1-grok-implementer`
+   (omite el parámetro `model` en `Task` —nunca `inherit`— para que se aplique
+   el frontmatter de Grok). El brief incluye tablas, instancia `auth`, rutas y
+   montaje, rate limit, schemas con tests, cliente, formularios, migración y
+   documentación. Un implementador por defecto; divide solo con independencia
+   real, contratos acordados y archivos disjuntos. Asigna también los barrels.
 3. **Comprobaciones (Grok).** Aplica la migración en el entorno correcto,
    ejecuta `vp check`, `vp test` y las pruebas HTTP de «Hecho cuando» por
    `http://localhost:5173`. Usa cookie jar temporal y `Origin` de confianza
@@ -82,9 +83,10 @@ No hagas commit ni implementes los pasos siguientes.
   activa por defecto en producción, limita todas las rutas y trae una regla
   propia de 3 cada 10 s para sign-in/sign-up: habría que activarlo, fijar
   esas dos reglas y excluir `get-session`. Detrás del proxy de Vite puede no
-  llegar la IP real: comparte un bucket y basta para el aula. Deja el límite
-  configurable para que los tests de API del 03 (que registran usuarios por
-  `/api/auth`) no choquen con él, sin cambiar el comportamiento en desarrollo.
+  llegar la IP real: comparte un bucket y basta para el aula. Haz el máximo
+  configurable con `process.env.AUTH_RATE_LIMIT_MAX` (por defecto `10`) para
+  que el setup de tests del 03 lo suba sin desactivar la lógica ni cambiar el
+  comportamiento en desarrollo.
 - **Validación en el cliente.** `signUpInputSchema` (nombre, email y contraseña
   de 8 a 128 caracteres) y `signInInputSchema`, con tests de parse y de rechazo.
 - **Web.** `createAuthClient()` de `better-auth/react` sin `baseURL`: URL

@@ -23,7 +23,9 @@ arnés de tests de API que usarán todas las sesiones siguientes.
 - `requireSession` en `apps/api/src/middleware/session.ts`: deja `userId` en el
   contexto o responde 401 con `{ error }`.
 - Consultas en `@agentic-kanban/db`: `listWorkspacesForUser(userId)` y
-  `getProjectForMember(projectId, userId)`.
+  `getProjectForMember(projectId, userId)`, más las escrituras idempotentes
+  `upsertWorkspace`, `addWorkspaceMember` y `upsertProject` (las usan los
+  fixtures de test aquí y el seed en el 04).
 - `migrateDatabase()` en `@agentic-kanban/db`: aplica las migraciones de
   `packages/db/migrations/` con el migrador instalado de Drizzle. Solo lo usa
   el arnés de tests; la API nunca migra al arrancar.
@@ -52,10 +54,12 @@ frontend o seed.
    integración y pruebas. Explica por qué la autorización merece este plan.
    Espera mi «adelante» antes de editar.
 2. **Implementación (Grok).** Delega explícitamente en `s1-grok-implementer`
-   con los contratos anteriores y todos los archivos necesarios: schemas,
-   consultas de DB, middleware, rutas, montaje, arnés, tests y documentación.
-   Un implementador por defecto. Si divides, primero fija contratos y evita
-   que dos agentes editen el mismo archivo; no paralelices por obligación.
+   (omite el parámetro `model` en `Task` —nunca `inherit`— para que se aplique
+   el frontmatter de Grok) con los contratos anteriores y todos los archivos
+   necesarios: schemas, consultas de DB, middleware, rutas, montaje, arnés,
+   tests y documentación. Un implementador por defecto. Si divides, primero
+   fija contratos y evita que dos agentes editen el mismo archivo; no
+   paralelices por obligación.
 3. **Comprobaciones (Grok).** Ejecuta `vp check`, `vp test` y las pruebas de
    aceptación. Los casos con membresías usan fixtures en la base de test;
    no adelantes el seed de la demo ni escribas datos de test en `data/`.
@@ -96,14 +100,16 @@ consultas usan el query builder.
   `@agentic-kanban/db`, porque el cliente se cachea en la primera consulta.
 - `vp test` corre sobre Node, no sobre Bun: el código que importan los tests
   no usa APIs `Bun.*` ni `bun:*`.
-- Los helpers registran usuarios por `/api/auth/sign-up/email`: el rate limit
-  del 01 no debe hacer fallar la suite. Usa su configuración para test sin
-  cambiar el comportamiento en desarrollo ni debilitar otros tests.
+- Los helpers registran usuarios por `/api/auth/sign-up/email`: fija un
+  `AUTH_RATE_LIMIT_MAX` alto en `test.env` para que el rate limit del 01 no
+  haga fallar la suite, sin cambiar el comportamiento en desarrollo ni
+  debilitar otros tests.
 - Helpers compartidos en `apps/api/src/test/`: registrar un usuario y obtener
-  su cookie, crear fixtures de workspace, membresía y project, y hacer
-  peticiones con cookie contra `app`. Las peticiones a `/api/auth/*` llevan
-  `Origin: http://localhost:5173`: Better Auth rechaza las que llevan cookie y
-  no traen un origen de confianza.
+  su cookie, crear fixtures de workspace, membresía y project (mediante
+  `upsertWorkspace`, `addWorkspaceMember` y `upsertProject` de
+  `@agentic-kanban/db`), y hacer peticiones con cookie contra `app`. Las
+  peticiones a `/api/auth/*` llevan `Origin: http://localhost:5173`: Better
+  Auth rechaza las que llevan cookie y no traen un origen de confianza.
 - Tests: schemas (parse y rechazo) y autorización: 401 sin cookie, lista vacía
   para un usuario sin membresías, lista propia con sus projects, 200 para un
   project propio y 404 para uno de otro workspace.
@@ -123,5 +129,6 @@ consultas usan el query builder.
 ## Al terminar
 
 Grok actualiza `AGENTS.md` (contratos de
-lectura y cómo correr los tests de API) y `.cursor/rules/api.mdc`. No hagas
-commit. Cierra con el resumen que pide `AGENTS.md`.
+lectura y cómo correr los tests de API), `.cursor/rules/api.mdc` y
+`.cursor/rules/scope.mdc`. No hagas commit. Cierra con el resumen que pide
+`AGENTS.md`.

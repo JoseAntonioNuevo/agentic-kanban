@@ -148,22 +148,22 @@ Ya están resueltas en los prompts; conviene conocerlas por si salen.
 Los nombres que fija un prompt los usan los siguientes. Si en el repo ya existe
 un equivalente con otro nombre, el agente lo reutiliza y lo dice en el plan.
 
-| Prompt | Contrato                                                                                                                                                                         |
-| ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1·01   | `/api/auth/*`, `auth`, `authClient`, `signUpInputSchema`, `signInInputSchema`                                                                                                    |
-| 1·03   | `GET /api/workspaces` (con `projects`), `GET /api/projects/:projectId`, `requireSession`, `listWorkspacesForUser`, `getProjectForMember`, arnés de tests en `apps/api/src/test/` |
-| 1·04   | `bun run db:seed`, Ana y Luis, `ws_thepower_demo`, `proj_agentic_kanban`, `ws_ana_demo`, `proj_ana_notes`                                                                        |
-| 1·05   | `useWorkspaces`, `workspace-accent.ts`, queryKeys con `userId` y `queryClient.clear()` al salir                                                                                  |
-| 2·02   | `col_kanban_*`, `task_kanban_1..5`, `col_ana_*`, `task_ana_1`                                                                                                                    |
-| 2·03   | `GET /api/projects/:projectId/board`, `POST /api/projects/:projectId/tasks`, `PATCH` y `DELETE /api/tasks/:taskId`, schemas de `board.ts`                                        |
-| 2·05   | `useBoard`, `boardQueryKey`, `useTaskMutations`, `mutationKey` `["board", projectId]`, `TaskFormDialog`                                                                          |
-| 2·06   | `POST /api/tasks/:taskId/move`, `moveTaskBodySchema`                                                                                                                             |
-| 2·07   | `applyBoardMove`, `useMoveTask`                                                                                                                                                  |
-| 3·01   | `boardEventSchema` (`task.created`, `task.updated`, `task.deleted`, `task.moved`)                                                                                                |
-| 3·02   | `GET /api/projects/:projectId/events`, hub `subscribe`/`publish`                                                                                                                 |
-| 3·04   | `applyBoardEvent`, `useBoardEvents`                                                                                                                                              |
-| 4·02   | `GET`/`POST /api/tasks/:taskId/comments`, `commentSchema`                                                                                                                        |
-| 4·03   | `useComments`, `useCreateComment`, `TaskComments`                                                                                                                                |
-| 4·04   | `extractMentionTokens`, `apps/api/src/mail/outbox.ts`, `OUTBOX_PATH`                                                                                                             |
-| 4·05   | `GET /api/notifications`, `POST /api/notifications/:notificationId/read`, `notificationSchema`, `NotificationBell`                                                               |
-| 4·06   | `comment.created` en `boardEventSchema`                                                                                                                                          |
+| Prompt | Contrato                                                                                                                                                                                                           |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1·01   | `/api/auth/*`, `auth`, `AUTH_RATE_LIMIT_MAX`, `authClient`, `signUpInputSchema`, `signInInputSchema`                                                                                                               |
+| 1·03   | `GET /api/workspaces` (con `projects`), `GET /api/projects/:projectId`, `requireSession`, `listWorkspacesForUser`, `getProjectForMember`, `upsertWorkspace`, `addWorkspaceMember`, `upsertProject`, arnés de tests |
+| 1·04   | `bun run db:seed`, Ana y Luis, `ws_thepower_demo`, `proj_agentic_kanban`, `ws_ana_demo`, `proj_ana_notes`                                                                                                          |
+| 1·05   | `useWorkspaces`, `workspace-accent.ts`, queryKeys con `userId` y `queryClient.clear()` al salir                                                                                                                    |
+| 2·02   | `col_kanban_*`, `task_kanban_1..5`, `col_ana_*`, `task_ana_1`                                                                                                                                                      |
+| 2·03   | `GET /api/projects/:projectId/board`, `POST /api/projects/:projectId/tasks`, `PATCH` y `DELETE /api/tasks/:taskId`, schemas de `board.ts`                                                                          |
+| 2·05   | `useBoard`, `boardQueryKey`, `useTaskMutations`, `mutationKey` `["board", projectId]`, `TaskFormDialog`                                                                                                            |
+| 2·06   | `POST /api/tasks/:taskId/move`, `moveTaskBodySchema`                                                                                                                                                               |
+| 2·07   | `applyBoardMove`, `useMoveTask`                                                                                                                                                                                    |
+| 3·01   | `boardEventSchema` (`task.created`, `task.updated`, `task.deleted`, `task.moved`)                                                                                                                                  |
+| 3·02   | `GET /api/projects/:projectId/events`, hub `subscribe`/`publish`                                                                                                                                                   |
+| 3·04   | `applyBoardEvent`, `useBoardEvents`                                                                                                                                                                                |
+| 4·02   | `GET`/`POST /api/tasks/:taskId/comments`, `commentSchema`                                                                                                                                                          |
+| 4·03   | `useComments`, `useCreateComment`, `TaskComments`                                                                                                                                                                  |
+| 4·04   | `extractMentionTokens`, `apps/api/src/mail/outbox.ts`, `OUTBOX_PATH`                                                                                                                                               |
+| 4·05   | `GET /api/notifications`, `POST /api/notifications/:notificationId/read`, `notificationSchema`, `NotificationBell`                                                                                                 |
+| 4·06   | `comment.created` en `boardEventSchema`                                                                                                                                                                            |

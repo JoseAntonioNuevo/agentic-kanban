@@ -23,11 +23,12 @@ comprobaciones independientes y pide ese dato; no adivines el alcance.
 
 1. **Consolidar evidencias (Opus).** Identifica la versión revisada y los
    resultados vigentes de `vp check`, `vp test` y la aceptación de abajo.
-   Delega en `s1-grok-implementer`, en modo verificar y sin edición, solo lo
-   que falte o haya quedado invalidado. No lances Haiku, Sonnet, los agentes
-   `kanban-*` de `.claude/agents/`, subagentes integrados de Cursor ni cuatro
-   revisores por dimensiones. Un fallo local conocido se diagnostica y se
-   corrige con Grok antes de enviarlo a revisión adicional.
+   Delega en `s1-grok-implementer` (sin `model: "inherit"` en `Task`), en modo
+   verificar y sin edición, solo lo que falte o haya quedado invalidado. No
+   lances Haiku, Sonnet, los agentes `kanban-*` de `.claude/agents/`,
+   subagentes integrados de Cursor ni cuatro revisores por dimensiones. Un
+   fallo local conocido se diagnostica y se corrige con Grok antes de enviarlo
+   a revisión adicional.
 2. **Decidir si CodeRabbit aporta valor.** Expón el motivo y el alcance antes
    de ejecutarlo. Aquí el punto previsto es el cambio completo tras el 05:
    introduce auth, autorización multi-tenant y caché privada. Si ya se revisó

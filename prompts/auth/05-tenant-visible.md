@@ -82,5 +82,6 @@ estos pasos. No añadas una pasada de CodeRabbit solo por terminar el dashboard.
 ## Al terminar
 
 Actualiza `AGENTS.md`,
-`.cursor/rules/web.mdc` y el README (Ana ve dos espacios; Luis, uno). No
-hagas commit. Cierra con el resumen que pide `AGENTS.md`.
+`.cursor/rules/web.mdc`, `.cursor/rules/scope.mdc` y el README (Ana ve dos
+espacios; Luis, uno). No hagas commit. Cierra con el resumen que pide
+`AGENTS.md`.

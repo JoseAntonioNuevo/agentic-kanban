@@ -28,14 +28,18 @@ Cursor también carga `.claude/agents/` por compatibilidad: los agentes
 `kanban-*` (Haiku/Sonnet) son de las sesiones 2–4 y sus descripciones invitan
 a usarlos de forma proactiva. En la Sesión 1 **no se invocan**, ni a mano ni
 por delegación automática. Tampoco se lanzan los subagentes integrados de
-Cursor (exploración, terminal, navegador): Opus y Grok inspeccionan con sus
+Cursor (exploración y navegador): Opus y Grok inspeccionan con sus
 propias herramientas. Si aparece uno en el chat, detenlo e informa.
 
-Comprueba el modelo real en la tarjeta del subagente y en el consumo: el texto
-del prompt no garantiza qué modelo ejecutó Cursor. Si falta el modelo o hay
-una sustitución, informa antes de delegar; no uses Sonnet/Haiku como reemplazo
-silencioso. En pasos directos, selecciona Grok en el chat principal y ejecuta
-el prompt allí, sin invocar el subagente ni montar un coordinador.
+Al delegar en `s1-grok-implementer` con la herramienta `Task`, **omite el
+parámetro `model`** (nunca pases `model: "inherit"`, que pisaría el frontmatter
+y lo ejecutaría con Opus; si tuvieras que indicarlo, usa el slug permitido
+`grok-4.7-high-fast` cuando esté en el catálogo). Comprueba el modelo real en
+la tarjeta del subagente y en el consumo: el texto del prompt no garantiza qué
+modelo ejecutó Cursor. Si falta el modelo o hay una sustitución, informa antes
+de delegar; no uses Sonnet/Haiku como reemplazo silencioso. En pasos directos,
+selecciona Grok en el chat principal y ejecuta el prompt allí, sin invocar el
+subagente ni montar un coordinador.
 
 ## Antes del directo
 

@@ -1,6 +1,6 @@
 ---
 name: kanban-recon
-description: Read-only reconnaissance for one Agentic Kanban course step. Use it before planning to map the files, contracts, conventions, installed library APIs and gaps the step depends on. It never edits files or changes state.
+description: Sessions 2–4 only (never invoke in Session 1). Read-only reconnaissance for one Agentic Kanban course step. Use it before planning to map the files, contracts, conventions, installed library APIs and gaps the step depends on. It never edits files or changes state.
 tools: Read, Grep, Glob, Bash
 model: haiku
 color: cyan

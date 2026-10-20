@@ -72,5 +72,5 @@ Drizzle con `sqliteTable`, `text` e `integer` de `drizzle-orm/sqlite-core`, en
 ## Al terminar
 
 Actualiza `AGENTS.md` (tablas sí;
-endpoints no) y `.cursor/rules/db.mdc`. No hagas commit. Cierra con el resumen
-que pide `AGENTS.md`.
+endpoints no), `.cursor/rules/db.mdc` y `.cursor/rules/scope.mdc`. No hagas
+commit. Cierra con el resumen que pide `AGENTS.md`.

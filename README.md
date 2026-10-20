@@ -20,16 +20,15 @@ usa cuando aporta una revisión necesaria; no hace falta para arrancar la app.
 
 ## Material para la primera clase (S9)
 
-| Material                                                        | Para qué sirve                                                      |
-| --------------------------------------------------------------- | ------------------------------------------------------------------- |
-| [Guía de Cursor](prompts/auth/README.md)                        | Preparación, modelo de cada paso, delegación y criterio de revisión |
-| [Guion para Obsidian](docs/obsidian/S9-Kanban-clase-1-guion.md) | Cronología del directo, explicación, demo y validación              |
-| [01 · Autenticación](prompts/auth/01-estructura.md)             | Registro, login, sesión y logout                                    |
-| [02 · Modelo multi-tenant](prompts/auth/02-multi-tenants.md)    | Workspaces, membresías y proyectos                                  |
-| [03 · Lecturas autorizadas](prompts/auth/03-workspaces.md)      | Acceso por sesión y membresía, con tests aislados                   |
-| [04 · Seed](prompts/auth/04-seed.md)                            | Datos repetibles para Ana y Luis                                    |
-| [05 · Dashboard](prompts/auth/05-tenant-visible.md)             | Espacios visibles por usuario y limpieza de caché                   |
-| [06 · Cierre](prompts/auth/06-review.md)                        | Evidencias, revisión cuando procede y correcciones verificadas      |
+| Material                                                     | Para qué sirve                                                      |
+| ------------------------------------------------------------ | ------------------------------------------------------------------- |
+| [Guía de Cursor](prompts/auth/README.md)                     | Preparación, modelo de cada paso, delegación y criterio de revisión |
+| [01 · Autenticación](prompts/auth/01-estructura.md)          | Registro, login, sesión y logout                                    |
+| [02 · Modelo multi-tenant](prompts/auth/02-multi-tenants.md) | Workspaces, membresías y proyectos                                  |
+| [03 · Lecturas autorizadas](prompts/auth/03-workspaces.md)   | Acceso por sesión y membresía, con tests aislados                   |
+| [04 · Seed](prompts/auth/04-seed.md)                         | Datos repetibles para Ana y Luis                                    |
+| [05 · Dashboard](prompts/auth/05-tenant-visible.md)          | Espacios visibles por usuario y limpieza de caché                   |
+| [06 · Cierre](prompts/auth/06-review.md)                     | Evidencias, revisión cuando procede y correcciones verificadas      |
 
 Los prompts se ejecutan uno a uno desde el starter. El código de esas
 funcionalidades aún no está implementado. El [mapa del bloque](prompts/README.md)

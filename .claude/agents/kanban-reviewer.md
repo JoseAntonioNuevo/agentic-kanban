@@ -1,6 +1,6 @@
 ---
 name: kanban-reviewer
-description: Read-only reviewer for one dimension of an Agentic Kanban change (tenant isolation and authorization, contracts and tests, client state, or scope and docs). Reports only real problems backed by file:line evidence and a concrete failing scenario. Use it in the review prompts, several in parallel, one dimension each.
+description: Sessions 2–4 only (never invoke in Session 1). Read-only reviewer for one dimension of an Agentic Kanban change (tenant isolation and authorization, contracts and tests, client state, or scope and docs). Reports only real problems backed by file:line evidence and a concrete failing scenario. Use it in the review prompts, several in parallel, one dimension each.
 tools: Read, Grep, Glob, Bash
 model: sonnet
 color: purple

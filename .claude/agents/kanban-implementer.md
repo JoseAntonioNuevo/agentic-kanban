@@ -1,6 +1,6 @@
 ---
 name: kanban-implementer
-description: Implements one bounded slice of an Agentic Kanban course step from a complete brief (goal, owned files, exact contract names, constraints, checks). Use it for slices the main agent already planned, in parallel only when the slices own disjoint files. Not for planning or cross-cutting decisions.
+description: Sessions 2–4 only (never invoke in Session 1). Implements one bounded slice of an Agentic Kanban course step from a complete brief (goal, owned files, exact contract names, constraints, checks). Use it for slices the main agent already planned, in parallel only when the slices own disjoint files. Not for planning or cross-cutting decisions.
 tools: Read, Edit, Write, Grep, Glob, Bash
 model: sonnet
 color: blue

@@ -1,6 +1,6 @@
 ---
 name: kanban-verifier
-description: Runs the verification gate and the acceptance probes of an Agentic Kanban course step and reports green or red with the exact failure output. Use it after implementation and after every fix. It never edits files and never fixes anything.
+description: Sessions 2–4 only (never invoke in Session 1). Runs the verification gate and the acceptance probes of an Agentic Kanban course step and reports green or red with the exact failure output. Use it after implementation and after every fix. It never edits files and never fixes anything.
 tools: Bash, Read, Grep, Glob
 model: haiku
 color: green
