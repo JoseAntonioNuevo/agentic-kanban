@@ -1,0 +1,3 @@
+# Copias anidadas de otras ramas (Claude Code crea worktrees aquí): Cursor no
+# debe indexarlas ni leerlas, porque contienen código de sesiones futuras.
+.claude/worktrees/

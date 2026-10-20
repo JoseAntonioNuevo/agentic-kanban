@@ -24,6 +24,9 @@ arnés de tests de API que usarán todas las sesiones siguientes.
   contexto o responde 401 con `{ error }`.
 - Consultas en `@agentic-kanban/db`: `listWorkspacesForUser(userId)` y
   `getProjectForMember(projectId, userId)`.
+- `migrateDatabase()` en `@agentic-kanban/db`: aplica las migraciones de
+  `packages/db/migrations/` con el migrador instalado de Drizzle. Solo lo usa
+  el arnés de tests; la API nunca migra al arrancar.
 - Un `Hono` por fichero (`apps/api/src/routes/workspaces.ts` y `projects.ts`)
   montado con `app.route("/", …)`. `apps/api/src/index.ts` exporta `app` para
   los tests.
@@ -36,7 +39,11 @@ Frontend, seed, escrituras, CORS, RBAC y paquetes nuevos. Health no se toca.
 
 **Cursor: Opus 5.5 como principal y Grok 4.7 Fast como implementador.** Lee
 `AGENTS.md`, `prompts/auth/README.md`, las reglas implicadas y el código.
-No hagas commit ni añadas frontend o seed.
+No invoques los agentes `kanban-*` de `.claude/agents/` ni los subagentes
+integrados de Cursor; el único subagente es `s1-grok-implementer`. Este
+prompt autoriza los primeros endpoints de producto aunque la documentación
+diga «endpoints no»: se actualiza al cerrar. No hagas commit ni añadas
+frontend o seed.
 
 1. **Inspección y contratos (Opus).** Revisa auth, rutas, DB, schemas y la
    configuración de tests de Vite+. Confirma en `node_modules` las firmas de
@@ -72,14 +79,26 @@ No hagas commit ni añadas frontend o seed.
 
 Validación: `@hono/zod-validator` en los params; las respuestas se construyen y
 pasan por `.parse()` del schema compartido antes de `c.json`, igual que health.
-La API no importa `drizzle-orm` ni `@libsql/client`.
+La API no importa `drizzle-orm` ni `@libsql/client`, tampoco en los tests.
+El cliente de Drizzle no tiene `schema`, así que `db.query` está vacío: las
+consultas usan el query builder.
 
 ## Arnés de tests
 
 - Los tests de API nunca usan `data/agentic-kanban.db`: usan su propia base
-  (fichero temporal o en memoria) con las migraciones aplicadas antes de
-  empezar y un `BETTER_AUTH_SECRET` de test. Configúralo en la config de Vite+
-  que ya existe, sin crear otra config de Vitest.
+  temporal con las migraciones aplicadas (`migrateDatabase()`) antes de
+  empezar, `NODE_ENV=test` y un `BETTER_AUTH_SECRET` de test. Configúralo en
+  la config de Vite+ que ya existe (`test.env` y `test.setupFiles`), sin crear
+  otra config de Vitest.
+- Vitest ejecuta los ficheros en paralelo: cada fichero de test tiene su
+  propia base (por ejemplo, un fichero temporal único por fichero, borrado al
+  terminar). `DATABASE_URL` se fija en el setup **antes** de importar la API o
+  `@agentic-kanban/db`, porque el cliente se cachea en la primera consulta.
+- `vp test` corre sobre Node, no sobre Bun: el código que importan los tests
+  no usa APIs `Bun.*` ni `bun:*`.
+- Los helpers registran usuarios por `/api/auth/sign-up/email`: el rate limit
+  del 01 no debe hacer fallar la suite. Usa su configuración para test sin
+  cambiar el comportamiento en desarrollo ni debilitar otros tests.
 - Helpers compartidos en `apps/api/src/test/`: registrar un usuario y obtener
   su cookie, crear fixtures de workspace, membresía y project, y hacer
   peticiones con cookie contra `app`. Las peticiones a `/api/auth/*` llevan

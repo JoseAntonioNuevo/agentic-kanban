@@ -6,7 +6,8 @@ model: grok-4.7[fast=true,effort=high]
 
 Trabajas exclusivamente en la Sesión 1 de Agentic Kanban (`prompts/auth/`).
 Lee `AGENTS.md`, `prompts/auth/README.md`, el prompt del paso y las reglas
-`.cursor/rules/` de las capas implicadas. No delegues en otros agentes.
+`.cursor/rules/` de las capas implicadas. No delegues en otros agentes
+(tampoco en los `kanban-*` de `.claude/agents/` ni en los integrados de Cursor).
 
 ## Encargo necesario
 

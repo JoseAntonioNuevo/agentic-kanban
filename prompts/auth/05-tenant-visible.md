@@ -26,8 +26,13 @@ no se toca.
 ## Cómo trabajar
 
 **Cursor: Grok 4.7 Fast directamente como agente principal.** Lee `AGENTS.md`,
-`prompts/auth/README.md`, las reglas de web y el código. No delegues, no hagas
-commit ni lances una revisión adicional por rutina.
+`prompts/auth/README.md`, las reglas de web y el código. No delegues ni lances
+subagentes (`kanban-*` ni integrados de Cursor, incluido el navegador), no
+hagas commit ni lances una revisión adicional por rutina.
+
+Este prompt es la petición del curso que autoriza la UI de workspaces: si
+`AGENTS.md` o `.cursor/rules/web.mdc` dicen «sin UI de workspaces», se
+refieren al estado anterior a este paso; actualízalos al cerrar.
 
 1. Inspecciona `use-health.ts`, `App.tsx`, `authClient`, `queryClient` y la
    respuesta real de `GET /api/workspaces`.
@@ -50,6 +55,8 @@ estos pasos. No añadas una pasada de CodeRabbit solo por terminar el dashboard.
   `unknown` y `workspaceListResponseSchema.parse`. Nunca un cast.
 - La convención de queryKey y caché evita que, al cambiar de usuario en la
   misma pestaña, se vean datos del anterior.
+- El `userId` sale de `authClient.useSession()`, la única excepción a TanStack
+  Query para estado de servidor; los datos de la API van por `useQuery`.
 - Sin sesión válida no se renderiza el dashboard privado ni se ejecutan sus
   queries. Al salir o cambiar de identidad, cancela/descarta las peticiones
   privadas anteriores y limpia su estado; una respuesta tardía de Ana no
@@ -65,10 +72,11 @@ estos pasos. No añadas una pasada de CodeRabbit solo por terminar el dashboard.
 - [ ] `vp check` y `vp test` en verde.
 - [ ] Navegador (lo compruebo yo): Ana ve «thePower Demo» y «Espacio de Ana»;
       Luis, en una ventana privada, solo «thePower Demo», con el mismo color.
-- [ ] Ana cierra sesión y entra Luis en la misma pestaña: no aparece el
-      espacio de Ana. Comprueba también sin sesión y con una petición de
-      workspaces pendiente: no reaparece contenido privado ni se siguen
-      lanzando consultas privadas sin sesión.
+- [ ] Navegador (lo compruebo yo): Ana cierra sesión y entra Luis en la misma
+      pestaña: no aparece el espacio de Ana. Compruebo también sin sesión y
+      con una petición de workspaces pendiente: no reaparece contenido
+      privado ni se siguen lanzando consultas privadas sin sesión. Grok
+      explica qué código lo garantiza, pero no da esta prueba por observada.
 - [ ] Luis `GET /api/projects/proj_ana_notes` → 404; health OK.
 
 ## Al terminar

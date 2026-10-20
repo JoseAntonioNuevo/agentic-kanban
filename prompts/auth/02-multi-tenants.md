@@ -19,7 +19,12 @@ Endpoints, UI, seed, schemas Zod de API, `slug`, `owner`, columnas y tareas.
 
 **Cursor: Grok 4.7 Fast directamente como agente principal.** Lee `AGENTS.md`,
 `prompts/auth/README.md`, las reglas de DB y el código. No delegues ni lances
-Opus, revisores o CodeRabbit por rutina. No hagas commit.
+Opus, subagentes (`kanban-*` ni integrados de Cursor), revisores o CodeRabbit
+por rutina. No hagas commit.
+
+Este prompt es la petición del curso que autoriza las tablas de producto: si
+`AGENTS.md` o `.cursor/rules/` dicen «workspaces no» o «sin tablas de
+producto», se refieren al estado anterior a este paso; actualízalos al cerrar.
 
 1. Inspecciona las tablas de auth, el modo de timestamp, exports y migraciones.
 2. Explica en hasta 8 líneas las tablas, FK, índices y restricción única que

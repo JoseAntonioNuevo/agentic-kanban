@@ -24,7 +24,8 @@ comprobaciones independientes y pide ese dato; no adivines el alcance.
 1. **Consolidar evidencias (Opus).** Identifica la versión revisada y los
    resultados vigentes de `vp check`, `vp test` y la aceptación de abajo.
    Delega en `s1-grok-implementer`, en modo verificar y sin edición, solo lo
-   que falte o haya quedado invalidado. No lances Haiku, Sonnet ni cuatro
+   que falte o haya quedado invalidado. No lances Haiku, Sonnet, los agentes
+   `kanban-*` de `.claude/agents/`, subagentes integrados de Cursor ni cuatro
    revisores por dimensiones. Un fallo local conocido se diagnostica y se
    corrige con Grok antes de enviarlo a revisión adicional.
 2. **Decidir si CodeRabbit aporta valor.** Expón el motivo y el alcance antes
@@ -64,12 +65,15 @@ comprobaciones independientes y pide ese dato; no adivines el alcance.
 2. **Contratos y tests.** Schemas en `@agentic-kanban/schemas`;
    `@hono/zod-validator` en los params de los `GET`; `/api/auth/*` sin
    envolver; respuestas pasadas por `.parse()`; tests que prueban de verdad
-   401, lista vacía, lista propia y 404, y que no tocan `data/`.
+   401, lista vacía, lista propia y 404, que no tocan `data/`, con una base
+   por fichero, migrada con `migrateDatabase()`, y sin `drizzle-orm` en
+   `apps/api`.
 3. **Sesión y cliente.** Cookie httpOnly; `createAuthClient` sin `baseURL` a
    `:3000`; TanStack Query para health y workspaces (`useSession` es la única
    excepción); queryKeys con `userId` y caché vacía al cerrar sesión; color
-   por `workspace.id`; rate limit solo en sign-up y sign-in; nada de
-   `dangerouslySetInnerHTML`.
+   por `workspace.id`; rate limit de 10 por minuto solo en sign-up y sign-in
+   (429 observado, `get-session` libre, sin romper los tests); `auth` creado
+   con el proxy lazy `db`; nada de `dangerouslySetInnerHTML`.
 4. **Seed, alcance y documentación.** `signUpEmail`, idempotente, IDs fijos,
    no arranca solo, sin DELETE masivo, Luis no es miembro de `ws_ana_demo`;
    dependencias con versión exacta; nada de Next, Redux, React Router ni React

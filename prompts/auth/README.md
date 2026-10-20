@@ -20,6 +20,16 @@ Los IDs documentados son `claude-opus-5-5` y `grok-4.7`. El único subagente
 nuevo es `.cursor/agents/s1-grok-implementer.md`, fijado a
 `grok-4.7[fast=true,effort=high]`. Opus es el agente principal seleccionado
 por el profesor; no otro subagente. Grok también hace las correcciones.
+El chat principal de Grok usa esfuerzo medio en los pasos directos; el
+subagente va con esfuerzo alto a propósito, porque recibe los encargos
+transversales de 01, 03 y 06.
+
+Cursor también carga `.claude/agents/` por compatibilidad: los agentes
+`kanban-*` (Haiku/Sonnet) son de las sesiones 2–4 y sus descripciones invitan
+a usarlos de forma proactiva. En la Sesión 1 **no se invocan**, ni a mano ni
+por delegación automática. Tampoco se lanzan los subagentes integrados de
+Cursor (exploración, terminal, navegador): Opus y Grok inspeccionan con sus
+propias herramientas. Si aparece uno en el chat, detenlo e informa.
 
 Comprueba el modelo real en la tarjeta del subagente y en el consumo: el texto
 del prompt no garantiza qué modelo ejecutó Cursor. Si falta el modelo o hay
@@ -33,10 +43,19 @@ el prompt allí, sin invocar el subagente ni montar un coordinador.
   dependencias fijadas con `bun install --frozen-lockfile` y levanta
   `docker compose up --build -d`. Comprueba `docker compose ps` y
   `curl -s http://localhost:5173/api/health`: `api` y `database` deben ser `ok`.
-- Usa un checkout sin otras copias anidadas para el directo. Si `vp test`
-  descubre `.claude/worktrees/`, informa del alcance inesperado; no borres ni
-  modifiques ese trabajo. Para comprobar solo este checkout puedes usar
-  `vp test --exclude '**/.claude/worktrees/**'`, declarando ese alcance.
+- Usa un checkout sin otras copias anidadas para el directo: `git worktree list`
+  no debe mostrar nada dentro del repo. Un worktree en `.claude/worktrees/` hace
+  que `vp test` ejecute sus tests (con código de sesiones futuras) y Cursor
+  puede encontrarlo al buscar. Sácalo con `git worktree move <ruta> ../<nombre>`,
+  que no borra nada. `.cursorignore` lo oculta a Cursor, pero no a `vp test`;
+  si no puedes moverlo, usa `vp test --exclude '**/.claude/worktrees/**'`
+  declarando ese alcance. Antes del 01, `vp check` y `vp test` deben estar en
+  verde.
+- Comprueba la terminal del agente de Cursor: con el modo «Auto-Run in
+  Sandbox», macOS puede bloquear el socket de Docker, `localhost` y la red.
+  Desde un chat de agente ejecuta `docker compose exec api bun --version`,
+  `curl -s http://localhost:5173/api/health` y `coderabbit review --help`. Si
+  fallan, ajusta el modo de ejecución o la allowlist antes de la clase.
 - Ensaya el arranque de `s1-grok-implementer` con un encargo de solo inspección,
   y comprueba su modelo real; no implementes la app en ese preflight.
 - Guarda **el SHA completo de `git rev-parse HEAD` antes del prompt 01** en tus
@@ -49,9 +68,16 @@ el prompt allí, sin invocar el subagente ni montar un coordinador.
 
 ## Cómo ejecutar cada prompt
 
-Abre un chat nuevo en Cursor por paso, selecciona el modelo de la tabla y
-pega el prompt completo. Vuelve a leer `AGENTS.md`, las reglas relevantes y
-el código; no dependas de la conversación del paso anterior.
+Abre un chat nuevo en Cursor por paso, en modo **Agent**, selecciona el modelo
+de la tabla y pega el prompt completo (o referéncialo con `@`). Vuelve a leer
+`AGENTS.md`, las reglas relevantes y el código; no dependas de la
+conversación del paso anterior. No uses Plan Mode en 01 y 03: su botón
+«Build» haría que Opus implementase en lugar de delegar en Grok. El prompt ya
+obliga a Opus a presentar el plan y esperar tu «adelante».
+
+Cada prompt de la Sesión 1 es la petición del curso que autoriza su alcance.
+Si `AGENTS.md` o `.cursor/rules/` dicen que algo «aún no» existe, el prompt
+manda dentro de su alcance y el agente actualiza esa documentación al cerrar.
 
 - **01 y 03, orquestados:** Opus inspecciona y presenta un plan breve; espera
   el «adelante» del profesor. Después delega explícitamente en
@@ -134,6 +160,8 @@ revisar localmente la parte pendiente, identificando esa evidencia por separado.
 Ana ve dos espacios; Luis ve uno y recibe 404 al pedir el proyecto privado de
 Ana. Al salir de Ana y entrar como Luis en la misma pestaña, no queda contenido
 de Ana. Registro, recarga con sesión, logout y health siguen funcionando.
+El rate limit del 01 (10 peticiones por minuto y ruta) no debe saltar en la
+demo; si lo pruebas en directo, hazlo al final o espera a que pase la ventana.
 El tablero, tareas y drag-and-drop empiezan en la sesión 2.
 
 ## Referencias de configuración

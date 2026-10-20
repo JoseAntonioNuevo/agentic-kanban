@@ -32,7 +32,12 @@ Endpoints, UI, CORS, paquetes nuevos y más filas de las de la tabla.
 
 **Cursor: Grok 4.7 Fast directamente como agente principal.** Lee `AGENTS.md`,
 `prompts/auth/README.md`, las reglas implicadas y el código. No delegues ni
-lances Opus o CodeRabbit por rutina. No hagas commit.
+lances Opus, subagentes (`kanban-*` ni integrados de Cursor) o CodeRabbit por
+rutina. No hagas commit.
+
+Este prompt es la petición del curso que autoriza el seed y las cuentas demo:
+si `AGENTS.md` o `.cursor/rules/` dicen «sin usuarios demo» o «sin seed», se
+refieren al estado anterior a este paso; actualízalos al cerrar.
 
 1. Inspecciona `auth.api.signUpEmail` instalado, consultas reutilizables de
    `packages/db` y scripts existentes.
@@ -44,6 +49,8 @@ lances Opus o CodeRabbit por rutina. No hagas commit.
    y lecturas de «Hecho cuando», con cookie jar separado y `Origin` en los
    POST de auth. Ejecuta `vp check` y `vp test`. Corrige los fallos del paso
    y repite las comprobaciones afectadas; no borres datos para lograrlo.
+   Los sign-in de prueba cuentan para el rate limit del 01 (10 por minuto y
+   ruta): si recibes 429, espera a que pase la ventana; no lo desactives.
 
 Si surge una decisión importante no cubierta, explica la duda para que el
 profesor decida si usar Opus; no cambies de modelo ni añadas otro agente en

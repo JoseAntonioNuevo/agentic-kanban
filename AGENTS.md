@@ -64,7 +64,9 @@ and corrections to `s1-grok-implementer`; Grok 4.7 Fast handles 02, 04 and 05
 directly. Step 06 closes verification and uses CodeRabbit when the change or
 an unresolved risk warrants it. No mandatory Haiku/Sonnet agents, parallel
 reviewers, or repeated reviews. The `s1-*` agents are exclusive to Session 1;
-do not use them for Sessions 2–4. Keep the starter scope above accurate until
+do not use them for Sessions 2–4. In Session 1, do not invoke the
+`.claude/agents/kanban-*` agents or Cursor's built-in subagents. Keep the
+starter scope above accurate until
 the classroom prompts actually implement it.
 
 **Sessions 2–4 retain the following workflow and `.claude/agents/`.**
