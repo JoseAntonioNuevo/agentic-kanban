@@ -17,7 +17,12 @@ El mapa, la logística y los contratos del bloque se mantienen.
 | 3 (S11) | Mié 28 oct | `websockets/`    | 01–06   | Dos sesiones sincronizadas por SSE, con toasts    |
 | 4 (S12) | Mié 4 nov  | `notifications/` | 01–08   | Comentarios, menciones, campana, outbox y demo    |
 
-## Quién hace qué
+## Sesiones 2–4: ejecución con Claude Code
+
+Los siguientes apartados de reparto, flujo, preparación y ritual corresponden
+solo a las sesiones 2–4. Para la sesión 1 usa [la guía de Cursor](auth/README.md).
+
+### Quién hace qué
 
 | Agente               | Modelo | Para qué                                                                              |
 | -------------------- | ------ | ------------------------------------------------------------------------------------- |
@@ -27,20 +32,41 @@ El mapa, la logística y los contratos del bloque se mantienen.
 | `kanban-verifier`    | Haiku  | Puerta de calidad y pruebas HTTP; nunca edita                                         |
 | `kanban-reviewer`    | Sonnet | Revisión de solo lectura de una dimensión, en los prompts de revisión                 |
 
-Por qué este reparto: Haiku investiga y verifica (leer, ejecutar comandos,
-resumir salidas largas) y así el contexto de Opus queda limpio; Opus decide lo
-que es caro equivocarse (plan, contratos, autorización, transacciones) y lo
-deja escrito en los briefs; Sonnet implementa todo, en paralelo cuando las
-partes tienen ficheros disjuntos; al final Opus revisa el diff y arregla y pule
-él mismo lo que no esté bien. Cada prompt sigue los
-mismos cinco pasos: investigar (Haiku), planificar (Opus, con tu «adelante»),
-implementar (Sonnet), verificar (Haiku) y revisar (Opus, que corrige y pule
-él mismo y vuelve a verificar). El flujo está escrito una sola vez en
-`AGENTS.md` (Agent workflow); cada prompt solo añade lo propio de su paso. Los prompts piden los subagentes de forma explícita
-porque algunas configuraciones solo delegan cuando se pide. Si se usa una
-herramienta sin subagentes, cada prompt funciona haciendo los pasos en orden.
+### Flujo de trabajo (sesiones 2–4)
 
-## Antes de cada clase
+Este es el procedimiento heredado de `AGENTS.md`, conservado aquí sin cambiar
+sus pasos ni el reparto de modelos. Cada prompt añade lo específico de su paso.
+
+Every implementation step in those sessions runs the same five-stage flow with the project
+agents in `.claude/agents/`. Each prompt only adds what is specific to its
+step (what to inspect, the slices, the probes, the review focus). Without
+subagents, do the same stages yourself in order.
+
+1. **Investigate** with `kanban-recon` (Haiku, read-only): current state of the
+   repo and the installed APIs the step needs. Run several in parallel when
+   the areas are independent.
+2. **Plan** (main agent, Opus): a short plan with files, contracts, slices and
+   checks. Fix the shared contracts (`packages/schemas`, route paths,
+   exported names) in the briefs. Wait for the teacher's approval.
+3. **Implement** with `kanban-implementer` (Sonnet): all code, tests and docs,
+   in bounded slices. When slices share contracts, one implementer writes
+   them first; then the rest run in parallel. Two subagents never edit the
+   same file. A brief states the goal, owned files, exact contract names,
+   constraints, checks and the expected report. The main agent does not edit
+   files during this stage.
+4. **Verify** with `kanban-verifier` (Haiku, never edits): the gate and the
+   step's probes.
+5. **Review** (main agent, Opus): read the final diff and the subagents'
+   reports, check that what Sonnet wrote is correct and complete, then fix
+   what is wrong and polish what is unfinished yourself. Run
+   `kanban-verifier` again after your changes.
+
+Review steps (`06`/`08`) use parallel `kanban-reviewer` (Sonnet, read-only,
+one dimension each) plus `kanban-verifier`; the main agent confirms each
+finding in the code and, once the teacher approves the plan, applies the
+fixes itself.
+
+### Antes de cada clase (sesiones 2–4)
 
 - [ ] `git status` limpio y una rama de clase desde el punto de partida
       (`git switch -c clase-2`, por ejemplo).
@@ -57,7 +83,7 @@ herramienta sin subagentes, cada prompt funciona haciendo los pasos en orden.
 - [ ] Ensayo completo con estos prompts y un checkpoint por prompt que puedas
       recuperar en clase.
 
-## El ritual de cada prompt
+### El ritual de cada prompt (sesiones 2–4)
 
 1. `/clear`: cada prompt es autocontenido y vuelve a leer `AGENTS.md`, las
    reglas y el código. Un contexto limpio es más rápido y más barato.
