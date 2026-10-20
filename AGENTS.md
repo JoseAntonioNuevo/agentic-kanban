@@ -60,15 +60,24 @@ Course steps live in `prompts/<session>/NN-*.md` and run one at a time,
 ideally each in a fresh context. A step is self-contained: re-read this file,
 the `.cursor/rules/*.mdc` of the layers it touches and the code itself.
 
-- **Session 1 (`prompts/auth/01`–`06`):** follow the
-  [Cursor guide](prompts/auth/README.md) and the selected prompt. Opus 5.5
-  plans/reviews 01 and 03; `s1-grok-implementer` implements and corrects with
-  Grok 4.7 Fast. Steps 02, 04 and 05 run directly with Grok. Opus leads 06;
-  CodeRabbit runs only when the change or an unresolved risk warrants it.
-  Do not invoke `.claude/agents/kanban-*` or Cursor's built-in subagents.
-- **Sessions 2–4:** retain the [five-stage Claude Code workflow](prompts/README.md#flujo-de-trabajo-sesiones-24)
-  and `.claude/agents/`. Their implementation and review steps follow that
-  procedure; do not substitute the Session 1 workflow or `s1-*` agents.
+- **Sessions 1, 3 and 4:** follow [the Cursor orchestration guide](prompts/CURSOR.md)
+  and the selected session prompt in Agent mode with Opus 5.5. Opus only
+  coordinates, fixes contracts and reviews. Instances of `kanban-grok-worker`
+  inspect, implement, verify and correct with Grok 4.7 xhigh Fast. Every new
+  `Task` must explicitly select `grok-4.7-xhigh-fast` when listed in the
+  runtime catalog; never omit `model`, use `inherit` or select Claude for a
+  worker. Continue autonomously within the requested step, without routine
+  plan/correction approvals; split only independent work with disjoint files.
+- **Session 2:** follow [the planning and execution guide](prompts/kanban/README.md).
+  Opus creates the session plan in Plan mode without implementing. The teacher
+  then switches to Agent mode with Grok 4.7 xhigh Fast and runs steps 01–08
+  against that plan. Grok is the sole executor; do not spawn subagents.
+
+The old `.claude/agents/kanban-*` agents are historical and are not part of
+these four classroom workflows. Do not invoke them or built-in subagents.
+`s1-grok-implementer` is a compatibility alias for already-open Session 1
+chats; new orchestrated tasks use `kanban-grok-worker`. CodeRabbit is an
+additional review when the change or a concrete uncertainty warrants it.
 
 Keep the starter scope above accurate until the classroom prompts implement
 the corresponding functionality. The selected course prompt authorizes only

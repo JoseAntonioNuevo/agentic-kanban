@@ -33,14 +33,29 @@ Presencia, comentarios y menciones.
 
 ## Cómo trabajar
 
-Sigue los cinco pasos de `AGENTS.md`. Tú planificas y, al final, corriges. Hasta el «adelante» no se editan ficheros. No hagas commit.
+**Cursor: Agent con Opus 5.5 orquestando de forma autónoma; Grok 4.7 xhigh
+Fast ejecuta.** Lee `AGENTS.md`, `prompts/CURSOR.md`,
+`prompts/websockets/README.md`, las reglas implicadas y el código. Usa
+`kanban-grok-worker` y pasa `model: "grok-4.7-xhigh-fast"` explícito en cada
+nueva Task si está en el catálogo; aplica el protocolo común si cambia.
+No uses omisión, `inherit`, Claude, agentes históricos ni subagentes integrados.
 
-En este paso:
+Este prompt autoriza el paso y sus correcciones locales. Opus coordina,
+fija contratos y revisa; Grok inspecciona, implementa, prueba y actualiza el
+estado documentado. Continúa sin «adelante» ni aprobación rutinaria del plan.
+No hagas commit, no escribas tú la app ni implementes pasos siguientes.
 
-- **Investigar.** `kanban-recon`: dónde `useBoardEvents` reconoce los eventos propios y cómo está montado `sonner`.
-- **Planificar.** Tú, y espera mi «adelante»: textos y cuándo no hay toast.
-- **Implementar.** `kanban-implementer`: uno solo: toasts, función pura con tests y documentación de «Al terminar».
-- **Verificar.** `kanban-verifier`: puerta de calidad.
+1. **Inspección (Grok).** Confirma dónde `useBoardEvents` reconoce al autor y cómo
+   está montado `sonner`.
+2. **Contratos y reparto (Opus); implementación (Grok).** Textos y regla de cuándo no mostrar toast. Un worker puede implementar
+   función pura, tests, integración y documentación de «Al terminar».
+3. **Comprobaciones y revisión.** Grok pasa `vp check`, `vp test` y «Hecho cuando». Opus revisa que solo el
+   otro usuario recibe el aviso y que borrar/mover conserva un título útil.
+4. **Correcciones (Grok).** Opus contrasta diff y evidencia y encarga los
+   arreglos confirmados; espera los resultados y repite los checks afectados.
+   La puerta general se ejecuta sobre integración estable. CodeRabbit solo
+   ante una duda importante que aporte valor, conservando alcance y cobertura;
+   no se exige una pasada al terminar cada prompt.
 
 ## Hecho cuando
 

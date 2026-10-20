@@ -30,32 +30,31 @@ Endpoints, UI, CORS, paquetes nuevos y más filas de las de la tabla.
 
 ## Cómo trabajar
 
-**Cursor: Grok 4.7 Fast directamente como agente principal.** Lee `AGENTS.md`,
-`prompts/auth/README.md`, las reglas implicadas y el código. No delegues ni
-lances Opus, subagentes (`kanban-*` ni integrados de Cursor) o CodeRabbit por
-rutina. No hagas commit.
+**Cursor: Agent con Opus 5.5 orquestando de forma autónoma; Grok 4.7 xhigh
+Fast ejecuta.** Lee `AGENTS.md`, `prompts/CURSOR.md`, `prompts/auth/README.md`,
+las reglas implicadas y el código. Usa `kanban-grok-worker` con
+`model: "grok-4.7-xhigh-fast"` explícito en cada nueva Task si está en el catálogo;
+si cambia, aplica el protocolo de la guía común. No omitas `model`, no uses
+`inherit`, Claude, agentes históricos ni subagentes integrados.
 
-Este prompt es la petición del curso que autoriza el seed y las cuentas demo:
-si `AGENTS.md` o `.cursor/rules/` dicen «sin usuarios demo» o «sin seed», se
-refieren al estado anterior a este paso; actualízalos al cerrar.
+Este prompt autoriza su alcance y sus correcciones locales aunque el estado
+anterior diga «aún no existe». Opus coordina, fija contratos y revisa; Grok
+inspecciona, implementa, prueba y actualiza la documentación al cerrar. No
+pidas «adelante», no hagas commit ni implementes los pasos siguientes.
 
-1. Inspecciona `auth.api.signUpEmail` instalado, consultas reutilizables de
-   `packages/db` y scripts existentes.
-2. Explica en hasta 8 líneas cómo creas los usuarios mediante Better Auth,
-   reutilizas IDs y evitas duplicados. Continúa sin otro «adelante»: los
-   datos y criterios están cerrados.
-3. Implementa seed, scripts, consultas necesarias y documentación.
-4. Ejecuta el seed dos veces, cuenta las filas demo y demuestra los logins
-   y lecturas de «Hecho cuando», con cookie jar separado y `Origin` en los
-   POST de auth. Ejecuta `vp check` y `vp test`. Corrige los fallos del paso
-   y repite las comprobaciones afectadas; no borres datos para lograrlo.
-   Los sign-in de prueba cuentan para el rate limit del 01 (10 por minuto y
-   ruta): si recibes 429, espera a que pase la ventana; no lo desactives.
-
-Si surge una decisión importante no cubierta, explica la duda para que el
-profesor decida si usar Opus; no cambies de modelo ni añadas otro agente en
-silencio. Al cerrar, relaciona la ejecución directa con el alcance definido
-y las pruebas de idempotencia observadas.
+1. **Inspección (Grok).** Confirma `auth.api.signUpEmail` instalado, consultas
+   reutilizables de `packages/db` y scripts existentes.
+2. **Contratos (Opus).** Fija cómo crear usuarios mediante Better Auth,
+   reutilizar IDs y evitar duplicados. Los datos de esta clase están cerrados;
+   continúa sin otro «adelante». Un worker puede ejecutar el paso completo.
+3. **Implementación (Grok).** Seed, scripts, consultas necesarias y documentación.
+4. **Comprobaciones (Grok).** Ejecuta el seed dos veces, cuenta filas demo y
+   demuestra logins y lecturas de «Hecho cuando», con cookie jar separado y
+   `Origin` en los POST de auth. Ejecuta `vp check` y `vp test`; no borres datos.
+   Los sign-in cuentan para el rate limit del 01 (10 por minuto y ruta): si
+   recibes 429, espera la ventana; no lo desactives.
+5. **Revisión (Opus).** Contrasta idempotencia e identidad de cada cuenta.
+   Devuelve fallos a Grok y repite los checks afectados sin pausa de aprobación.
 
 ## Requisitos
 

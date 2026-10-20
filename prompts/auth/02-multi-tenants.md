@@ -17,29 +17,27 @@ Endpoints, UI, seed, schemas Zod de API, `slug`, `owner`, columnas y tareas.
 
 ## Cómo trabajar
 
-**Cursor: Grok 4.7 Fast directamente como agente principal.** Lee `AGENTS.md`,
-`prompts/auth/README.md`, las reglas de DB y el código. No delegues ni lances
-Opus, subagentes (`kanban-*` ni integrados de Cursor), revisores o CodeRabbit
-por rutina. No hagas commit.
+**Cursor: Agent con Opus 5.5 orquestando de forma autónoma; Grok 4.7 xhigh
+Fast ejecuta.** Lee `AGENTS.md`, `prompts/CURSOR.md`, `prompts/auth/README.md`,
+las reglas implicadas y el código. Usa `kanban-grok-worker` con
+`model: "grok-4.7-xhigh-fast"` explícito en cada nueva Task si está en el catálogo;
+si cambia, aplica el protocolo de la guía común. No omitas `model`, no uses
+`inherit`, Claude, agentes históricos ni subagentes integrados.
 
-Este prompt es la petición del curso que autoriza las tablas de producto: si
-`AGENTS.md` o `.cursor/rules/` dicen «workspaces no» o «sin tablas de
-producto», se refieren al estado anterior a este paso; actualízalos al cerrar.
+Este prompt autoriza su alcance y sus correcciones locales aunque el estado
+anterior diga «aún no existe». Opus coordina, fija contratos y revisa; Grok
+inspecciona, implementa, prueba y actualiza la documentación al cerrar. No
+pidas «adelante», no hagas commit ni implementes los pasos siguientes.
 
-1. Inspecciona las tablas de auth, el modo de timestamp, exports y migraciones.
-2. Explica en hasta 8 líneas las tablas, FK, índices y restricción única que
-   vas a añadir. Continúa con la implementación sin esperar otro «adelante»:
-   los requisitos y el alcance ya están definidos.
-3. Implementa tablas, exports y migración; aplícala donde corresponde y
-   actualiza la documentación de «Al terminar».
-4. Ejecuta `vp check`, `vp test` y las comprobaciones de «Hecho cuando».
-   Inspecciona el SQL generado y corrige los fallos del paso. Repite las
-   comprobaciones afectadas por cada corrección.
-
-Si aparece una decisión importante que estos requisitos no cubren, expón la
-duda para que el profesor decida si usar Opus. No inventes el contrato ni
-cambies de modelo en silencio. Explica al cerrar por qué este paso acotado
-se ha podido resolver sin orquestador.
+1. **Inspección (Grok).** Confirma tablas de auth, timestamps, exports y migraciones.
+2. **Contratos (Opus).** Fija tablas, FK, índices y unicidad de membresía en un
+   plan breve y continúa. Un solo worker suele bastar: no hay que inventar
+   paralelismo para este paso cerrado.
+3. **Implementación (Grok).** Tablas, exports, migración y documentación de
+   «Al terminar». Genera en host y aplica dentro de `api` con Compose arriba.
+4. **Comprobaciones y revisión.** Grok inspecciona el SQL generado, ejecuta
+   `vp check`, `vp test` y «Hecho cuando». Opus revisa FK, unicidad y evidencia;
+   Grok corrige y repite los checks afectados, sin otra aprobación.
 
 ## Requisitos
 

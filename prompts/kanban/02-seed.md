@@ -31,14 +31,28 @@ API y frontend.
 
 ## Cómo trabajar
 
-Sigue los cinco pasos de `AGENTS.md`. Tú planificas y, al final, corriges. Hasta el «adelante» no se editan ficheros. No hagas commit.
+**Cursor: Agent con Grok 4.7 xhigh Fast como único ejecutor.** El profesor
+ya ha revisado el plan inicial de Opus y lo adjunta a este paso. Lee
+`AGENTS.md`, `prompts/CURSOR.md`, `prompts/kanban/README.md`, ese plan, las
+reglas implicadas y el código. No uses Task, subagentes, agentes históricos
+ni cambio automático de modelo. No hagas commit ni implementes pasos futuros.
 
-En este paso:
+Este prompt autoriza su alcance y sus correcciones locales, aunque la
+documentación de partida diga «aún no existe». Ejecuta sin otro «adelante»
+ni pausa de aprobación. El plan guía la sesión; verifica sus supuestos contra
+el código. Adapta detalles locales conservando contratos y comunica solo los
+conflictos importantes que necesiten una decisión. No vuelvas a Opus por rutina.
 
-- **Investigar.** `kanban-recon`: estructura del seed actual y consultas de upsert disponibles.
-- **Planificar.** Tú, y espera mi «adelante»: IDs y posiciones de columnas y tareas.
-- **Implementar.** `kanban-implementer`: uno solo: seed y documentación de «Al terminar».
-- **Verificar.** `kanban-verifier`: ejecuta el seed dos veces y cuenta filas por project.
+1. **Inspeccionar.** Confirma estructura del seed actual y consultas de upsert disponibles.
+2. **Implementar.** IDs y posiciones cerrados por el prompt. Amplía solo seed y documentación;
+   conserva los datos y contratos de la clase 1.
+3. **Comprobar.** Ejecuta el seed dos veces dentro de `api`, cuenta filas por project y
+   comprueba posiciones contiguas, además de `vp check` y `vp test`.
+4. **Revisar y corregir.** Lee tu diff, corrige los problemas confirmados y
+   repite los checks afectados. Actualiza la documentación de «Al terminar»
+   sin borrar el reparto de modelos. Distingue la evidencia automática y la
+   aceptación manual pendiente. CodeRabbit solo por una duda importante;
+   el cierre del conjunto se decide en el 08.
 
 ## Hecho cuando
 

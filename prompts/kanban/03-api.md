@@ -53,15 +53,30 @@ Mover tareas, drag-and-drop, realtime y frontend.
 
 ## Cómo trabajar
 
-Sigue los cinco pasos de `AGENTS.md`. Tú planificas y, al final, corriges. Hasta el «adelante» no se editan ficheros. No hagas commit.
+**Cursor: Agent con Grok 4.7 xhigh Fast como único ejecutor.** El profesor
+ya ha revisado el plan inicial de Opus y lo adjunta a este paso. Lee
+`AGENTS.md`, `prompts/CURSOR.md`, `prompts/kanban/README.md`, ese plan, las
+reglas implicadas y el código. No uses Task, subagentes, agentes históricos
+ni cambio automático de modelo. No hagas commit ni implementes pasos futuros.
 
-En este paso:
+Este prompt autoriza su alcance y sus correcciones locales, aunque la
+documentación de partida diga «aún no existe». Ejecuta sin otro «adelante»
+ni pausa de aprobación. El plan guía la sesión; verifica sus supuestos contra
+el código. Adapta detalles locales conservando contratos y comunica solo los
+conflictos importantes que necesiten una decisión. No vuelvas a Opus por rutina.
 
-- **Investigar.** `kanban-recon`: `requireSession`, `getProjectForMember`, el patrón de rutas, el arnés de tests y la API de transacciones de Drizzle instalada.
-- **Planificar.** Tú, y espera mi «adelante»: fija schemas, rutas y firmas de las consultas en los briefs.
-- **Implementar.** `kanban-implementer`: primero uno escribe los schemas de `board.ts`; después dos en paralelo: A, consultas en `packages/db`, rutas y montaje; B, tests contra los contratos. Uno de ellos actualiza la documentación de «Al terminar».
-- **Verificar.** `kanban-verifier`: puerta de calidad y pruebas HTTP de «Hecho cuando» por el proxy.
-- **Revisar.** Tú: busca cualquier camino sin filtro de tenant.
+1. **Inspeccionar.** Confirma `requireSession`, `getProjectForMember`, rutas, arnés de tests y API
+   de transacciones de Drizzle instalada.
+2. **Implementar.** Schemas de `board.ts`, consultas en `packages/db`, rutas, montaje y tests
+   contra los contratos. Escribe primero los schemas compartidos y después
+   integra las capas; no uses otro agente para separar el trabajo.
+3. **Comprobar.** Ejecuta `vp check`, `vp test` y las pruebas HTTP de «Hecho cuando» por el
+   proxy. Revisa cualquier camino sin filtro de tenant y los casos 400/401/404.
+4. **Revisar y corregir.** Lee tu diff, corrige los problemas confirmados y
+   repite los checks afectados. Actualiza la documentación de «Al terminar»
+   sin borrar el reparto de modelos. Distingue la evidencia automática y la
+   aceptación manual pendiente. CodeRabbit solo por una duda importante;
+   el cierre del conjunto se decide en el 08.
 
 ## Hecho cuando
 

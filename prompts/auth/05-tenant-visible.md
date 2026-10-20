@@ -25,28 +25,32 @@ no se toca.
 
 ## Cómo trabajar
 
-**Cursor: Grok 4.7 Fast directamente como agente principal.** Lee `AGENTS.md`,
-`prompts/auth/README.md`, las reglas de web y el código. No delegues ni lances
-subagentes (`kanban-*` ni integrados de Cursor, incluido el navegador), no
-hagas commit ni lances una revisión adicional por rutina.
+**Cursor: Agent con Opus 5.5 orquestando de forma autónoma; Grok 4.7 xhigh
+Fast ejecuta.** Lee `AGENTS.md`, `prompts/CURSOR.md`, `prompts/auth/README.md`,
+las reglas implicadas y el código. Usa `kanban-grok-worker` con
+`model: "grok-4.7-xhigh-fast"` explícito en cada nueva Task si está en el catálogo;
+si cambia, aplica el protocolo de la guía común. No omitas `model`, no uses
+`inherit`, Claude, agentes históricos ni subagentes integrados.
 
-Este prompt es la petición del curso que autoriza la UI de workspaces: si
-`AGENTS.md` o `.cursor/rules/web.mdc` dicen «sin UI de workspaces», se
-refieren al estado anterior a este paso; actualízalos al cerrar.
+Este prompt autoriza su alcance y sus correcciones locales aunque el estado
+anterior diga «aún no existe». Opus coordina, fija contratos y revisa; Grok
+inspecciona, implementa, prueba y actualiza la documentación al cerrar. No
+pidas «adelante», no hagas commit ni implementes los pasos siguientes.
 
-1. Inspecciona `use-health.ts`, `App.tsx`, `authClient`, `queryClient` y la
-   respuesta real de `GET /api/workspaces`.
-2. Explica en hasta 10 líneas hook, queryKey, pérdida/cambio de sesión,
-   limpieza de caché y color. Continúa sin otro «adelante» dentro del alcance.
-3. Implementa web y documentación de «Al terminar». Ejecuta `vp check`,
-   `vp test` y las pruebas HTTP; deja separadas las comprobaciones de
-   navegador que debe observar el profesor.
-4. Revisa tu diff y corrige los fallos del paso. Si queda una duda concreta
-   en sesión o caché, describe el escenario y la evidencia que falta para
-   una revisión puntual con Opus, sin cambiar de modelo automáticamente.
+1. **Inspección (Grok).** Lee `use-health.ts`, `App.tsx`, `authClient`,
+   `queryClient` y la respuesta real de `GET /api/workspaces`.
+2. **Contratos (Opus).** Fija hook, queryKey, pérdida/cambio de sesión,
+   limpieza de caché y color. Asigna los archivos de hooks y componentes si
+   pueden avanzar de forma independiente; un único responsable integra `App.tsx`.
+3. **Implementación y comprobaciones (Grok).** Web y documentación de
+   «Al terminar», `vp check`, `vp test` y pruebas HTTP. Deja separadas las
+   comprobaciones del navegador que debe observar el profesor.
+4. **Revisión (Opus).** Examina identidad, respuestas tardías y caché al salir.
+   Encarga a Grok las correcciones y repite los checks afectados. No pares
+   para aprobar el plan ni hagas pasar una explicación por prueba manual.
 
-La revisión del cambio completo se decide en el 06, con las evidencias de
-estos pasos. No añadas una pasada de CodeRabbit solo por terminar el dashboard.
+La revisión del cambio completo se decide en el 06. No añadas una pasada de
+CodeRabbit solo por terminar el dashboard.
 
 ## Requisitos
 

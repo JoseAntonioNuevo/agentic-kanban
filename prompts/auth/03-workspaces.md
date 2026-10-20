@@ -39,27 +39,30 @@ Frontend, seed, escrituras, CORS, RBAC y paquetes nuevos. Health no se toca.
 
 ## Cómo trabajar
 
-**Cursor: Opus 5.5 como principal y Grok 4.7 Fast como implementador.** Lee
-`AGENTS.md`, `prompts/auth/README.md`, las reglas implicadas y el código.
+**Cursor: Opus 5.5 orquesta de forma autónoma; Grok 4.7 xhigh Fast ejecuta.** Lee
+`AGENTS.md`, `prompts/CURSOR.md` y `prompts/auth/README.md`, las reglas implicadas y el código.
 No invoques los agentes `kanban-*` de `.claude/agents/` ni los subagentes
-integrados de Cursor; el único subagente es `s1-grok-implementer`. Este
+integrados de Cursor; usa las instancias necesarias de `kanban-grok-worker`. Este
 prompt autoriza los primeros endpoints de producto aunque la documentación
 diga «endpoints no»: se actualiza al cerrar. No hagas commit ni añadas
 frontend o seed.
 
-1. **Inspección y contratos (Opus).** Revisa auth, rutas, DB, schemas y la
-   configuración de tests de Vite+. Confirma en `node_modules` las firmas de
-   `auth.api.getSession` y del migrador de Drizzle. Presenta un plan de hasta
-   15 líneas: schemas y formas de respuesta, consultas, middleware, archivos,
-   integración y pruebas. Explica por qué la autorización merece este plan.
-   Espera mi «adelante» antes de editar.
-2. **Implementación (Grok).** Delega explícitamente en `s1-grok-implementer`
-   (omite el parámetro `model` en `Task` —nunca `inherit`— para que se aplique
-   el frontmatter de Grok) con los contratos anteriores y todos los archivos
-   necesarios: schemas, consultas de DB, middleware, rutas, montaje, arnés,
-   tests y documentación. Un implementador por defecto. Si divides, primero
-   fija contratos y evita que dos agentes editen el mismo archivo; no
-   paralelices por obligación.
+Este prompt autoriza el paso completo y sus correcciones locales. No pidas
+«adelante», no esperes aprobación del plan ni termines con una oferta de
+continuar. Opus orquesta y revisa; Grok inspecciona, implementa y comprueba.
+
+1. **Inspección y contratos.** Delega en Grok la inspección de auth, rutas,
+   DB, schemas y configuración de tests; debe confirmar las firmas de
+   `auth.api.getSession` y del migrador instalado. Con los informes fija
+   schemas, respuestas, consultas, middleware, archivos e integración y
+   continúa. No escribas tú el código.
+2. **Implementación.** En cada nueva `Task` de `kanban-grok-worker`, pasa
+   explícitamente `model: "grok-4.7-xhigh-fast"` si está en el catálogo;
+   aplica el protocolo de la guía si cambia. Nunca omitas el selector,
+   uses `inherit` o selecciones Claude. Fija primero contratos compartidos y
+   reparte consultas/rutas y arnés/tests cuando puedan avanzar sin editar
+   los mismos archivos. Asigna barrels, configuración y documentación a un
+   propietario. Si hay dependencias, respeta su orden sin serializar lo demás.
 3. **Comprobaciones (Grok).** Ejecuta `vp check`, `vp test` y las pruebas de
    aceptación. Los casos con membresías usan fixtures en la base de test;
    no adelantes el seed de la demo ni escribas datos de test en `data/`.

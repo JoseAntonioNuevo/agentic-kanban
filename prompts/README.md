@@ -1,131 +1,65 @@
 # Prompts de clase — Agentic Kanban
 
-La **Sesión 1 (S9)** se ejecuta en Cursor con Opus/Grok y revisión proporcional
-con CodeRabbit. Sigue [su guía de ejecución](auth/README.md): sustituye para
-esa sesión el reparto y el ritual de Claude Code descritos abajo.
+Las cuatro sesiones se ejecutan en Cursor. Usamos dos estilos, con el mismo
+Grok 4.7 xhigh Fast para ejecutar y los mismos criterios de aceptación:
 
-Las **Sesiones 2–4** conservan su ejecución con Claude Code: Opus como agente
-principal y subagentes Sonnet y Haiku definidos en `.claude/agents/`.
-El mapa, la logística y los contratos del bloque se mantienen.
+| Sesión  | Fecha      | Carpeta y guía                           | Estilo                                            | Prompts                  | Resultado esperado                             |
+| ------- | ---------- | ---------------------------------------- | ------------------------------------------------- | ------------------------ | ---------------------------------------------- |
+| 1 (S9)  | Mié 21 oct | [auth](auth/README.md)                   | Agent con Opus orquestando workers Grok, autónomo | 01–06                    | Auth, workspaces aislados y dashboard          |
+| 2 (S10) | Lun 26 oct | [kanban](kanban/README.md)               | Plan con Opus → Agent con Grok, sin subagentes    | 00 plan; 01–08 ejecución | CRUD, orden y drag-and-drop optimista          |
+| 3 (S11) | Mié 28 oct | [websockets](websockets/README.md)       | Agent con Opus orquestando workers Grok, autónomo | 01–06                    | Dos sesiones sincronizadas por SSE y toasts    |
+| 4 (S12) | Mié 4 nov  | [notifications](notifications/README.md) | Agent con Opus orquestando workers Grok, autónomo | 01–08                    | Comentarios, menciones, campana, outbox y demo |
 
-## Mapa del bloque
+El protocolo de modelos, autonomía, propiedad de archivos, verificación y
+CodeRabbit vive en [CURSOR.md](CURSOR.md). El preflight
+[00 · Comprobar delegación](00-comprobar-delegacion.md) es de solo lectura;
+no implementa ningún paso. Las definiciones de `.claude/agents/` se conservan
+como material histórico y no se usan en estos flujos.
 
-| Sesión  | Fecha      | Carpeta          | Prompts | Resultado al terminar                             |
-| ------- | ---------- | ---------------- | ------- | ------------------------------------------------- |
-| 1 (S9)  | Mié 21 oct | `auth/`          | 01–06   | Login por cookie, workspaces aislados, dashboard  |
-| 2 (S10) | Lun 26 oct | `kanban/`        | 01–08   | Tablero con CRUD, orden y drag-and-drop optimista |
-| 3 (S11) | Mié 28 oct | `websockets/`    | 01–06   | Dos sesiones sincronizadas por SSE, con toasts    |
-| 4 (S12) | Mié 4 nov  | `notifications/` | 01–08   | Comentarios, menciones, campana, outbox y demo    |
+## Material para conducir el directo
 
-## Sesiones 2–4: ejecución con Claude Code
+[Índice de guiones de Obsidian](../docs/obsidian/README.md): cada clase tiene
+un guion operativo y otro con texto literal antes, durante y después de cada
+prompt, apertura tras la presentación y cierre previo a preguntas. Son notas
+locales del profesor en `docs/obsidian/`, carpeta excluida de Git; los prompts
+versionados permiten seguir el curso sin esas notas personales.
 
-Los siguientes apartados de reparto, flujo, preparación y ritual corresponden
-solo a las sesiones 2–4. Para la sesión 1 usa [la guía de Cursor](auth/README.md).
+## Antes de cada clase
 
-### Quién hace qué
-
-| Agente               | Modelo | Para qué                                                                              |
-| -------------------- | ------ | ------------------------------------------------------------------------------------- |
-| principal            | Opus   | Plan, contratos en los briefs y reparto; en la revisión final corrige y pule él mismo |
-| `kanban-recon`       | Haiku  | Mapa de solo lectura del estado actual y de las APIs instaladas                       |
-| `kanban-implementer` | Sonnet | Una parte acotada del plan, con ficheros propios                                      |
-| `kanban-verifier`    | Haiku  | Puerta de calidad y pruebas HTTP; nunca edita                                         |
-| `kanban-reviewer`    | Sonnet | Revisión de solo lectura de una dimensión, en los prompts de revisión                 |
-
-### Flujo de trabajo (sesiones 2–4)
-
-Este es el procedimiento heredado de `AGENTS.md`, conservado aquí sin cambiar
-sus pasos ni el reparto de modelos. Cada prompt añade lo específico de su paso.
-
-Every implementation step in those sessions runs the same five-stage flow with the project
-agents in `.claude/agents/`. Each prompt only adds what is specific to its
-step (what to inspect, the slices, the probes, the review focus). Without
-subagents, do the same stages yourself in order.
-
-1. **Investigate** with `kanban-recon` (Haiku, read-only): current state of the
-   repo and the installed APIs the step needs. Run several in parallel when
-   the areas are independent.
-2. **Plan** (main agent, Opus): a short plan with files, contracts, slices and
-   checks. Fix the shared contracts (`packages/schemas`, route paths,
-   exported names) in the briefs. Wait for the teacher's approval.
-3. **Implement** with `kanban-implementer` (Sonnet): all code, tests and docs,
-   in bounded slices. When slices share contracts, one implementer writes
-   them first; then the rest run in parallel. Two subagents never edit the
-   same file. A brief states the goal, owned files, exact contract names,
-   constraints, checks and the expected report. The main agent does not edit
-   files during this stage.
-4. **Verify** with `kanban-verifier` (Haiku, never edits): the gate and the
-   step's probes.
-5. **Review** (main agent, Opus): read the final diff and the subagents'
-   reports, check that what Sonnet wrote is correct and complete, then fix
-   what is wrong and polish what is unfinished yourself. Run
-   `kanban-verifier` again after your changes.
-
-Review steps (`06`/`08`) use parallel `kanban-reviewer` (Sonnet, read-only,
-one dimension each) plus `kanban-verifier`; the main agent confirms each
-finding in the code and, once the teacher approves the plan, applies the
-fixes itself.
-
-### Antes de cada clase (sesiones 2–4)
-
-- [ ] `git status` limpio y una rama de clase desde el punto de partida
-      (`git switch -c clase-2`, por ejemplo).
-- [ ] Si existe `.codex-tmp/`, bórrala: sus ficheros sin formatear hacen fallar
-      `vp check`.
-- [ ] `bun install --frozen-lockfile` y `docker compose up --build -d`;
-      `curl -s localhost:5173/api/health` debe devolver `ok`.
-- [ ] Claude Code con Opus (`/model`) y `/agents` lista `kanban-recon`,
-      `kanban-implementer`, `kanban-verifier` y `kanban-reviewer`.
-- [ ] Permisos preparados para no aprobar cada comando en directo: `vp`,
-      `bun run`, `docker compose` y `curl`.
-- [ ] Desde la Sesión 1 · 04: dos navegadores, Ana en uno normal y Luis en una
-      ventana privada.
-- [ ] Ensayo completo con estos prompts y un checkpoint por prompt que puedas
-      recuperar en clase.
-
-### El ritual de cada prompt (sesiones 2–4)
-
-1. `/clear`: cada prompt es autocontenido y vuelve a leer `AGENTS.md`, las
-   reglas y el código. Un contexto limpio es más rápido y más barato.
-2. Modo plan (Shift+Tab hasta ver el modo plan) y pega el prompt entero.
-3. Lee el plan en voz alta. Corrige lo que haga falta y aprueba.
-4. Narra el trabajo: Haiku investiga, Sonnet implementa, Haiku verifica y
-   Opus revisa y pule.
-5. Repasa «Hecho cuando»: lo automático lo trae el verificador; lo manual lo
-   haces tú en el navegador.
-6. Commit de checkpoint con el mensaje que propone el agente.
-
-Los prompts de revisión (`06`/`08`) no editan: devuelven hallazgos verificados
-y un plan mínimo. Si lo apruebas, la corrección es un paso más.
+- Conserva el trabajo pendiente, prepara el checkout y comprueba el estado
+  de la sesión anterior. No ejecutes un paso sobre prerrequisitos rotos.
+- Instala las dependencias fijadas y levanta únicamente `web` y `api`.
+  Comprueba health por `http://localhost:5173/api/health` y los checks locales.
+- Usa un checkout sin worktrees anidados. No borres trabajo ajeno para lograr
+  una puerta verde. La guía común explica el alcance de los tests.
+- Guarda el SHA completo de HEAD antes del 01 **de esta clase**. No reutilices
+  el SHA de otra clase para su revisión final.
+- Prepara las dos sesiones de navegador y checkpoints ensayados para esta
+  versión. Las ramas antiguas `fase1`–`fase4` no son reservas sin validar.
+- En la clase 2 hay un traspaso de modelo tras el plan; en 1/3/4 no hay pausas
+  rutinarias de aprobación. En todas se observan las pruebas manuales.
 
 ## Base de datos en clase
 
-- Las migraciones se **generan** en el Mac (`bun run db:generate`).
-- Con Compose arriba, se **aplican** y se **seedean** dentro del contenedor:
-  `docker compose exec api bun run db:migrate` y
-  `docker compose exec api bun run db:seed`. Así nunca hay dos procesos de
-  distintas máquinas peleando por el mismo `.db`.
-- Nunca arranques una segunda API en el Mac con Compose arriba.
-- Los tests de la API usan su propia base (desde la Sesión 1 · 03): no ensucian
-  los datos de la demo.
-- El reset (`docker compose down`, borrar `data/*.db*` y
-  `data/outbox.jsonl`, levantar, migrar y seedear) se hace antes de clase,
-  nunca en mitad de una demo.
+Genera las migraciones en el host solo cuando el prompt lo pide. Con Compose
+arriba, aplícalas y ejecuta el seed dentro de `api`; nunca arranques una
+segunda API sobre el mismo fichero. Tests y outbox de test usan rutas
+propias, nunca `data/`. [Arranque y reset según el estado](../README.md#resetear-la-base-de-datos).
+El reset se prepara fuera del directo y no se ejecuta como arreglo automático.
 
 ## Si algo se tuerce
 
-- Pide al agente que diagnostique con la salida del verificador; no pegues
-  logs enteros.
-- Si un paso se pasa más de 5 minutos de su tiempo, guarda el trabajo
-  (`git stash -u`), vuelve al último checkpoint y sigue desde ahí. El paso
-  pendiente se puede enseñar después.
-- Las ramas `fase1`–`fase4` son el ensayo de agosto sobre un starter anterior
-  (antes de Bun 1.4.3 y Vite+ 1.3.0). Sirven para consultar soluciones, no
-  para hacer checkout en clase sin probarlas antes.
+Diagnostica el fallo y repite las comprobaciones afectadas. Si necesitas un
+checkpoint, conserva el trabajo y usa una copia ensayada, indicando qué
+resultado pertenece al ensayo. Si falta un prerrequisito, deja el paso
+pendiente; no avances como si hubiera pasado. Una revisión externa pendiente
+no es una revisión aprobada. No amplíes permisos, servicios ni facturación
+para sortear un fallo del aula.
 
 ## Trampas conocidas del ensayo de agosto
 
-Ya están resueltas en los prompts; conviene conocerlas por si salen.
+Los prompts incluyen controles para estas incidencias del ensayo; se deben
+volver a comprobar sobre la implementación real de cada clase.
 
 | Trampa                                                                                             | Dónde se trata                      |
 | -------------------------------------------------------------------------------------------------- | ----------------------------------- |

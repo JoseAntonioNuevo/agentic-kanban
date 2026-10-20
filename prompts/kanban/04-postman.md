@@ -50,14 +50,30 @@ Cambios de funcionalidad en la API, Newman y paquetes nuevos.
 
 ## Cómo trabajar
 
-Sigue los cinco pasos de `AGENTS.md`. Tú planificas y, al final, corriges. Hasta el «adelante» no se editan ficheros. No hagas commit.
+**Cursor: Agent con Grok 4.7 xhigh Fast como único ejecutor.** El profesor
+ya ha revisado el plan inicial de Opus y lo adjunta a este paso. Lee
+`AGENTS.md`, `prompts/CURSOR.md`, `prompts/kanban/README.md`, ese plan, las
+reglas implicadas y el código. No uses Task, subagentes, agentes históricos
+ni cambio automático de modelo. No hagas commit ni implementes pasos futuros.
 
-En este paso:
+Este prompt autoriza su alcance y sus correcciones locales, aunque la
+documentación de partida diga «aún no existe». Ejecuta sin otro «adelante»
+ni pausa de aprobación. El plan guía la sesión; verifica sus supuestos contra
+el código. Adapta detalles locales conservando contratos y comunica solo los
+conflictos importantes que necesiten una decisión. No vuelvas a Opus por rutina.
 
-- **Investigar.** `kanban-recon`: rutas reales en `apps/api/src/routes/`, schemas de los bodies y endpoints de Better Auth montados.
-- **Planificar.** Tú, y espera mi «adelante»: peticiones, variables y orden de la colección.
-- **Implementar.** `kanban-implementer`: uno solo: los dos JSON y la documentación de «Al terminar».
-- **Verificar.** `kanban-verifier`: comprueba que los dos JSON se parsean y que cada URL existe en `apps/api/src/routes/`, y reproduce con `curl` el flujo principal y el bloque 05 contra `http://localhost:3000`.
+1. **Inspeccionar.** Confirma rutas reales de `apps/api/src/routes/`, schemas de bodies y endpoints
+   montados de Better Auth.
+2. **Implementar.** Peticiones, variables y secuencia del plan. Crea los dos JSON y la
+   documentación de «Al terminar», con cookies y sin inventar endpoints.
+3. **Comprobar.** Comprueba que ambos JSON se parsean y cada URL existe en las rutas;
+   reproduce con `curl` el flujo principal y el bloque 05 contra
+   `http://localhost:3000`, además de `vp check` y `vp test`.
+4. **Revisar y corregir.** Lee tu diff, corrige los problemas confirmados y
+   repite los checks afectados. Actualiza la documentación de «Al terminar»
+   sin borrar el reparto de modelos. Distingue la evidencia automática y la
+   aceptación manual pendiente. CodeRabbit solo por una duda importante;
+   el cierre del conjunto se decide en el 08.
 
 ## Hecho cuando
 

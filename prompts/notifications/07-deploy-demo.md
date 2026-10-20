@@ -47,15 +47,33 @@ Funcionalidades de producto nuevas y despliegues públicos.
 
 ## Cómo trabajar
 
-Sigue los cinco pasos de `AGENTS.md`. Tú planificas y, al final, corriges. Hasta el «adelante» no se editan ficheros. No hagas commit.
+**Cursor: Agent con Opus 5.5 orquestando de forma autónoma; Grok 4.7 xhigh
+Fast ejecuta.** Lee `AGENTS.md`, `prompts/CURSOR.md`,
+`prompts/notifications/README.md`, las reglas implicadas y el código. Usa
+`kanban-grok-worker` y pasa `model: "grok-4.7-xhigh-fast"` explícito en cada
+nueva Task si está en el catálogo; aplica el protocolo común si cambia.
+No uses omisión, `inherit`, Claude, agentes históricos ni subagentes integrados.
 
-En este paso:
+Este prompt autoriza el paso y sus correcciones locales. Opus coordina,
+fija contratos y revisa; Grok inspecciona, implementa, prueba y actualiza el
+estado documentado. Continúa sin «adelante» ni aprobación rutinaria del plan.
+No hagas commit, no escribas tú la app ni implementes pasos siguientes.
 
-- **Investigar.** `kanban-recon`: README, `.gitignore`, scripts de `package.json`, `docker-compose.yml` y el estado de `data/outbox.jsonl` en Git.
-- **Planificar.** Tú, y espera mi «adelante»: qué cambia en el README, `.gitignore` y `AGENTS.md`.
-- **Implementar.** `kanban-implementer`: uno solo: README, `.gitignore`, `git rm --cached data/outbox.jsonl` y `AGENTS.md`.
-- **Verificar.** `kanban-verifier`: puerta de calidad completa, `docker compose config` y que cada comando del README existe en `package.json` o en Docker Compose.
-- **Revisar.** Tú: el README y `AGENTS.md`.
+1. **Inspección (Grok).** Confirma README, `.gitignore`, scripts de `package.json`,
+   `docker-compose.yml` y estado de `data/outbox.jsonl` en Git.
+2. **Contratos y reparto (Opus); implementación (Grok).** Cambios mínimos de README, `.gitignore` y estado de `AGENTS.md`. Un worker
+   escribe documentación y saca `data/outbox.jsonl` del índice solo si estaba
+   seguido, conservando el archivo local. No ejecuta el reset de datos ni
+   despliega a producción: este paso prepara la demo local.
+3. **Comprobaciones y revisión.** Grok ejecuta `vp check`, `vp test`, `vp build apps/web`,
+   `docker compose config` y comprueba que los comandos del README existen
+   en `package.json` o Compose. Opus revisa README, `AGENTS.md` y que la
+   salida del índice no haya eliminado el outbox local.
+4. **Correcciones (Grok).** Opus contrasta diff y evidencia y encarga los
+   arreglos confirmados; espera los resultados y repite los checks afectados.
+   La puerta general se ejecuta sobre integración estable. CodeRabbit solo
+   ante una duda importante que aporte valor, conservando alcance y cobertura;
+   no se exige una pasada al terminar cada prompt.
 
 ## Hecho cuando
 

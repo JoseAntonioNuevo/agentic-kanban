@@ -28,25 +28,33 @@ verificación de email y proveedores OAuth.
 
 ## Cómo trabajar
 
-**Cursor: Opus 5.5 como principal y Grok 4.7 Fast como implementador.** Lee
-`AGENTS.md`, `prompts/auth/README.md`, las reglas de las capas implicadas y el
+**Cursor: Opus 5.5 orquesta de forma autónoma; Grok 4.7 xhigh Fast ejecuta.** Lee
+`AGENTS.md`, `prompts/CURSOR.md` y `prompts/auth/README.md`, las reglas de las capas implicadas y el
 código. Este paso usa el flujo orquestado de la Sesión 1, no el de Sonnet/Haiku:
 no invoques los agentes `kanban-*` de `.claude/agents/` ni los subagentes
-integrados de Cursor; el único subagente es `s1-grok-implementer`.
+integrados de Cursor. Usa las instancias necesarias de `kanban-grok-worker`.
 No hagas commit ni implementes los pasos siguientes.
 
-1. **Inspección y plan (Opus).** Revisa API, DB, schemas y web. Confirma en
-   las versiones instaladas `betterAuth`, `drizzleAdapter`, campos de tablas
-   con `getAuthTables` y `createAuthClient`. Presenta un plan de hasta 15
-   líneas con archivos, contratos, integración, migración y comprobaciones.
-   Explica por qué aquí compensa orquestar: auth cruza varias capas. Espera
-   mi «adelante» antes de editar.
-2. **Implementación (Grok).** Delega explícitamente en `s1-grok-implementer`
-   (omite el parámetro `model` en `Task` —nunca `inherit`— para que se aplique
-   el frontmatter de Grok). El brief incluye tablas, instancia `auth`, rutas y
-   montaje, rate limit, schemas con tests, cliente, formularios, migración y
-   documentación. Un implementador por defecto; divide solo con independencia
-   real, contratos acordados y archivos disjuntos. Asigna también los barrels.
+La ejecución de este prompt autoriza el paso completo: inspección, reparto,
+implementación, correcciones y comprobaciones locales. No pidas «adelante»
+ni termines tras anunciar un plan. Planifica lo necesario dentro de Agent y
+continúa. Opus coordina, fija contratos y revisa; todo cambio de la app lo
+escriben los workers Grok.
+
+1. **Inspección y reparto.** Encarga a Grok inspección de API/DB/schemas y web,
+   separada si son áreas independientes. Debe confirmar en las versiones
+   instaladas `betterAuth`, `drizzleAdapter`, campos con `getAuthTables` y
+   `createAuthClient`. Con sus informes fija contratos, archivos propios e
+   integración; comunica un plan breve y ejecuta sin esperar aprobación.
+2. **Implementación.** En cada nueva llamada `Task` a `kanban-grok-worker`,
+   pasa `model: "grok-4.7-xhigh-fast"` si figura en el catálogo permitido;
+   si cambia el catálogo, aplica el protocolo de `prompts/CURSOR.md` y `prompts/auth/README.md`.
+   No omitas `model`, no uses `inherit` ni un slug de Claude. Primero fija
+   los contratos compartidos; después reparte los archivos entre los workers.
+   Una división posible es DB/schemas primero, luego API y web en paralelo,
+   y finalmente integración y documentación con un único responsable.
+   Los barrels y `App.tsx` tienen propietario: no convierten por sí solos
+   todo el trabajo en una tarea indivisible. Paraleliza solo lo independiente.
 3. **Comprobaciones (Grok).** Aplica la migración en el entorno correcto,
    ejecuta `vp check`, `vp test` y las pruebas HTTP de «Hecho cuando» por
    `http://localhost:5173`. Usa cookie jar temporal y `Origin` de confianza

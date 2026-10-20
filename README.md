@@ -15,8 +15,16 @@ y las dependencias locales con `bun install --frozen-lockfile`. Vite+ `1.3.0`
 pertenece al workspace; puedes ejecutar `bun run check` y `bun run test`
 (los prompts usan sus comandos `vp check` y `vp test`).
 
-La primera clase se sigue con Cursor y los modelos Opus/Grok. CodeRabbit se
-usa cuando aporta una revisión necesaria; no hace falta para arrancar la app.
+Las cuatro clases se siguen en Cursor: en las clases **1, 3 y 4**, Opus 5.5
+orquesta de forma autónoma workers Grok 4.7 xhigh Fast; en la **2**, Opus
+prepara un plan y Grok lo ejecuta en Agent sin subagentes. CodeRabbit se usa
+cuando aporta una revisión necesaria; no hace falta para arrancar la app.
+
+El [mapa de las cuatro sesiones](prompts/README.md), la
+[guía común de Cursor](prompts/CURSOR.md) y los
+[guiones para Obsidian](docs/obsidian/README.md) reúnen prompts, preparación,
+texto literal y comprobaciones de cada clase. Los guiones son notas locales
+del profesor en `docs/obsidian/`, que permanece excluido de Git.
 
 ## Material para la primera clase (S9)
 
@@ -32,7 +40,7 @@ usa cuando aporta una revisión necesaria; no hace falta para arrancar la app.
 
 Los prompts se ejecutan uno a uno desde el starter. El código de esas
 funcionalidades aún no está implementado. El [mapa del bloque](prompts/README.md)
-conserva el material y el procedimiento de las sesiones 2–4.
+enlaza los prompts y guiones de las sesiones 2–4 con sus respectivos estilos.
 
 ## Arrancar
 
