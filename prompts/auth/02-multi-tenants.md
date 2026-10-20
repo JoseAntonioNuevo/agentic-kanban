@@ -17,20 +17,24 @@ Endpoints, UI, seed, schemas Zod de API, `slug`, `owner`, columnas y tareas.
 
 ## Cómo trabajar
 
-Sigue los cinco pasos de `AGENTS.md`. Tú planificas y, al final, corriges.
-Hasta el «adelante» no se editan ficheros. Durante la implementación solo
-escriben los `kanban-implementer`. No hagas commit.
+**Cursor: Grok 4.7 Fast directamente como agente principal.** Lee `AGENTS.md`,
+`prompts/auth/README.md`, las reglas de DB y el código. No delegues ni lances
+Opus, revisores o CodeRabbit por rutina. No hagas commit.
 
-1. **Investigar.** Un `kanban-recon`: tablas de auth existentes, su modo de
-   timestamp, cómo se exporta el schema y cómo se generan las migraciones.
-2. **Planificar.** Tú. Como máximo 12 líneas: tablas, FK, índices y
-   restricción única. Para y espera mi «adelante».
-3. **Implementar.** Un `kanban-implementer`: tablas, reexport, migración
-   generada y documentación de «Al terminar».
-4. **Verificar.** Un `kanban-verifier`: aplica la migración, pasa la puerta
-   de calidad y comprueba health.
-5. **Revisar.** Tú lees el diff y el informe, corriges y pules, y vuelves a
-   lanzar `kanban-verifier`.
+1. Inspecciona las tablas de auth, el modo de timestamp, exports y migraciones.
+2. Explica en hasta 8 líneas las tablas, FK, índices y restricción única que
+   vas a añadir. Continúa con la implementación sin esperar otro «adelante»:
+   los requisitos y el alcance ya están definidos.
+3. Implementa tablas, exports y migración; aplícala donde corresponde y
+   actualiza la documentación de «Al terminar».
+4. Ejecuta `vp check`, `vp test` y las comprobaciones de «Hecho cuando».
+   Inspecciona el SQL generado y corrige los fallos del paso. Repite las
+   comprobaciones afectadas por cada corrección.
+
+Si aparece una decisión importante que estos requisitos no cubren, expón la
+duda para que el profesor decida si usar Opus. No inventes el contrato ni
+cambies de modelo en silencio. Explica al cerrar por qué este paso acotado
+se ha podido resolver sin orquestador.
 
 ## Requisitos
 
@@ -62,6 +66,6 @@ Drizzle con `sqliteTable`, `text` e `integer` de `drizzle-orm/sqlite-core`, en
 
 ## Al terminar
 
-El implementador que cierra el paso actualiza `AGENTS.md` (tablas sí;
+Actualiza `AGENTS.md` (tablas sí;
 endpoints no) y `.cursor/rules/db.mdc`. No hagas commit. Cierra con el resumen
 que pide `AGENTS.md`.

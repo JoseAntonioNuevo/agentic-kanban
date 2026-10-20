@@ -1,8 +1,12 @@
 # Prompts de clase — Agentic Kanban
 
-Guía para ejecutar en directo los 28 prompts del bloque con Claude Code: Opus
-como agente principal y subagentes Sonnet y Haiku definidos en
-`.claude/agents/`.
+La **Sesión 1 (S9)** se ejecuta en Cursor con Opus/Grok y revisión proporcional
+con CodeRabbit. Sigue [su guía de ejecución](auth/README.md): sustituye para
+esa sesión el reparto y el ritual de Claude Code descritos abajo.
+
+Las **Sesiones 2–4** conservan su ejecución con Claude Code: Opus como agente
+principal y subagentes Sonnet y Haiku definidos en `.claude/agents/`.
+El mapa, la logística y los contratos del bloque se mantienen.
 
 ## Mapa del bloque
 

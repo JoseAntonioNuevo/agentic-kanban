@@ -34,28 +34,31 @@ Frontend, seed, escrituras, CORS, RBAC y paquetes nuevos. Health no se toca.
 
 ## Cómo trabajar
 
-Sigue los cinco pasos de `AGENTS.md`. Tú planificas y, al final, corriges.
-Hasta el «adelante» no se editan ficheros. Durante la implementación solo
-escriben los `kanban-implementer`. No hagas commit.
+**Cursor: Opus 5.5 como principal y Grok 4.7 Fast como implementador.** Lee
+`AGENTS.md`, `prompts/auth/README.md`, las reglas implicadas y el código.
+No hagas commit ni añadas frontend o seed.
 
-1. **Investigar.** Un `kanban-recon`: `auth`, rutas existentes, `packages/db`,
-   `packages/schemas` y cómo se ejecutan los tests con la config de Vite+.
-   Confirma en `node_modules` las firmas de `auth.api.getSession` y del
-   migrador de Drizzle.
-2. **Planificar.** Tú. Como máximo 15 líneas. En los briefs quedan fijados
-   los schemas, las firmas de las consultas y la del middleware. Para y
-   espera mi «adelante».
-3. **Implementar.** Primero un `kanban-implementer` escribe los schemas
-   compartidos y las firmas de las consultas. Después, dos en paralelo, con
-   ficheros disjuntos:
-   - A: consultas en `packages/db`, `requireSession`, rutas y montaje.
-   - B: arnés de tests y tests contra los contratos.
-   Uno de ellos actualiza la documentación de «Al terminar». Dos subagentes
-   nunca editan el mismo fichero.
-4. **Verificar.** Un `kanban-verifier`: puerta de calidad y pruebas HTTP de
-   «Hecho cuando» por el proxy.
-5. **Revisar.** Tú buscas cualquier consulta sin filtro de tenant, corriges
-   y pules, y vuelves a lanzar `kanban-verifier`.
+1. **Inspección y contratos (Opus).** Revisa auth, rutas, DB, schemas y la
+   configuración de tests de Vite+. Confirma en `node_modules` las firmas de
+   `auth.api.getSession` y del migrador de Drizzle. Presenta un plan de hasta
+   15 líneas: schemas y formas de respuesta, consultas, middleware, archivos,
+   integración y pruebas. Explica por qué la autorización merece este plan.
+   Espera mi «adelante» antes de editar.
+2. **Implementación (Grok).** Delega explícitamente en `s1-grok-implementer`
+   con los contratos anteriores y todos los archivos necesarios: schemas,
+   consultas de DB, middleware, rutas, montaje, arnés, tests y documentación.
+   Un implementador por defecto. Si divides, primero fija contratos y evita
+   que dos agentes editen el mismo archivo; no paralelices por obligación.
+3. **Comprobaciones (Grok).** Ejecuta `vp check`, `vp test` y las pruebas de
+   aceptación. Los casos con membresías usan fixtures en la base de test;
+   no adelantes el seed de la demo ni escribas datos de test en `data/`.
+   Las pruebas HTTP del proceso levantado pasan por el proxy de Vite+.
+4. **Revisión (Opus).** Sigue las rutas hasta las consultas y comprueba
+   sesión, membresía y filtro de tenant, además de la evidencia de tests.
+   Encarga las correcciones a Grok y repite los checks afectados. Si queda
+   una incertidumbre concreta de aislamiento, justifica CodeRabbit antes de
+   construir encima; no lo ejecutes por rutina ni repitas una revisión aún
+   válida. Conserva el alcance exacto que haya revisado.
 
 ## Autorización (siempre en este orden)
 
@@ -92,10 +95,14 @@ La API no importa `drizzle-orm` ni `@libsql/client`.
       (enséñame dónde se configura).
 - [ ] HTTP: `GET /api/workspaces` sin cookie → 401; con un usuario recién
       registrado → 200 y `[]`.
+- [ ] Con fixtures en la base aislada, un miembro obtiene su lista con
+      projects y `GET /api/projects/:projectId` propio → 200; otro usuario
+      sin membresía obtiene 404 para ese mismo project. Muestra los casos y
+      sus resultados; no basta con una lista vacía ni con inspeccionar código.
 - [ ] `GET /api/health` sigue OK.
 
 ## Al terminar
 
-El implementador que cierra el paso actualiza `AGENTS.md` (contratos de
+Grok actualiza `AGENTS.md` (contratos de
 lectura y cómo correr los tests de API) y `.cursor/rules/api.mdc`. No hagas
 commit. Cierra con el resumen que pide `AGENTS.md`.

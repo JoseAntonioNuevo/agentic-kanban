@@ -57,7 +57,18 @@ Course steps live in `prompts/<session>/NN-*.md` and run one at a time,
 ideally each in a fresh context. A step is self-contained: re-read this file,
 the `.cursor/rules/*.mdc` of the layers it touches and the code itself.
 
-Every implementation step runs the same five-stage flow with the project
+**Session 1 only (`prompts/auth/01`–`06`):** follow
+`prompts/auth/README.md` and the execution mode in the selected prompt.
+In Cursor, Opus 5.5 plans/reviews steps 01 and 03 and delegates implementation
+and corrections to `s1-grok-implementer`; Grok 4.7 Fast handles 02, 04 and 05
+directly. Step 06 closes verification and uses CodeRabbit when the change or
+an unresolved risk warrants it. No mandatory Haiku/Sonnet agents, parallel
+reviewers, or repeated reviews. The `s1-*` agents are exclusive to Session 1;
+do not use them for Sessions 2–4. Keep the starter scope above accurate until
+the classroom prompts actually implement it.
+
+**Sessions 2–4 retain the following workflow and `.claude/agents/`.**
+Every implementation step in those sessions runs the same five-stage flow with the project
 agents in `.claude/agents/`. Each prompt only adds what is specific to its
 step (what to inspect, the slices, the probes, the review focus). Without
 subagents, do the same stages yourself in order.

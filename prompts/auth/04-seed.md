@@ -30,21 +30,25 @@ Endpoints, UI, CORS, paquetes nuevos y más filas de las de la tabla.
 
 ## Cómo trabajar
 
-Sigue los cinco pasos de `AGENTS.md`. Tú planificas y, al final, corriges.
-Hasta el «adelante» no se editan ficheros. Durante la implementación solo
-escriben los `kanban-implementer`. No hagas commit.
+**Cursor: Grok 4.7 Fast directamente como agente principal.** Lee `AGENTS.md`,
+`prompts/auth/README.md`, las reglas implicadas y el código. No delegues ni
+lances Opus o CodeRabbit por rutina. No hagas commit.
 
-1. **Investigar.** Un `kanban-recon`: `auth.api.signUpEmail` instalado,
-   consultas reutilizables de `packages/db` y scripts de `package.json`.
-2. **Planificar.** Tú. Como máximo 10 líneas: cómo se crean los usuarios sin
-   saltarse Better Auth y cómo un segundo seed no duplica. Para y espera mi
-   «adelante».
-3. **Implementar.** Un `kanban-implementer`: seed, scripts, consultas de
-   upsert que falten y documentación de «Al terminar».
-4. **Verificar.** Un `kanban-verifier`: ejecuta el seed dos veces, cuenta
-   filas y hace los logins y lecturas de «Hecho cuando».
-5. **Revisar.** Tú lees el diff y el informe, corriges y pules, y vuelves a
-   lanzar `kanban-verifier`.
+1. Inspecciona `auth.api.signUpEmail` instalado, consultas reutilizables de
+   `packages/db` y scripts existentes.
+2. Explica en hasta 8 líneas cómo creas los usuarios mediante Better Auth,
+   reutilizas IDs y evitas duplicados. Continúa sin otro «adelante»: los
+   datos y criterios están cerrados.
+3. Implementa seed, scripts, consultas necesarias y documentación.
+4. Ejecuta el seed dos veces, cuenta las filas demo y demuestra los logins
+   y lecturas de «Hecho cuando», con cookie jar separado y `Origin` en los
+   POST de auth. Ejecuta `vp check` y `vp test`. Corrige los fallos del paso
+   y repite las comprobaciones afectadas; no borres datos para lograrlo.
+
+Si surge una decisión importante no cubierta, explica la duda para que el
+profesor decida si usar Opus; no cambies de modelo ni añadas otro agente en
+silencio. Al cerrar, relaciona la ejecución directa con el alcance definido
+y las pruebas de idempotencia observadas.
 
 ## Requisitos
 
@@ -73,6 +77,6 @@ escriben los `kanban-implementer`. No hagas commit.
 
 ## Al terminar
 
-El implementador que cierra el paso actualiza `AGENTS.md` (seed y cuentas
+Actualiza `AGENTS.md` (seed y cuentas
 demo) y el README (cómo seedear y el orden migrar → seedear). No hagas
 commit. Cierra con el resumen que pide `AGENTS.md`.

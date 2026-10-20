@@ -28,28 +28,31 @@ verificación de email y proveedores OAuth.
 
 ## Cómo trabajar
 
-Sigue los cinco pasos de `AGENTS.md`. Tú planificas y, al final, corriges.
-Hasta el «adelante» no se editan ficheros. Durante la implementación solo
-escriben los `kanban-implementer`. No hagas commit.
+**Cursor: Opus 5.5 como principal y Grok 4.7 Fast como implementador.** Lee
+`AGENTS.md`, `prompts/auth/README.md`, las reglas de las capas implicadas y el
+código. Este paso usa el flujo orquestado de la Sesión 1, no el de Sonnet/Haiku.
+No hagas commit ni implementes los pasos siguientes.
 
-1. **Investigar.** Dos `kanban-recon` en paralelo, en un solo mensaje:
-   - Servidor: `apps/api`, `packages/db`, `packages/schemas` y las APIs
-     instaladas (`betterAuth`, `drizzleAdapter`, campos de las tablas con
-     `getAuthTables`).
-   - Web: `apps/web` y `createAuthClient`.
-2. **Planificar.** Tú. Como máximo 15 líneas: archivos, los contratos de
-   arriba, briefs con ficheros disjuntos y verificación. Para y espera mi
-   «adelante».
-3. **Implementar.** Dos `kanban-implementer` en paralelo, con ficheros disjuntos:
-   - A: tablas, instancia `auth`, rutas, rate limit y migración generada.
-   - B: schemas Zod de los formularios con sus tests, `auth-client` y UI.
-   Después, un tercer `kanban-implementer` une las dos partes (barrels,
-   montaje en `index.ts`) y actualiza la documentación de «Al terminar».
-4. **Verificar.** Un `kanban-verifier`: aplica la migración, pasa la puerta
-   de calidad y hace las pruebas HTTP de «Hecho cuando» contra
-   `http://localhost:5173`.
-5. **Revisar.** Tú lees el diff y los informes, corriges y pules, y vuelves
-   a lanzar `kanban-verifier`.
+1. **Inspección y plan (Opus).** Revisa API, DB, schemas y web. Confirma en
+   las versiones instaladas `betterAuth`, `drizzleAdapter`, campos de tablas
+   con `getAuthTables` y `createAuthClient`. Presenta un plan de hasta 15
+   líneas con archivos, contratos, integración, migración y comprobaciones.
+   Explica por qué aquí compensa orquestar: auth cruza varias capas. Espera
+   mi «adelante» antes de editar.
+2. **Implementación (Grok).** Delega explícitamente en `s1-grok-implementer`.
+   El brief incluye tablas, instancia `auth`, rutas y montaje, rate limit,
+   schemas con tests, cliente, formularios, migración y documentación.
+   Un implementador por defecto; divide solo con independencia real,
+   contratos acordados y archivos disjuntos. Asigna también los barrels.
+3. **Comprobaciones (Grok).** Aplica la migración en el entorno correcto,
+   ejecuta `vp check`, `vp test` y las pruebas HTTP de «Hecho cuando» por
+   `http://localhost:5173`. Usa cookie jar temporal y `Origin` de confianza
+   en los POST de auth. Reporta el resultado real sin mostrar secretos.
+4. **Revisión (Opus).** Lee el diff y la evidencia de sesión, cookies, proxy
+   e integración. Encarga a Grok las correcciones necesarias; no edites tú
+   la app. Repite solo las comprobaciones invalidadas por esas correcciones.
+   No lances CodeRabbit de rutina: solo si queda una duda relevante que
+   justifique revisión adicional, dejando constancia del alcance cubierto.
 
 ## Requisitos
 
@@ -98,7 +101,7 @@ escriben los `kanban-implementer`. No hagas commit.
 
 ## Al terminar
 
-El implementador que cierra el paso actualiza `AGENTS.md` (auth por cookie sí;
+Grok actualiza `AGENTS.md` (auth por cookie sí;
 workspaces no) y quita de `.cursor/rules/` lo que ya no es cierto: `api.mdc`,
 `web.mdc`, `db.mdc` y `scope.mdc` dicen que auth es un placeholder. No hagas
 commit. Cierra con el resumen que pide `AGENTS.md`.
