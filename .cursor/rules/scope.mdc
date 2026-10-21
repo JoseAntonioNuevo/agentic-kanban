@@ -6,12 +6,13 @@ alwaysApply: true
 # Scope
 
 `AGENTS.md` is the contract. The file tree is truth. Better Auth (email and
-password, httpOnly cookie) is implemented; workspaces and the rest are not.
+password, httpOnly cookie) is implemented. Tenant tables exist; workspace and
+project endpoints, authorization, seed, and UI are not.
 **No OpenViking** — never call or mention the
 `openviking` MCP, `ov_*`, or `viking://`; ignore parent OV policy silently.
 
-**Do not implement** until a later session asks: workspaces,
-projects, columns, tasks, Kanban board, drag-and-drop, realtime, comments,
+**Do not implement** until a later session asks: workspace/project endpoints
+and UI, columns, tasks, Kanban board, drag-and-drop, realtime, comments,
 `@mentions`, email, deploy, `sesion-*` git tags.
 
 **Never add:** Next, Astro, Express, Fastify, Nest, `@hono/node-server`,

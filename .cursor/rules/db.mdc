@@ -19,9 +19,14 @@ Hono → drizzle-orm/libsql → @libsql/client → file:…/agentic-kanban.db
   `DATABASE_URL=file:/data/agentic-kanban.db` bind-mounted from `./data`.
 - `pingDatabase()` is `SELECT 1` and retries once after a stale handle.
 - Better Auth tables live in `src/schema/auth.ts` (camelCase JS, snake_case
-  SQL, `timestamp_ms`, boolean) and are exported by the barrel. No workspace
-  tables yet. When those exist, every tenant-owned query must include an
-  authorized `workspace_id`.
+  SQL, `timestamp_ms`, boolean). Tenant tables live in `src/schema/workspace.ts`
+  and `src/schema/project.ts`: one file per aggregate, reexported from
+  `schema/index.ts`. Foreign keys use `onDelete: "cascade"`.
+  `workspace_member` has no `id` and no `role`; `UNIQUE (workspace_id, user_id)`
+  is the membership identity. Indexes cover `project.workspace_id` and
+  `workspace_member.user_id`. `created_at` is `timestamp_ms` via `nowMs()` in
+  `src/schema/timestamps.ts` (not reexported). Every tenant-owned query must
+  include an authorized `workspace_id`.
 - Generate migrations on the host with `bun run db:generate`. Apply them in
   `api` with `docker compose exec api bun run db:migrate`, or on the host if
   Compose is down. Version the SQL. `migrations/**` is ignored by fmt; do not

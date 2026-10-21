@@ -17,11 +17,9 @@ desde el navegador y a través del proxy de Vite+.
 
 - `auth` en `apps/api/src/auth/index.ts` y rutas en `apps/api/src/routes/auth.ts`.
 - Tablas de Better Auth en `packages/db/src/schema/auth.ts`, exportadas desde
-`@agentic-kanban/db`.
+  `@agentic-kanban/db`.
 - `signUpInputSchema` y `signInInputSchema` en `@agentic-kanban/schemas`.
 - `authClient` en `apps/web/src/lib/auth-client.ts`.
-
-
 
 ## Fuera de alcance
 
@@ -44,12 +42,12 @@ continúa. Opus coordina, fija contratos y revisa; todo cambio de la app lo
 escriben los workers Grok.
 
 1. **Inspección y reparto.** Encarga a Grok inspección de API/DB/schemas y web,
-  separada si son áreas independientes. Debe confirmar en las versiones
+   separada si son áreas independientes. Debe confirmar en las versiones
    instaladas `betterAuth`, `drizzleAdapter`, campos con `getAuthTables` y
    `createAuthClient`. Con sus informes fija contratos, archivos propios e
    integración; comunica un plan breve y ejecuta sin esperar aprobación.
 2. **Implementación.** En cada nueva llamada `Task` a `kanban-grok-worker`,
-  pasa `model: "grok-4.7-xhigh-fast"` si figura en el catálogo permitido;
+   pasa `model: "grok-4.7-xhigh-fast"` si figura en el catálogo permitido;
    si cambia el catálogo, aplica el protocolo de `prompts/CURSOR.md` y `prompts/auth/README.md`.
    No omitas `model`, no uses `inherit` ni un slug de Claude. Primero fija
    los contratos compartidos; después reparte los archivos entre los workers.
@@ -58,65 +56,61 @@ escriben los workers Grok.
    Los barrels y `App.tsx` tienen propietario: no convierten por sí solos
    todo el trabajo en una tarea indivisible. Paraleliza solo lo independiente.
 3. **Comprobaciones (Grok).** Aplica la migración en el entorno correcto,
-  ejecuta `vp check`, `vp test` y las pruebas HTTP de «Hecho cuando» por
+   ejecuta `vp check`, `vp test` y las pruebas HTTP de «Hecho cuando» por
    `http://localhost:5173`. Usa cookie jar temporal y `Origin` de confianza
    en los POST de auth. Reporta el resultado real sin mostrar secretos.
 4. **Revisión (Opus).** Lee el diff y la evidencia de sesión, cookies, proxy
-  e integración. Encarga a Grok las correcciones necesarias; no edites tú
+   e integración. Encarga a Grok las correcciones necesarias; no edites tú
    la app. Repite solo las comprobaciones invalidadas por esas correcciones.
    No lances CodeRabbit de rutina: solo si queda una duda relevante que
    justifique revisión adicional, dejando constancia del alcance cubierto.
 
-
-
 ## Requisitos
 
 - **Servidor.** `betterAuth` con `drizzleAdapter(db, { provider: "sqlite", schema })` sobre `@agentic-kanban/db` (el mismo `.db` que el resto) y
-`emailAndPassword` activado. Usa el proxy lazy `db`, no `getDb()` en el
-nivel de módulo: `db.mdc` prohíbe abrir la base al importar. Comprueba que
-el adaptador instalado funciona con ese proxy. El cliente de Drizzle se crea
-sin `schema`, así que `db.query` está vacío: pasa el `schema` al adaptador
-y usa el query builder. `BETTER_AUTH_URL` es `http://localhost:5173`
-porque el navegador habla con Vite+, que reenvía `/api` a Hono.
-`trustedOrigins`: `http://localhost:5173` y `http://127.0.0.1:5173`.
+  `emailAndPassword` activado. Usa el proxy lazy `db`, no `getDb()` en el
+  nivel de módulo: `db.mdc` prohíbe abrir la base al importar. Comprueba que
+  el adaptador instalado funciona con ese proxy. El cliente de Drizzle se crea
+  sin `schema`, así que `db.query` está vacío: pasa el `schema` al adaptador
+  y usa el query builder. `BETTER_AUTH_URL` es `http://localhost:5173`
+  porque el navegador habla con Vite+, que reenvía `/api` a Hono.
+  `trustedOrigins`: `http://localhost:5173` y `http://127.0.0.1:5173`.
 - **Rutas.** Delega `GET` y `POST` de `/api/auth/`* en
-`auth.handler(c.req.raw)`. No envuelvas esas rutas con
-`@hono/zod-validator`: Better Auth valida el servidor.
+  `auth.handler(c.req.raw)`. No envuelvas esas rutas con
+  `@hono/zod-validator`: Better Auth valida el servidor.
 - **Tablas.** `user`, `session`, `account` y `verification` escritas a mano en
-Drizzle con los campos que espera la versión instalada. Compruébalos en
-`node_modules` (por ejemplo con `getAuthTables` de `@better-auth/core/db`)
-en lugar de fiarte de memoria. No uses `@better-auth/cli`, `bunx` ni `npx`:
-descargan paquetes.
+  Drizzle con los campos que espera la versión instalada. Compruébalos en
+  `node_modules` (por ejemplo con `getAuthTables` de `@better-auth/core/db`)
+  en lugar de fiarte de memoria. No uses `@better-auth/cli`, `bunx` ni `npx`:
+  descargan paquetes.
 - **Rate limit.** En memoria y solo para `POST /api/auth/sign-up/email` y
-`POST /api/auth/sign-in/email`: **10 peticiones por minuto y por ruta**; al
-superarlo, 429. `get-session` no se limita. Vale un middleware de Hono
-mínimo o el `rateLimit` integrado de Better Auth. El integrado solo se
-activa por defecto en producción, limita todas las rutas y trae una regla
-propia de 3 cada 10 s para sign-in/sign-up: habría que activarlo, fijar
-esas dos reglas y excluir `get-session`. Detrás del proxy de Vite puede no
-llegar la IP real: comparte un bucket y basta para el aula. Haz el máximo
-configurable con `process.env.AUTH_RATE_LIMIT_MAX` (por defecto `10`) para
-que el setup de tests del 03 lo suba sin desactivar la lógica ni cambiar el
-comportamiento en desarrollo.
+  `POST /api/auth/sign-in/email`: **10 peticiones por minuto y por ruta**; al
+  superarlo, 429. `get-session` no se limita. Vale un middleware de Hono
+  mínimo o el `rateLimit` integrado de Better Auth. El integrado solo se
+  activa por defecto en producción, limita todas las rutas y trae una regla
+  propia de 3 cada 10 s para sign-in/sign-up: habría que activarlo, fijar
+  esas dos reglas y excluir `get-session`. Detrás del proxy de Vite puede no
+  llegar la IP real: comparte un bucket y basta para el aula. Haz el máximo
+  configurable con `process.env.AUTH_RATE_LIMIT_MAX` (por defecto `10`) para
+  que el setup de tests del 03 lo suba sin desactivar la lógica ni cambiar el
+  comportamiento en desarrollo.
 - **Validación en el cliente.** `signUpInputSchema` (nombre, email y contraseña
-de 8 a 128 caracteres) y `signInInputSchema`, con tests de parse y de rechazo.
+  de 8 a 128 caracteres) y `signInInputSchema`, con tests de parse y de rechazo.
 - **Web.** `createAuthClient()` de `better-auth/react` sin `baseURL`: URL
-relativa, mismo origen, sin CORS. Formularios de registro y login con los
-componentes shadcn que ya existen (`card`, `input`, `label`, `button`) y
-estado local de React; sin React Hook Form ni router. La sesión se lee con
-`authClient.useSession()`: es la única excepción a TanStack Query para
-estado de servidor; no la envuelvas en `useQuery`. Con sesión: nombre del
-usuario, botón de cerrar sesión y la card de health. Nada de
-`dangerouslySetInnerHTML`.
+  relativa, mismo origen, sin CORS. Formularios de registro y login con los
+  componentes shadcn que ya existen (`card`, `input`, `label`, `button`) y
+  estado local de React; sin React Hook Form ni router. La sesión se lee con
+  `authClient.useSession()`: es la única excepción a TanStack Query para
+  estado de servidor; no la envuelvas en `useQuery`. Con sesión: nombre del
+  usuario, botón de cerrar sesión y la card de health. Nada de
+  `dangerouslySetInnerHTML`.
 - **Migración.** `bun run db:generate` en el host; el SQL se versiona. Para
-aplicarla, `docker compose exec api bun run db:migrate` si Compose está
-arriba; si no, `bun run db:migrate` en el host. Después de borrar
-`data/*.db*` hay que migrar otra vez. drizzle-kit genera los JSON de
-`packages/db/migrations/meta/` sin el formato de Oxfmt: si `vp check` falla
-por ellos, excluye `packages/db/migrations/**` con `fmt.ignorePatterns` en
-el `vite.config.ts` raíz. No reformatees ni edites a mano lo generado.
-
-
+  aplicarla, `docker compose exec api bun run db:migrate` si Compose está
+  arriba; si no, `bun run db:migrate` en el host. Después de borrar
+  `data/*.db*` hay que migrar otra vez. drizzle-kit genera los JSON de
+  `packages/db/migrations/meta/` sin el formato de Oxfmt: si `vp check` falla
+  por ellos, excluye `packages/db/migrations/**` con `fmt.ignorePatterns` en
+  el `vite.config.ts` raíz. No reformatees ni edites a mano lo generado.
 
 ## Hecho cuando
 
@@ -136,8 +130,6 @@ el `vite.config.ts` raíz. No reformatees ni edites a mano lo generado.
   ```
   cerrar sesión. `GET /api/health` sigue OK.
   ```
-
-
 
 ## Al terminar
 

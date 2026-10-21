@@ -12,17 +12,19 @@ skipped). Git, this file, and the repository documentation are authoritative.
 
 ## Current scope
 
-The implemented slice is the health check plus cookie auth:
+The implemented slice is the health check plus cookie auth. Tables
+`workspace`, `workspace_member`, and `project` exist in `@agentic-kanban/db`;
+workspace and project endpoints, authorization, seed, and UI do not.
 
 ```text
 React → TanStack Query (health) and authClient.useSession()
   → /api/health and /api/auth/* → Vite+ proxy
   → Hono on Bun → Better Auth (email + password, httpOnly cookie)
-  → Drizzle → local libSQL (auth tables in @agentic-kanban/db)
+  → Drizzle → local libSQL (auth and tenant tables in @agentic-kanban/db)
 ```
 
-Workspaces, memberships, `workspace_id`, projects, and the board are not
-implemented. Do not invent product tables, demo users, CRUD, a Kanban board,
+Those tenant tables have no endpoints yet. The board is not implemented.
+Do not invent further product tables, demo users, CRUD, a Kanban board,
 drag-and-drop, realtime, comments, mentions, email, deployment, or session tags
 before the corresponding course work asks for them.
 
@@ -116,7 +118,7 @@ vp build apps/web
 docker compose up --build
 ```
 
-The Session 1 step 01 auth schema is already generated. Run further schema
-generation or migrations only when the selected course prompt explicitly
-requests them. Do not add dependencies or implement future course sessions
-as cleanup.
+The Session 1 step 01 auth schema and step 02 tenant tables are already
+generated. Run further schema generation or migrations only when the selected
+course prompt explicitly requests them. Do not add dependencies or implement
+future course sessions as cleanup.

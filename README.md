@@ -3,8 +3,9 @@
 Proyecto starter del curso **thePower — Desarrollo Agéntico**.
 
 Esqueleto técnico listo (Bun, Vite+, React, Hono, Drizzle, libSQL). Hay login
-por cookie (email y contraseña). Aún no hay workspaces ni tablero Kanban: eso
-se construye en las sesiones en vivo.
+por cookie (email y contraseña) y las tablas `workspace`, `workspace_member`
+y `project`. Aún no hay endpoints de workspace ni tablero Kanban: eso se
+construye en las sesiones en vivo.
 
 ## Requisitos
 
@@ -40,7 +41,7 @@ del profesor en `docs/obsidian/`, que permanece excluido de Git.
 | [06 · Cierre](prompts/auth/06-review.md)                     | Evidencias, revisión cuando procede y correcciones verificadas      |
 
 Los prompts se ejecutan uno a uno. El prompt 01 (registro, login y sesión por
-cookie) ya está; workspaces, seed y el resto, no. El [mapa del bloque](prompts/README.md)
+cookie) y las tablas del 02 ya están; endpoints, seed y el resto, no. El [mapa del bloque](prompts/README.md)
 enlaza los prompts y guiones de las sesiones 2–4 con sus respectivos estilos.
 
 ## Arrancar

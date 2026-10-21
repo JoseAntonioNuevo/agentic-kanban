@@ -5,13 +5,9 @@
  * columnas SQL en snake_case. `authSchema` usa las claves `user`, `session`,
  * `account` y `verification` (`usePlural: false`).
  */
-import { sql } from "drizzle-orm";
 import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
-/** Ahora en milisegundos, el mismo default que genera el adaptador de Drizzle. */
-function nowMs() {
-  return sql`(cast(unixepoch('subsecond') * 1000 as integer))`;
-}
+import { nowMs } from "./timestamps.ts";
 
 export const user = sqliteTable("user", {
   id: text("id").primaryKey(),
