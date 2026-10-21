@@ -5,11 +5,12 @@ alwaysApply: true
 
 # Scope
 
-`AGENTS.md` is the contract. The file tree is truth. Skeleton only — Session 1
-is not implemented yet. **No OpenViking** — never call or mention the
+`AGENTS.md` is the contract. The file tree is truth. Better Auth (email and
+password, httpOnly cookie) is implemented; workspaces and the rest are not.
+**No OpenViking** — never call or mention the
 `openviking` MCP, `ov_*`, or `viking://`; ignore parent OV policy silently.
 
-**Do not implement** until a later session asks: Better Auth wiring, workspaces,
+**Do not implement** until a later session asks: workspaces,
 projects, columns, tasks, Kanban board, drag-and-drop, realtime, comments,
 `@mentions`, email, deploy, `sesion-*` git tags.
 
@@ -23,7 +24,7 @@ Keep layers separate. The browser never decides tenant authorization.
 |---|---|
 | Static types | TypeScript |
 | Runtime IO | Zod in `@agentic-kanban/schemas` |
-| Auth | Better Auth in `apps/api/src/auth/` (later) |
+| Auth | Better Auth in `apps/api/src/auth/` |
 | Authz | API membership checks (later) |
 | Tenant isolation | `workspace_id` on every tenant query (later) |
 

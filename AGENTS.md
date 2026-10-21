@@ -12,14 +12,17 @@ skipped). Git, this file, and the repository documentation are authoritative.
 
 ## Current scope
 
-The implemented slice is only:
+The implemented slice is the health check plus cookie auth:
 
 ```text
-React → TanStack Query → /api/health → Vite+ proxy
-  → Hono on Bun → Drizzle → local libSQL
+React → TanStack Query (health) and authClient.useSession()
+  → /api/health and /api/auth/* → Vite+ proxy
+  → Hono on Bun → Better Auth (email + password, httpOnly cookie)
+  → Drizzle → local libSQL (auth tables in @agentic-kanban/db)
 ```
 
-Do not invent product tables, auth wiring, demo users, CRUD, a Kanban board,
+Workspaces, memberships, `workspace_id`, projects, and the board are not
+implemented. Do not invent product tables, demo users, CRUD, a Kanban board,
 drag-and-drop, realtime, comments, mentions, email, deployment, or session tags
 before the corresponding course work asks for them.
 
@@ -39,7 +42,7 @@ or state-management frameworks.
   do not wrap it in `useQuery`. Do not add Redux or Zustand.
 - Runtime inputs and API responses use shared Zod schemas from
   `@agentic-kanban/schemas`; the browser parses responses instead of casting.
-- Authentication will belong to Better Auth; authorization and every
+- Authentication belongs to Better Auth; authorization and every
   tenant-owned `workspace_id` filter belong to the API. The browser never
   decides tenant access.
 - Database access goes through `@agentic-kanban/db` using Drizzle and local
@@ -113,6 +116,7 @@ vp build apps/web
 docker compose up --build
 ```
 
-Run schema generation or migrations only when the selected course prompt
-explicitly requests them, including the auth tables in Session 1 step 01.
-Do not add dependencies or implement future course sessions as cleanup.
+The Session 1 step 01 auth schema is already generated. Run further schema
+generation or migrations only when the selected course prompt explicitly
+requests them. Do not add dependencies or implement future course sessions
+as cleanup.

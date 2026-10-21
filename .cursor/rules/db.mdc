@@ -18,8 +18,12 @@ Hono → drizzle-orm/libsql → @libsql/client → file:…/agentic-kanban.db
 - Host default: `file:<repo>/data/agentic-kanban.db`. Compose:
   `DATABASE_URL=file:/data/agentic-kanban.db` bind-mounted from `./data`.
 - `pingDatabase()` is `SELECT 1` and retries once after a stale handle.
-- Schema folder is empty on purpose. No Better Auth or workspace tables yet.
-- Every tenant-owned query must include an authorized `workspace_id` when
-  Session 1 adds tables.
-- Do not auto-run migrations or seed. Keep `db:generate` / `db:migrate` for
-  later. Never commit `*.db`.
+- Better Auth tables live in `src/schema/auth.ts` (camelCase JS, snake_case
+  SQL, `timestamp_ms`, boolean) and are exported by the barrel. No workspace
+  tables yet. When those exist, every tenant-owned query must include an
+  authorized `workspace_id`.
+- Generate migrations on the host with `bun run db:generate`. Apply them in
+  `api` with `docker compose exec api bun run db:migrate`, or on the host if
+  Compose is down. Version the SQL. `migrations/**` is ignored by fmt; do not
+  edit generated files. Do not auto-run migrations or seed. Never commit
+  `*.db`.

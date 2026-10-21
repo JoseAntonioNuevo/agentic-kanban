@@ -1,18 +1,20 @@
 /**
  * Servidor HTTP de la API: Hono sobre Bun (no Node).
  *
- * Hoy solo monta `GET /api/health`. Better Auth y las rutas de workspace
- * se añaden en la Sesión 1. Bun usa este `export default` (`port`,
- * `hostname`, `fetch`) para escuchar.
+ * Monta `GET /api/health` y Better Auth en `/api/auth/*`. Las rutas de
+ * workspace aún no existen. Bun usa este `export default` (`port`,
+ * `hostname`, `fetch`) para escuchar. Sin CORS: mismo origen vía el proxy.
  */
 import { Hono } from "hono";
 
+import { authRoutes } from "./routes/auth.ts";
 import { healthRoutes } from "./routes/health.ts";
 
 const app = new Hono();
 
 // Cada módulo de rutas es un Hono pequeño; se cuelga en la raíz.
 app.route("/", healthRoutes);
+app.route("/", authRoutes);
 
 const port = Number(process.env.API_PORT ?? 3000);
 

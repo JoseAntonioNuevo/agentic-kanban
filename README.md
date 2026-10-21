@@ -2,8 +2,9 @@
 
 Proyecto starter del curso **thePower — Desarrollo Agéntico**.
 
-Esqueleto técnico listo (Bun, Vite+, React, Hono, Drizzle, libSQL). Aún no hay
-login, workspaces ni tablero Kanban: eso se construye en las sesiones en vivo.
+Esqueleto técnico listo (Bun, Vite+, React, Hono, Drizzle, libSQL). Hay login
+por cookie (email y contraseña). Aún no hay workspaces ni tablero Kanban: eso
+se construye en las sesiones en vivo.
 
 ## Requisitos
 
@@ -38,8 +39,8 @@ del profesor en `docs/obsidian/`, que permanece excluido de Git.
 | [05 · Dashboard](prompts/auth/05-tenant-visible.md)          | Espacios visibles por usuario y limpieza de caché                   |
 | [06 · Cierre](prompts/auth/06-review.md)                     | Evidencias, revisión cuando procede y correcciones verificadas      |
 
-Los prompts se ejecutan uno a uno desde el starter. El código de esas
-funcionalidades aún no está implementado. El [mapa del bloque](prompts/README.md)
+Los prompts se ejecutan uno a uno. El prompt 01 (registro, login y sesión por
+cookie) ya está; workspaces, seed y el resto, no. El [mapa del bloque](prompts/README.md)
 enlaza los prompts y guiones de las sesiones 2–4 con sus respectivos estilos.
 
 ## Arrancar
@@ -108,7 +109,7 @@ estructura y los datos según el estado que hayas implementado:
 
 | Estado del proyecto                    | Qué hacer después del reset                     |
 | -------------------------------------- | ----------------------------------------------- |
-| Starter actual, solo health            | No migrar ni seedear: comprueba health por 5173 |
+| Antes del prompt 01, solo health       | No migrar ni seedear: comprueba health por 5173 |
 | Desde el prompt 01, con tablas de auth | Aplicar las migraciones ya generadas            |
 | Desde el prompt 04, con seed           | Aplicar migraciones y después ejecutar el seed  |
 
@@ -139,4 +140,5 @@ Navegador (React)
   → Zod valida el JSON en la API y otra vez en el frontend
 ```
 
-La pantalla inicial solo muestra si Frontend, API y Database están OK.
+Sin sesión, la pantalla muestra registro e inicio de sesión. Con sesión, el
+nombre, cerrar sesión y si Frontend, API y Database están OK.

@@ -1,60 +1,91 @@
 /**
- * Pantalla starter: comprueba que el camino React → API → libSQL funciona.
+ * Puerta de sesión de la app.
  *
- * No hay login ni workspaces. `useHealth()` pide GET /api/health y Zod
- * valida la respuesta. Frontend se marca OK si el JS ha cargado; API y
- * Database salen del JSON parseado.
+ * `authClient.useSession()` lee la cookie de Better Auth. Es la única
+ * excepción a TanStack Query: no va envuelta en `useQuery`. Sin sesión
+ * se muestran los formularios. Con sesión, el nombre del usuario y la
+ * card de health (`useHealth` vive dentro de `HealthCard`).
  */
-import { Badge } from "@/components/ui/badge.tsx";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card.tsx";
-import { Skeleton } from "@/components/ui/skeleton.tsx";
-import { useHealth } from "@/hooks/use-health.ts";
+import { useState } from "react";
 
-/** Componente raíz: espera la query de health y pinta las tres filas de estado. */
+import { AuthForms } from "@/components/auth-forms.tsx";
+import { HealthCard } from "@/components/health-card.tsx";
+import { Button } from "@/components/ui/button.tsx";
+import { Card, CardContent, CardHeader } from "@/components/ui/card.tsx";
+import { Skeleton } from "@/components/ui/skeleton.tsx";
+import { authClient } from "@/lib/auth-client.ts";
+
+/** Componente raíz. La sesión se lee siempre, también mientras carga. */
 export default function App() {
-  const health = useHealth();
+  const { data, isPending } = authClient.useSession();
 
   return (
     <main className="flex min-h-svh items-center justify-center bg-background p-6">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-2xl">Agentic Kanban</CardTitle>
-          <CardDescription>thePower — Desarrollo Agéntico</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {health.isLoading ? (
-            <div className="space-y-3">
-              <Skeleton className="h-8 w-full" />
-              <Skeleton className="h-8 w-full" />
-              <Skeleton className="h-8 w-full" />
-            </div>
-          ) : (
-            <dl className="space-y-3">
-              <StatusRow label="Frontend" ok />
-              <StatusRow label="API" ok={health.isSuccess && health.data.api === "ok"} />
-              <StatusRow label="Database" ok={health.isSuccess && health.data.database === "ok"} />
-            </dl>
-          )}
-        </CardContent>
-      </Card>
+      {isPending ? (
+        <SessionSkeleton />
+      ) : data ? (
+        <SignedIn name={data.user.name} email={data.user.email} />
+      ) : (
+        <AuthForms />
+      )}
     </main>
   );
 }
 
-/** Fila de estado: etiqueta a la izquierda y badge OK/Error a la derecha. */
-function StatusRow({ label, ok }: { label: string; ok: boolean }) {
+/** Placeholder mientras Better Auth resuelve la cookie de sesión. */
+function SessionSkeleton() {
   return (
-    <div className="flex items-center justify-between rounded-lg border px-3 py-2">
-      <dt className="text-sm font-medium">{label}</dt>
-      <dd>
-        <Badge variant={ok ? "default" : "destructive"}>{ok ? "OK" : "Error"}</Badge>
-      </dd>
+    <Card className="w-full max-w-md" aria-busy="true">
+      <CardHeader>
+        <Skeleton className="h-8 w-2/3" />
+        <Skeleton className="h-4 w-1/2" />
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-3">
+          <Skeleton className="h-8 w-full" />
+          <Skeleton className="h-8 w-full" />
+          <Skeleton className="h-8 w-full" />
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+/** Cabecera con el usuario y, debajo, el health del starter. */
+function SignedIn({ name, email }: { name: string; email: string }) {
+  const [signingOut, setSigningOut] = useState(false);
+
+  async function handleSignOut() {
+    setSigningOut(true);
+    try {
+      await authClient.signOut();
+    } catch {
+      // Sin red la sesión no cambia. El botón vuelve a activarse en finally.
+    } finally {
+      setSigningOut(false);
+    }
+  }
+
+  return (
+    <div className="flex w-full max-w-md flex-col gap-4">
+      <header className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <p className="truncate text-base font-medium">{name}</p>
+          <p className="truncate text-sm text-muted-foreground">{email}</p>
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          disabled={signingOut}
+          aria-busy={signingOut}
+          onClick={() => {
+            void handleSignOut();
+          }}
+        >
+          Cerrar sesión
+        </Button>
+      </header>
+      <HealthCard />
     </div>
   );
 }

@@ -17,8 +17,12 @@ app.route("/", healthRoutes);
 - Validate responses (and later inputs) with `@agentic-kanban/schemas`.
 - Database access only through `@agentic-kanban/db`. Never import
   `@libsql/client` or `drizzle-orm` from the API.
-- Better Auth is installed only. `src/auth/index.ts` stays a placeholder until
-  Session 1. Do not mount `/api/auth/*` yet.
+- `src/auth/index.ts` exports `auth`: `drizzleAdapter` on the lazy `db` proxy
+  plus `authSchema` (never `getDb()` at module scope). `GET` and `POST`
+  `/api/auth/*` delegate to `auth.handler(c.req.raw)` with no zod-validator.
+  The built-in in-memory rate limit applies only to sign-up and sign-in
+  (`AUTH_RATE_LIMIT_MAX`; `"**": false` last). Do not import `drizzle-orm` in
+  the API (the adapter does). Authorization and workspaces are not in yet.
 - `src/realtime/index.ts` stays a placeholder. Realtime must stay in this
   process (SSE or WebSocket). No Socket.IO, Redis, or extra service.
 - Do not auto-run migrations or seed. Dev: `bun run --hot`. Listen
