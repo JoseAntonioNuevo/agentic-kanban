@@ -3,9 +3,10 @@
 Proyecto starter del curso **thePower — Desarrollo Agéntico**.
 
 Esqueleto técnico listo (Bun, Vite+, React, Hono, Drizzle, libSQL). Hay login
-por cookie (email y contraseña) y las tablas `workspace`, `workspace_member`
-y `project`. Aún no hay endpoints de workspace ni tablero Kanban: eso se
-construye en las sesiones en vivo.
+por cookie (email y contraseña), las tablas `workspace`, `workspace_member`
+y `project`, y un seed de aula que no corre al arrancar la API. Aún no hay
+endpoints de workspace ni tablero Kanban: eso se construye en las sesiones
+en vivo.
 
 ## Requisitos
 
@@ -41,7 +42,8 @@ del profesor en `docs/obsidian/`, que permanece excluido de Git.
 | [06 · Cierre](prompts/auth/06-review.md)                     | Evidencias, revisión cuando procede y correcciones verificadas      |
 
 Los prompts se ejecutan uno a uno. El prompt 01 (registro, login y sesión por
-cookie) y las tablas del 02 ya están; endpoints, seed y el resto, no. El [mapa del bloque](prompts/README.md)
+cookie), las tablas del 02 y el seed del 04 ya están; endpoints de workspace
+y el resto, no. El [mapa del bloque](prompts/README.md)
 enlaza los prompts y guiones de las sesiones 2–4 con sus respectivos estilos.
 
 ## Arrancar
@@ -112,7 +114,7 @@ estructura y los datos según el estado que hayas implementado:
 | -------------------------------------- | ----------------------------------------------- |
 | Antes del prompt 01, solo health       | No migrar ni seedear: comprueba health por 5173 |
 | Desde el prompt 01, con tablas de auth | Aplicar las migraciones ya generadas            |
-| Desde el prompt 04, con seed           | Aplicar migraciones y después ejecutar el seed  |
+| Estado actual, con el seed del 04      | Aplicar migraciones y después ejecutar el seed  |
 
 Solo cuando ya existan las migraciones del paso correspondiente:
 
@@ -120,11 +122,20 @@ Solo cuando ya existan las migraciones del paso correspondiente:
 docker compose exec api bun run db:migrate
 ```
 
-Solo desde el prompt 04, que añade `db:seed`, y después de migrar:
+Con el seed del prompt 04 ya en el repo, después de migrar:
 
 ```bash
 docker compose exec api bun run db:seed
 ```
+
+El seed es idempotente y no corre al arrancar la API. Cuentas de aula
+(contraseña ficticia `Demo1234!` para las dos):
+
+- Ana — `ana@demo.test`. Miembro de `ws_thepower_demo` «thePower Demo» y de
+  `ws_ana_demo` «Espacio de Ana».
+- Luis — `luis@demo.test`. Miembro solo de `ws_thepower_demo`.
+- Proyecto `proj_agentic_kanban` «Agentic Kanban» en `ws_thepower_demo`.
+- Proyecto `proj_ana_notes` «Notas de Ana» en `ws_ana_demo`.
 
 Finalmente comprueba `http://localhost:5173/api/health`. No generes una nueva
 migración para recuperar las tablas: aplica las existentes. Con Compose

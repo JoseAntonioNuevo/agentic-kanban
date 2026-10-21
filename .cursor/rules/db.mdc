@@ -27,6 +27,9 @@ Hono → drizzle-orm/libsql → @libsql/client → file:…/agentic-kanban.db
   `workspace_member.user_id`. `created_at` is `timestamp_ms` via `nowMs()` in
   `src/schema/timestamps.ts` (not reexported). Every tenant-owned query must
   include an authorized `workspace_id`.
+- Idempotent seed writes live in `src/queries/` (`findUserIdByEmail`,
+  `upsertWorkspace`, `upsertProject`, `addWorkspaceMember`): upsert by `id`
+  without rewriting `created_at`, and membership uses `onConflictDoNothing`.
 - Generate migrations on the host with `bun run db:generate`. Apply them in
   `api` with `docker compose exec api bun run db:migrate`, or on the host if
   Compose is down. Version the SQL. `migrations/**` is ignored by fmt; do not

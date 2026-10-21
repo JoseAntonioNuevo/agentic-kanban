@@ -12,9 +12,16 @@ skipped). Git, this file, and the repository documentation are authoritative.
 
 ## Current scope
 
-The implemented slice is the health check plus cookie auth. Tables
-`workspace`, `workspace_member`, and `project` exist in `@agentic-kanban/db`;
-workspace and project endpoints, authorization, seed, and UI do not.
+The implemented slice is the health check, cookie auth, and a classroom seed.
+Tables `workspace`, `workspace_member`, and `project` exist in
+`@agentic-kanban/db`. The seed does not run when the API starts. After
+migrating, load it with `docker compose exec api bun run db:seed`. Demo
+accounts use the classroom password `Demo1234!`: Ana (`ana@demo.test`) and
+Luis (`luis@demo.test`). Workspaces: `ws_thepower_demo` «thePower Demo»
+(Ana and Luis) and `ws_ana_demo` «Espacio de Ana» (Ana only). Projects:
+`proj_agentic_kanban` «Agentic Kanban» in the first workspace and
+`proj_ana_notes` «Notas de Ana» in Ana's. Workspace and project endpoints,
+authorization, and UI do not exist yet.
 
 ```text
 React → TanStack Query (health) and authClient.useSession()
@@ -24,7 +31,7 @@ React → TanStack Query (health) and authClient.useSession()
 ```
 
 Those tenant tables have no endpoints yet. The board is not implemented.
-Do not invent further product tables, demo users, CRUD, a Kanban board,
+Do not invent further product tables, extra demo users, CRUD, a Kanban board,
 drag-and-drop, realtime, comments, mentions, email, deployment, or session tags
 before the corresponding course work asks for them.
 

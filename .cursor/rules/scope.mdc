@@ -6,8 +6,9 @@ alwaysApply: true
 # Scope
 
 `AGENTS.md` is the contract. The file tree is truth. Better Auth (email and
-password, httpOnly cookie) is implemented. Tenant tables exist; workspace and
-project endpoints, authorization, seed, and UI are not.
+password, httpOnly cookie) is implemented. Tenant tables and an idempotent
+classroom seed exist; the API does not seed on startup. Workspace and project
+endpoints, authorization, and UI are not.
 **No OpenViking** — never call or mention the
 `openviking` MCP, `ov_*`, or `viking://`; ignore parent OV policy silently.
 
