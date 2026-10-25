@@ -53,31 +53,14 @@ Realtime, comentarios y notificaciones de otros usuarios.
 
 ## Cómo trabajar
 
-**Cursor: Agent con Grok 4.7 xhigh Fast como único ejecutor.** El profesor
-ya ha revisado el plan inicial de Opus y lo adjunta a este paso. Lee
-`AGENTS.md`, `prompts/CURSOR.md`, `prompts/kanban/README.md`, ese plan, las
-reglas implicadas y el código. No uses Task, subagentes, agentes históricos
-ni cambio automático de modelo. No hagas commit ni implementes pasos futuros.
-
-Este prompt autoriza su alcance y sus correcciones locales, aunque la
-documentación de partida diga «aún no existe». Ejecuta sin otro «adelante»
-ni pausa de aprobación. El plan guía la sesión; verifica sus supuestos contra
-el código. Adapta detalles locales conservando contratos y comunica solo los
-conflictos importantes que necesiten una decisión. No vuelvas a Opus por rutina.
-
 1. **Inspeccionar.** Confirma exports reales de `@dnd-kit/react` 0.5.1 en
    `node_modules/@dnd-kit/react/*.d.ts`, `use-board`, mutations y componentes.
 2. **Implementar.** Flujo arrastre → caché → API → rollback del plan. Implementa
-   `applyBoardMove` y tests, `useMoveTask`, integración de dnd-kit y documentación.
+   `applyBoardMove` y tests, `useMoveTask` e integración de dnd-kit.
    Usa las APIs instaladas, sin descargar ni migrar paquetes.
 3. **Comprobar.** Ejecuta `vp check` y `vp test`; revisa fuente única y rollback completo.
    Prepara la prueba manual incluida la caída controlada de `api` y su
-   restauración; solo se marca observada cuando el profesor la realiza.
-4. **Revisar y corregir.** Lee tu diff, corrige los problemas confirmados y
-   repite los checks afectados. Actualiza la documentación de «Al terminar»
-   sin borrar el reparto de modelos. Distingue la evidencia automática y la
-   aceptación manual pendiente. CodeRabbit solo por una duda importante;
-   el cierre del conjunto se decide en el 08.
+   restauración.
 
 ## Hecho cuando
 
@@ -86,9 +69,3 @@ conflictos importantes que necesiten una decisión. No vuelvas a Opus por rutina
       soltar en una vacía; refrescar y el orden se mantiene.
 - [ ] Fallo forzado: con `docker compose stop api`, mover una tarjeta → vuelve
       a su sitio y aparece el aviso; después `docker compose start api`.
-
-## Al terminar
-
-El implementador que cierra el paso actualiza `AGENTS.md` (drag-and-drop sí; realtime y comentarios no) y quita de
-`.cursor/rules/web.mdc` la frase que prohíbe implementar drag-and-drop. No
-hagas commit. Cierra con el resumen que pide `AGENTS.md`.

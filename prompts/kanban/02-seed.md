@@ -31,28 +31,9 @@ API y frontend.
 
 ## Cómo trabajar
 
-**Cursor: Agent con Grok 4.7 xhigh Fast como único ejecutor.** El profesor
-ya ha revisado el plan inicial de Opus y lo adjunta a este paso. Lee
-`AGENTS.md`, `prompts/CURSOR.md`, `prompts/kanban/README.md`, ese plan, las
-reglas implicadas y el código. No uses Task, subagentes, agentes históricos
-ni cambio automático de modelo. No hagas commit ni implementes pasos futuros.
-
-Este prompt autoriza su alcance y sus correcciones locales, aunque la
-documentación de partida diga «aún no existe». Ejecuta sin otro «adelante»
-ni pausa de aprobación. El plan guía la sesión; verifica sus supuestos contra
-el código. Adapta detalles locales conservando contratos y comunica solo los
-conflictos importantes que necesiten una decisión. No vuelvas a Opus por rutina.
-
 1. **Inspeccionar.** Confirma estructura del seed actual y consultas de upsert disponibles.
-2. **Implementar.** IDs y posiciones cerrados por el prompt. Amplía solo seed y documentación;
-   conserva los datos y contratos de la clase 1.
-3. **Comprobar.** Ejecuta el seed dos veces dentro de `api`, cuenta filas por project y
-   comprueba posiciones contiguas, además de `vp check` y `vp test`.
-4. **Revisar y corregir.** Lee tu diff, corrige los problemas confirmados y
-   repite los checks afectados. Actualiza la documentación de «Al terminar»
-   sin borrar el reparto de modelos. Distingue la evidencia automática y la
-   aceptación manual pendiente. CodeRabbit solo por una duda importante;
-   el cierre del conjunto se decide en el 08.
+2. **Implementar.** IDs y posiciones cerrados por el prompt. Amplía el seed conservando los datos y contratos de la clase 1.
+3. **Comprobar.** Ejecuta el seed dos veces dentro de `api`, cuenta filas por project y comprueba posiciones contiguas, además de `vp check` y `vp test`.
 
 ## Hecho cuando
 
@@ -60,8 +41,3 @@ conflictos importantes que necesiten una decisión. No vuelvas a Opus por rutina
       `proj_ana_notes`, 3 columnas y 1 tarea; las posiciones van de 0 a n-1
       sin huecos ni repetidos.
 - [ ] `vp check` y `vp test` en verde.
-
-## Al terminar
-
-El implementador que cierra el paso actualiza `AGENTS.md` y el README (datos del tablero demo). No hagas commit.
-Cierra con el resumen que pide `AGENTS.md`.
