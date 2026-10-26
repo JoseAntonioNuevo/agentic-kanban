@@ -30,6 +30,10 @@ Hono → drizzle-orm/libsql → @libsql/client → file:…/agentic-kanban.db
 - Idempotent seed writes live in `src/queries/` (`findUserIdByEmail`,
   `upsertWorkspace`, `upsertProject`, `addWorkspaceMember`): upsert by `id`
   without rewriting `created_at`, and membership uses `onConflictDoNothing`.
+- Reads: `listWorkspacesForUser(userId)` and
+  `getProjectForMember(projectId, userId)`. `migrateDatabase()` applies
+  `packages/db/migrations` for the test harness. The API does not migrate
+  on startup.
 - Generate migrations on the host with `bun run db:generate`. Apply them in
   `api` with `docker compose exec api bun run db:migrate`, or on the host if
   Compose is down. Version the SQL. `migrations/**` is ignored by fmt; do not

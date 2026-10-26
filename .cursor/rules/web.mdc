@@ -25,8 +25,18 @@ await fetch("http://localhost:3000/api/health");
 `authClient` lives in `src/lib/auth-client.ts` (`createAuthClient()` with no
 `baseURL`, same origin). Read the session with `authClient.useSession()`, not
 `useQuery`. Auth forms use local React state and the shared schemas
-(`safeParse`). Signed out: those forms. Signed in: the user, sign-out, and
-the health card (`useHealth`). No workspace UI and no router yet.
+(`safeParse`). Signed out: those forms. Signed in: the user, sign-out, the
+health card (`useHealth`), and `useWorkspaces(userId)`. No router and no
+board yet.
+
+- Private query keys are `[scope, userId, ...]` (`workspacesQueryKey`).
+  `useIdentityCacheReset` in `App` removes the previous user's queries when
+  the identity changes, and clears the cache when the session becomes null.
+- `signOutAndClearPrivateData` hides the private UI, then `signOut`, then
+  `queryClient.clear()`. If sign-out fails, the same user's UI is shown again
+  after the clear.
+- `workspaceAccent(workspaceId)` is a pure function of the id. `WorkspaceList`
+  has distinct loading, error, and empty states.
 
 - App imports: `@/hooks/...`, `@/components/ui/...` with `.tsx` where the file
   uses that style. Generated shadcn under `src/components/ui` — do not restyle

@@ -4,9 +4,9 @@ Proyecto starter del curso **thePower — Desarrollo Agéntico**.
 
 Esqueleto técnico listo (Bun, Vite+, React, Hono, Drizzle, libSQL). Hay login
 por cookie (email y contraseña), las tablas `workspace`, `workspace_member`
-y `project`, y un seed de aula que no corre al arrancar la API. Aún no hay
-endpoints de workspace ni tablero Kanban: eso se construye en las sesiones
-en vivo.
+y `project`, un seed de aula que no corre al arrancar la API, lecturas
+autenticadas de workspaces y projects, y un dashboard que lista los espacios
+del usuario. El tablero Kanban se construye en las sesiones siguientes.
 
 ## Requisitos
 
@@ -42,8 +42,8 @@ del profesor en `docs/obsidian/`, que permanece excluido de Git.
 | [06 · Cierre](prompts/auth/06-review.md)                     | Evidencias, revisión cuando procede y correcciones verificadas      |
 
 Los prompts se ejecutan uno a uno. El prompt 01 (registro, login y sesión por
-cookie), las tablas del 02 y el seed del 04 ya están; endpoints de workspace
-y el resto, no. El [mapa del bloque](prompts/README.md)
+cookie), las tablas del 02, las lecturas del 03, el seed del 04 y el
+dashboard del 05 ya están. El tablero, no. El [mapa del bloque](prompts/README.md)
 enlaza los prompts y guiones de las sesiones 2–4 con sus respectivos estilos.
 
 ## Arrancar
@@ -110,11 +110,11 @@ no usa patrones que fallen en zsh cuando no haya coincidencias.
 El bloque se detiene si falla un comando. Después de levantar, restaura la
 estructura y los datos según el estado que hayas implementado:
 
-| Estado del proyecto                    | Qué hacer después del reset                     |
-| -------------------------------------- | ----------------------------------------------- |
-| Antes del prompt 01, solo health       | No migrar ni seedear: comprueba health por 5173 |
-| Desde el prompt 01, con tablas de auth | Aplicar las migraciones ya generadas            |
-| Estado actual, con el seed del 04      | Aplicar migraciones y después ejecutar el seed  |
+| Estado del proyecto                       | Qué hacer después del reset                     |
+| ----------------------------------------- | ----------------------------------------------- |
+| Antes del prompt 01, solo health          | No migrar ni seedear: comprueba health por 5173 |
+| Desde el prompt 01, con tablas de auth    | Aplicar las migraciones ya generadas            |
+| Estado actual (seed, lecturas, dashboard) | Aplicar migraciones y después ejecutar el seed  |
 
 Solo cuando ya existan las migraciones del paso correspondiente:
 
@@ -137,6 +137,14 @@ El seed es idempotente y no corre al arrancar la API. Cuentas de aula
 - Proyecto `proj_agentic_kanban` «Agentic Kanban» en `ws_thepower_demo`.
 - Proyecto `proj_ana_notes` «Notas de Ana» en `ws_ana_demo`.
 
+Con la sesión de Ana, el dashboard lista «thePower Demo» y «Espacio de Ana».
+Con la de Luis, solo «thePower Demo». `GET /api/projects/proj_ana_notes` con
+la cookie de Luis responde 404. Sin cookie, las lecturas responden 401.
+
+`vp test` no usa `data/agentic-kanban.db`. Cada fichero de test recibe una
+base libSQL temporal (`apps/api/src/test/setup.ts`); `test.env` está en el
+`vite.config.ts` de la raíz.
+
 Finalmente comprueba `http://localhost:5173/api/health`. No generes una nueva
 migración para recuperar las tablas: aplica las existentes. Con Compose
 funcionando, migra y seedea dentro de `api`; no arranques otra API en el Mac.
@@ -145,12 +153,14 @@ funcionando, migra y seedea dentro de `api`; no arranques otra API en el Mac.
 
 ```text
 Navegador (React)
-  → TanStack Query pide GET /api/health (URL relativa)
+  → TanStack Query pide GET /api/health y GET /api/workspaces (URL relativa)
+  → authClient.useSession() lee la cookie
   → Vite+ reenvía /api al contenedor api
-  → Hono responde
-  → Drizzle ejecuta SELECT 1 en libSQL
+  → Hono exige sesión en las lecturas y filtra por membresía
+  → Drizzle lee libSQL
   → Zod valida el JSON en la API y otra vez en el frontend
 ```
 
 Sin sesión, la pantalla muestra registro e inicio de sesión. Con sesión, el
-nombre, cerrar sesión y si Frontend, API y Database están OK.
+nombre, cerrar sesión, el health y la lista de espacios. Ana ve dos; Luis,
+uno. El color de cada espacio sale de su id.

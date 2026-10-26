@@ -6,7 +6,7 @@
  * activan las rules de React; en la API se permite `console` (logs de health).
  * Las migraciones de Drizzle se ignoran en fmt: drizzle-kit no sigue Oxfmt.
  */
-import { defineConfig } from "vite-plus";
+import { configDefaults, defineConfig } from "vite-plus";
 
 export default defineConfig({
   fmt: {
@@ -40,5 +40,18 @@ export default defineConfig({
   },
   run: {
     cache: true,
+  },
+  test: {
+    // Cada fichero recibe su libSQL temporal en apps/api/src/test/setup.ts.
+    // DATABASE_URL no se fija aquí: el cliente la cachea al primer acceso y
+    // los ficheros corren en paralelo.
+    env: {
+      NODE_ENV: "test",
+      BETTER_AUTH_SECRET: "local-test-only-not-a-real-secret",
+      BETTER_AUTH_URL: "http://localhost:5173",
+      AUTH_RATE_LIMIT_MAX: "10000",
+    },
+    setupFiles: ["apps/api/src/test/setup.ts"],
+    exclude: [...configDefaults.exclude, "**/.claude/worktrees/**"],
   },
 });

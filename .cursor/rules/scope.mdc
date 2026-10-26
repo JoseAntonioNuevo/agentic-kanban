@@ -7,14 +7,15 @@ alwaysApply: true
 
 `AGENTS.md` is the contract. The file tree is truth. Better Auth (email and
 password, httpOnly cookie) is implemented. Tenant tables and an idempotent
-classroom seed exist; the API does not seed on startup. Workspace and project
-endpoints, authorization, and UI are not.
+classroom seed exist; the API does not seed on startup. Membership-scoped
+reads (`GET /api/workspaces`, `GET /api/projects/:projectId`) and the
+workspace dashboard are implemented.
 **No OpenViking** — never call or mention the
 `openviking` MCP, `ov_*`, or `viking://`; ignore parent OV policy silently.
 
-**Do not implement** until a later session asks: workspace/project endpoints
-and UI, columns, tasks, Kanban board, drag-and-drop, realtime, comments,
-`@mentions`, email, deploy, `sesion-*` git tags.
+**Do not implement** until a later session asks: columns, tasks, the Kanban
+board, drag-and-drop, realtime, comments, `@mentions`, email, deploy,
+`sesion-*` git tags, and product writes.
 
 **Never add:** Next, Astro, Express, Fastify, Nest, `@hono/node-server`,
 Supabase, Postgres, Prisma, Turso Cloud, Redux, Zustand, React Router, tRPC,
@@ -27,8 +28,8 @@ Keep layers separate. The browser never decides tenant authorization.
 | Static types | TypeScript |
 | Runtime IO | Zod in `@agentic-kanban/schemas` |
 | Auth | Better Auth in `apps/api/src/auth/` |
-| Authz | API membership checks (later) |
-| Tenant isolation | `workspace_id` on every tenant query (later) |
+| Authz | API membership checks on tenant reads |
+| Tenant isolation | `workspace_id` from the database row on every tenant query |
 
 Four packages only (`apps/web`, `apps/api`, `packages/db`, `packages/schemas`).
 Internal deps: `workspace:*`. After edits: `vp check` must stay green.

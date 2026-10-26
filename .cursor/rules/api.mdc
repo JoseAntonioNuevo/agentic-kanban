@@ -14,15 +14,25 @@ app.route("/", healthRoutes);
 ```
 
 - One Hono app per route file (`new Hono()`), then `app.route("/", …)`.
-- Validate responses (and later inputs) with `@agentic-kanban/schemas`.
+  `src/index.ts` exports `app` for tests and the Bun `default`.
+- `requireSession` in `src/middleware/session.ts` is applied per route, not
+  with `app.use("*")`. It sets `userId` or returns 401 `{ error }`.
+  Membership is next: a missing row or a non-member is 404, never 403.
+  `workspace_id` comes from the database row, not from the client.
+- Validate params with `@hono/zod-validator` after `requireSession`. Parse
+  responses with `@agentic-kanban/schemas` before `c.json`.
 - Database access only through `@agentic-kanban/db`. Never import
-  `@libsql/client` or `drizzle-orm` from the API.
+  `@libsql/client` or `drizzle-orm` from the API, including tests.
+- API tests use a temporary libSQL file per test file (`src/test/setup.ts`
+  calls `migrateDatabase()` before the cached client opens). `test.env` in
+  the root `vite.config.ts` sets `NODE_ENV`, the test auth secret,
+  `BETTER_AUTH_URL`, and a high `AUTH_RATE_LIMIT_MAX`. Never use `data/`.
 - `src/auth/index.ts` exports `auth`: `drizzleAdapter` on the lazy `db` proxy
   plus `authSchema` (never `getDb()` at module scope). `GET` and `POST`
   `/api/auth/*` delegate to `auth.handler(c.req.raw)` with no zod-validator.
   The built-in in-memory rate limit applies only to sign-up and sign-in
   (`AUTH_RATE_LIMIT_MAX`; `"**": false` last). Do not import `drizzle-orm` in
-  the API (the adapter does). Authorization and workspaces are not in yet.
+  the API (the adapter does).
 - `src/realtime/index.ts` stays a placeholder. Realtime must stay in this
   process (SSE or WebSocket). No Socket.IO, Redis, or extra service.
 - Do not auto-run migrations or seed. Dev: `bun run --hot`. Listen

@@ -3,28 +3,38 @@
  *
  * `authClient.useSession()` lee la cookie de Better Auth. Es la única
  * excepción a TanStack Query: no va envuelta en `useQuery`. Sin sesión
- * se muestran los formularios. Con sesión, el nombre del usuario y la
- * card de health (`useHealth` vive dentro de `HealthCard`).
+ * se muestran los formularios y no se monta la lista de workspaces.
+ * Con sesión, el nombre del usuario, la card de health y los espacios.
+ * El userId de la sesión limpia la caché privada al cambiar de identidad.
+ * Al cerrar sesión la lista se desmonta antes de la petición: `signOut`
+ * resuelve mientras `useSession` aún tiene datos.
  */
 import { useState } from "react";
+import { flushSync } from "react-dom";
 
 import { AuthForms } from "@/components/auth-forms.tsx";
 import { HealthCard } from "@/components/health-card.tsx";
+import { WorkspaceList } from "@/components/workspace-list.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { Card, CardContent, CardHeader } from "@/components/ui/card.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
+import { useIdentityCacheReset } from "@/hooks/use-identity-cache-reset.ts";
 import { authClient } from "@/lib/auth-client.ts";
+import { queryClient } from "@/lib/query-client.ts";
+import { signOutAndClearPrivateData } from "@/lib/sign-out.ts";
 
 /** Componente raíz. La sesión se lee siempre, también mientras carga. */
 export default function App() {
   const { data, isPending } = authClient.useSession();
+  const userId = data?.user.id ?? null;
+  useIdentityCacheReset(userId);
 
   return (
     <main className="flex min-h-svh items-center justify-center bg-background p-6">
       {isPending ? (
         <SessionSkeleton />
       ) : data ? (
-        <SignedIn name={data.user.name} email={data.user.email} />
+        <SignedIn name={data.user.name} email={data.user.email} userId={data.user.id} />
       ) : (
         <AuthForms />
       )}
@@ -51,17 +61,23 @@ function SessionSkeleton() {
   );
 }
 
-/** Cabecera con el usuario y, debajo, el health del starter. */
-function SignedIn({ name, email }: { name: string; email: string }) {
+/** Cabecera con el usuario, el health y, debajo, sus espacios de trabajo. */
+function SignedIn({ name, email, userId }: { name: string; email: string; userId: string }) {
   const [signingOut, setSigningOut] = useState(false);
+  const [privateVisible, setPrivateVisible] = useState(true);
 
   async function handleSignOut() {
     setSigningOut(true);
-    try {
-      await authClient.signOut();
-    } catch {
-      // Sin red la sesión no cambia. El botón vuelve a activarse en finally.
-    } finally {
+    const succeeded = await signOutAndClearPrivateData({
+      signOut: () => authClient.signOut(),
+      queryClient,
+      setPrivateVisible: (visible) => {
+        flushSync(() => {
+          setPrivateVisible(visible);
+        });
+      },
+    });
+    if (!succeeded) {
       setSigningOut(false);
     }
   }
@@ -86,6 +102,7 @@ function SignedIn({ name, email }: { name: string; email: string }) {
         </Button>
       </header>
       <HealthCard />
+      {privateVisible ? <WorkspaceList key={userId} userId={userId} /> : null}
     </div>
   );
 }

@@ -14,3 +14,15 @@ export {
   type HealthResponse,
   type ServiceStatus,
 } from "./health.ts";
+export {
+  projectIdParamSchema,
+  projectSchema,
+  projectSummarySchema,
+  workspaceListResponseSchema,
+  workspaceSchema,
+  type Project,
+  type ProjectIdParam,
+  type ProjectSummary,
+  type Workspace,
+  type WorkspaceListResponse,
+} from "./workspace.ts";
