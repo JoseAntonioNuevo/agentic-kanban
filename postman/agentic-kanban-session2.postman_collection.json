@@ -1,0 +1,632 @@
+{
+  "info": {
+    "name": "Agentic Kanban — Session 2",
+    "_postman_id": "6f0e2a14-9c3b-4d7e-8f21-0b6a4c8d2e10",
+    "description": "Contrato HTTP del tablero, con la cookie de Better Auth.\n\nImporta también el entorno agentic-kanban-local y selecciónalo. No uses Authorization Bearer: la sesión viaja en la cookie del tarro.\n\nbaseUrl sale en http://localhost:3000. Puedes cambiarla a http://localhost:3002 o a http://localhost:5173. origin se queda en http://localhost:5173. Toda petición a /api/auth/* manda Origin: si ya hay cookie y falta ese origen, Better Auth responde 403.\n\nOrden del runner: Login Ana → Get Workspaces → Get Board → Create Task → Update Task → Delete Task. El bloque 05 hace login de Luis y termina volviendo a Ana. El único id fijo es proj_ana_notes.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "noauth"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "description": "API directa. Cámbiala a http://localhost:3002 si el puerto 3000 está ocupado, o a http://localhost:5173 para pasar por el proxy de Vite."
+    },
+    {
+      "key": "origin",
+      "value": "http://localhost:5173",
+      "description": "Origen de confianza de Better Auth. No lo cambies al cambiar baseUrl."
+    },
+    {
+      "key": "workspaceId",
+      "value": "",
+      "description": "Lo rellenan Get Workspaces y Get Board."
+    },
+    {
+      "key": "projectId",
+      "value": "",
+      "description": "Lo rellena Get Workspaces. No uses un id fijo."
+    },
+    {
+      "key": "columnId",
+      "value": "",
+      "description": "Lo rellena Get Board con la primera columna."
+    },
+    {
+      "key": "taskId",
+      "value": "",
+      "description": "Lo rellena Create Task."
+    }
+  ],
+  "item": [
+    {
+      "name": "01 - Auth",
+      "item": [
+        {
+          "name": "Login Ana",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Origin",
+                "value": "{{origin}}",
+                "description": "Better Auth responde 403 si la petición ya lleva cookie y el origen no es de confianza."
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/auth/sign-in/email",
+            "description": "Inicio de sesión de Ana. La cookie httpOnly queda en el tarro de Postman. No guardes ni envíes el token del cuerpo como Bearer.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"ana@demo.test\",\n  \"password\": \"Demo1234!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "",
+                  "pm.test('status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('valid json', function () {",
+                  "  pm.response.to.be.json;",
+                  "});",
+                  "",
+                  "pm.test('user id', function () {",
+                  "  pm.expect(body.user.email).to.eql('ana@demo.test');",
+                  "  pm.expect(body.user.id).to.be.a('string').and.not.empty;",
+                  "});",
+                  "",
+                  "pm.test('session cookie', function () {",
+                  "  pm.expect(pm.response.cookies.get('better-auth.session_token')).to.be.an('object');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "02 - Workspaces",
+      "item": [
+        {
+          "name": "Get Workspaces",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/workspaces",
+            "description": "Lista los workspaces de la sesión. Guarda workspaceId y projectId del primer proyecto que no sea proj_ana_notes.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "",
+                  "pm.test('status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('valid json', function () {",
+                  "  pm.response.to.be.json;",
+                  "});",
+                  "",
+                  "const workspace = Array.isArray(body)",
+                  "  ? body.find(function (item) {",
+                  "      return Array.isArray(item.projects) && item.projects.some(function (project) {",
+                  "        return project.id !== 'proj_ana_notes';",
+                  "      });",
+                  "    })",
+                  "  : undefined;",
+                  "const project = workspace && workspace.projects.find(function (item) {",
+                  "  return item.id !== 'proj_ana_notes';",
+                  "});",
+                  "",
+                  "pm.test('workspace and project ids', function () {",
+                  "  pm.expect(body).to.be.an('array').that.is.not.empty;",
+                  "  pm.expect(workspace && workspace.id).to.be.a('string').and.not.empty;",
+                  "  pm.expect(project && project.id).to.be.a('string').and.not.empty;",
+                  "});",
+                  "",
+                  "function save(key, value) {",
+                  "  pm.collectionVariables.set(key, value);",
+                  "  try {",
+                  "    pm.environment.set(key, value);",
+                  "  } catch (error) {",
+                  "    // Sin entorno activo basta la variable de la colección.",
+                  "  }",
+                  "}",
+                  "",
+                  "if (workspace && project) {",
+                  "  save('workspaceId', workspace.id);",
+                  "  save('projectId', project.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "03 - Board",
+      "item": [
+        {
+          "name": "Get Board",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/projects/{{projectId}}/board",
+            "description": "Tablero del projectId guardado. Guarda columnId de la primera columna (la API ya la ordena por position).",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "",
+                  "pm.test('status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('valid json', function () {",
+                  "  pm.response.to.be.json;",
+                  "});",
+                  "",
+                  "pm.test('project, column and task ids', function () {",
+                  "  pm.expect(body.project.id).to.be.a('string').and.not.empty;",
+                  "  pm.expect(body.project.workspaceId).to.be.a('string').and.not.empty;",
+                  "  pm.expect(body.columns).to.be.an('array').that.is.not.empty;",
+                  "  pm.expect(body.columns[0].id).to.be.a('string').and.not.empty;",
+                  "});",
+                  "",
+                  "function save(key, value) {",
+                  "  pm.collectionVariables.set(key, value);",
+                  "  try {",
+                  "    pm.environment.set(key, value);",
+                  "  } catch (error) {",
+                  "    // Sin entorno activo basta la variable de la colección.",
+                  "  }",
+                  "}",
+                  "",
+                  "if (body && body.project && Array.isArray(body.columns) && body.columns[0]) {",
+                  "  save('workspaceId', body.project.workspaceId);",
+                  "  save('projectId', body.project.id);",
+                  "  save('columnId', body.columns[0].id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "04 - Tasks",
+      "item": [
+        {
+          "name": "Create Task",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/projects/{{projectId}}/tasks",
+            "description": "Añade una tarea al final de la columna. createTaskBodySchema: columnId, title (1–200) y description opcional.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"columnId\": \"{{columnId}}\",\n  \"title\": \"Tarea desde Postman\",\n  \"description\": \"Creada para comprobar el contrato\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "",
+                  "pm.test('status is 201', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('valid json', function () {",
+                  "  pm.response.to.be.json;",
+                  "});",
+                  "",
+                  "pm.test('task id', function () {",
+                  "  pm.expect(body.id).to.be.a('string').and.not.empty;",
+                  "  pm.expect(body.columnId).to.eql(pm.variables.get('columnId'));",
+                  "  pm.expect(body.projectId).to.eql(pm.variables.get('projectId'));",
+                  "  pm.expect(body.title).to.eql('Tarea desde Postman');",
+                  "});",
+                  "",
+                  "function save(key, value) {",
+                  "  pm.collectionVariables.set(key, value);",
+                  "  try {",
+                  "    pm.environment.set(key, value);",
+                  "  } catch (error) {",
+                  "    // Sin entorno activo basta la variable de la colección.",
+                  "  }",
+                  "}",
+                  "",
+                  "if (body && body.id) {",
+                  "  save('taskId', body.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Task",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/tasks/{{taskId}}",
+            "description": "Actualiza título y descripción. updateTaskBodySchema exige al menos uno de los dos.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Tarea editada desde Postman\",\n  \"description\": \"Descripción actualizada\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "",
+                  "pm.test('status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('valid json', function () {",
+                  "  pm.response.to.be.json;",
+                  "});",
+                  "",
+                  "pm.test('updated task id', function () {",
+                  "  pm.expect(body.id).to.eql(pm.variables.get('taskId'));",
+                  "  pm.expect(body.title).to.eql('Tarea editada desde Postman');",
+                  "  pm.expect(body.description).to.eql('Descripción actualizada');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Task",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/tasks/{{taskId}}",
+            "description": "Borra la tarea creada en este flujo. La respuesta es 204 sin cuerpo.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 204', function () {",
+                  "  pm.response.to.have.status(204);",
+                  "});",
+                  "",
+                  "pm.test('empty body', function () {",
+                  "  pm.expect(pm.response.text()).to.eql('');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "05 - Security & Validation",
+      "description": "400 con la cookie de Ana, 401 sin enviarla, login de Luis, 404 en proj_ana_notes y login de Ana para restaurar el tarro.",
+      "item": [
+        {
+          "name": "Create Task With Empty Title",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/projects/{{projectId}}/tasks",
+            "description": "Título vacío: createTaskBodySchema lo rechaza con 400. Hace falta la cookie de Ana del flujo principal; sin sesión esta misma ruta responde 401 porque requireSession va antes del validador.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"columnId\": \"{{columnId}}\",\n  \"title\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "",
+                  "pm.test('status is 400', function () {",
+                  "  pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('valid json', function () {",
+                  "  pm.response.to.be.json;",
+                  "});",
+                  "",
+                  "pm.test('validation failed', function () {",
+                  "  pm.expect(body.success).to.eql(false);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Workspaces Without Session",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/workspaces",
+            "description": "No envía la cookie del tarro (disableCookies). La sesión de Ana sigue guardada para el login de Luis, que la sustituye.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "",
+                  "pm.test('status is 401', function () {",
+                  "  pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "pm.test('valid json', function () {",
+                  "  pm.response.to.be.json;",
+                  "});",
+                  "",
+                  "pm.test('unauthorized, never 403', function () {",
+                  "  pm.expect(pm.response.code).to.not.eql(403);",
+                  "  pm.expect(body.error).to.eql('Unauthorized');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disableCookies": true
+          }
+        },
+        {
+          "name": "Login Luis",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Origin",
+                "value": "{{origin}}",
+                "description": "Better Auth responde 403 si la petición ya lleva cookie y el origen no es de confianza."
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/auth/sign-in/email",
+            "description": "Sustituye la cookie compartida por la sesión de Luis. Origin es obligatorio: al repetir el login con cookie, Better Auth responde 403 si falta.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"luis@demo.test\",\n  \"password\": \"Demo1234!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "",
+                  "pm.test('status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('valid json', function () {",
+                  "  pm.response.to.be.json;",
+                  "});",
+                  "",
+                  "pm.test('user id', function () {",
+                  "  pm.expect(body.user.email).to.eql('luis@demo.test');",
+                  "  pm.expect(body.user.id).to.be.a('string').and.not.empty;",
+                  "});",
+                  "",
+                  "pm.test('session cookie', function () {",
+                  "  pm.expect(pm.response.cookies.get('better-auth.session_token')).to.be.an('object');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Ana Notes Board As Luis",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/projects/proj_ana_notes/board",
+            "description": "proj_ana_notes es el único id fijo: el proyecto privado de Ana. Luis es miembro de otro workspace, así que la respuesta es 404 y no 403.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "",
+                  "pm.test('status is 404', function () {",
+                  "  pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test('valid json', function () {",
+                  "  pm.response.to.be.json;",
+                  "});",
+                  "",
+                  "pm.test('not found, never 403', function () {",
+                  "  pm.expect(pm.response.code).to.not.eql(403);",
+                  "  pm.expect(body.error).to.eql('Not found');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login Ana",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Origin",
+                "value": "{{origin}}",
+                "description": "Better Auth responde 403 si la petición ya lleva cookie y el origen no es de confianza."
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/auth/sign-in/email",
+            "description": "Devuelve el tarro a Ana. El bloque 05 comparte la cookie con el flujo principal, así que hay que restaurarla.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"ana@demo.test\",\n  \"password\": \"Demo1234!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "",
+                  "pm.test('status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('valid json', function () {",
+                  "  pm.response.to.be.json;",
+                  "});",
+                  "",
+                  "pm.test('user id', function () {",
+                  "  pm.expect(body.user.email).to.eql('ana@demo.test');",
+                  "  pm.expect(body.user.id).to.be.a('string').and.not.empty;",
+                  "});",
+                  "",
+                  "pm.test('session cookie', function () {",
+                  "  pm.expect(pm.response.cookies.get('better-auth.session_token')).to.be.an('object');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -14,12 +14,15 @@ the demo columns and tasks for both projects. Membership-scoped reads
 dashboard are implemented. Board read and task create, edit, and delete
 are implemented (`GET /api/projects/:projectId/board`,
 `POST /api/projects/:projectId/tasks`, `PATCH /api/tasks/:taskId`,
-`DELETE /api/tasks/:taskId`). The board UI is not.
+`DELETE /api/tasks/:taskId`). `postman/` holds the session-cookie
+collection for those routes. The board UI opens a project from the
+dashboard (`selectedProjectId` in `App`, no router) and creates, edits,
+and deletes tasks.
 **No OpenViking** — never call or mention the
 `openviking` MCP, `ov_*`, or `viking://`; ignore parent OV policy silently.
 
-**Do not implement** until a later prompt asks: the Kanban board UI,
-moving tasks, drag-and-drop, realtime, comments, `@mentions`, email,
+**Do not implement** until a later prompt asks: moving tasks,
+drag-and-drop, realtime, comments, `@mentions`, email,
 deploy, `sesion-*` git tags, and product writes other than task create,
 edit, and delete.
 

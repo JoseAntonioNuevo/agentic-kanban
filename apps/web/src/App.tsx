@@ -5,6 +5,7 @@
  * excepción a TanStack Query: no va envuelta en `useQuery`. Sin sesión
  * se muestran los formularios y no se monta la lista de workspaces.
  * Con sesión, el nombre del usuario, la card de health y los espacios.
+ * Un proyecto abre su tablero (`selectedProjectId`); no hay router.
  * El userId de la sesión limpia la caché privada al cambiar de identidad.
  * Al cerrar sesión la lista se desmonta antes de la petición: `signOut`
  * resuelve mientras `useSession` aún tiene datos.
@@ -13,6 +14,7 @@ import { useState } from "react";
 import { flushSync } from "react-dom";
 
 import { AuthForms } from "@/components/auth-forms.tsx";
+import { BoardScreen } from "@/components/board-screen.tsx";
 import { HealthCard } from "@/components/health-card.tsx";
 import { WorkspaceList } from "@/components/workspace-list.tsx";
 import { Button } from "@/components/ui/button.tsx";
@@ -22,6 +24,7 @@ import { useIdentityCacheReset } from "@/hooks/use-identity-cache-reset.ts";
 import { authClient } from "@/lib/auth-client.ts";
 import { queryClient } from "@/lib/query-client.ts";
 import { signOutAndClearPrivateData } from "@/lib/sign-out.ts";
+import { cn } from "@/lib/utils.ts";
 
 /** Componente raíz. La sesión se lee siempre, también mientras carga. */
 export default function App() {
@@ -34,7 +37,12 @@ export default function App() {
       {isPending ? (
         <SessionSkeleton />
       ) : data ? (
-        <SignedIn name={data.user.name} email={data.user.email} userId={data.user.id} />
+        <SignedIn
+          key={data.user.id}
+          name={data.user.name}
+          email={data.user.email}
+          userId={data.user.id}
+        />
       ) : (
         <AuthForms />
       )}
@@ -61,10 +69,11 @@ function SessionSkeleton() {
   );
 }
 
-/** Cabecera con el usuario, el health y, debajo, sus espacios de trabajo. */
+/** Cabecera con el usuario y, debajo, el dashboard o el tablero del proyecto elegido. */
 function SignedIn({ name, email, userId }: { name: string; email: string; userId: string }) {
   const [signingOut, setSigningOut] = useState(false);
   const [privateVisible, setPrivateVisible] = useState(true);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
 
   async function handleSignOut() {
     setSigningOut(true);
@@ -83,7 +92,12 @@ function SignedIn({ name, email, userId }: { name: string; email: string; userId
   }
 
   return (
-    <div className="flex w-full max-w-md flex-col gap-4">
+    <div
+      className={cn(
+        "flex w-full flex-col gap-4",
+        selectedProjectId ? "max-w-6xl self-start" : "max-w-md",
+      )}
+    >
       <header className="flex items-center justify-between gap-3">
         <div className="min-w-0">
           <p className="truncate text-base font-medium">{name}</p>
@@ -101,8 +115,22 @@ function SignedIn({ name, email, userId }: { name: string; email: string; userId
           Cerrar sesión
         </Button>
       </header>
-      <HealthCard />
-      {privateVisible ? <WorkspaceList key={userId} userId={userId} /> : null}
+      {privateVisible ? (
+        selectedProjectId ? (
+          <BoardScreen
+            projectId={selectedProjectId}
+            userId={userId}
+            onBack={() => {
+              setSelectedProjectId(null);
+            }}
+          />
+        ) : (
+          <>
+            <HealthCard />
+            <WorkspaceList key={userId} userId={userId} onOpenProject={setSelectedProjectId} />
+          </>
+        )
+      ) : null}
     </div>
   );
 }

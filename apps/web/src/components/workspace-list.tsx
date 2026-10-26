@@ -19,8 +19,14 @@ import { useWorkspaces } from "@/hooks/use-workspaces.ts";
 import { cn } from "@/lib/utils.ts";
 import { workspaceAccent } from "@/lib/workspace-accent.ts";
 
-/** Dashboard de espacios. `userId` entra en la queryKey. */
-export function WorkspaceList({ userId }: { userId: string }) {
+/** Dashboard de espacios. `userId` entra en la queryKey. Un proyecto abre su tablero. */
+export function WorkspaceList({
+  userId,
+  onOpenProject,
+}: {
+  userId: string;
+  onOpenProject: (projectId: string) => void;
+}) {
   const workspaces = useWorkspaces(userId);
 
   return (
@@ -43,7 +49,7 @@ export function WorkspaceList({ userId }: { userId: string }) {
             Todavía no perteneces a ningún espacio de trabajo.
           </p>
         ) : (
-          <WorkspaceItems workspaces={workspaces.data} />
+          <WorkspaceItems workspaces={workspaces.data} onOpenProject={onOpenProject} />
         )}
       </CardContent>
     </Card>
@@ -73,8 +79,14 @@ function WorkspacesError({ onRetry }: { onRetry: () => void }) {
   );
 }
 
-/** Un ítem por workspace: swatch, nombre y proyectos en texto plano. */
-function WorkspaceItems({ workspaces }: { workspaces: readonly Workspace[] }) {
+/** Un ítem por workspace: swatch, nombre y un botón por proyecto. */
+function WorkspaceItems({
+  workspaces,
+  onOpenProject,
+}: {
+  workspaces: readonly Workspace[];
+  onOpenProject: (projectId: string) => void;
+}) {
   return (
     <ul className="space-y-3">
       {workspaces.map((workspace) => (
@@ -91,9 +103,20 @@ function WorkspaceItems({ workspaces }: { workspaces: readonly Workspace[] }) {
           {workspace.projects.length === 0 ? (
             <p className="mt-1 pl-6 text-sm text-muted-foreground">Sin proyectos</p>
           ) : (
-            <ul className="mt-1 space-y-1 pl-6 text-sm text-muted-foreground">
+            <ul className="mt-1 space-y-1 pl-6">
               {workspace.projects.map((project) => (
-                <li key={project.id}>{project.name}</li>
+                <li key={project.id}>
+                  <Button
+                    type="button"
+                    variant="link"
+                    className="h-auto px-0 text-sm text-muted-foreground"
+                    onClick={() => {
+                      onOpenProject(project.id);
+                    }}
+                  >
+                    {project.name}
+                  </Button>
+                </li>
               ))}
             </ul>
           )}

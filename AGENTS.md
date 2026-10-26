@@ -39,14 +39,19 @@ updates title and/or description (200). `DELETE /api/tasks/:taskId` removes
 the task and compacts that column's positions inside a transaction (204).
 No session is 401. No membership, a missing resource, or a `columnId` from
 another project is 404, never 403. The dashboard lists workspaces and
-projects; the accent comes from `workspace.id`. The board UI is not
-implemented. Do not invent further product tables, extra demo users,
+projects; the accent comes from `workspace.id`. The same HTTP contract
+is in `postman/` (`agentic-kanban-session2.postman_collection.json` and
+`agentic-kanban-local.postman_environment.json`): session cookies, `Origin`
+on `/api/auth/*`, and `baseUrl` defaulting to `http://localhost:3000`.
+Choosing a project sets `selectedProjectId` in `App` and opens the board
+(`useBoard`, `useTaskMutations`) without a router; a back button returns to
+the dashboard. Do not invent further product tables, extra demo users,
 moving tasks, drag-and-drop, realtime, comments, mentions, email,
 deployment, or session tags before the corresponding course work asks
 for them.
 
 ```text
-React → TanStack Query (health, workspaces) and authClient.useSession()
+React → TanStack Query (health, workspaces, board) and authClient.useSession()
   → /api/health, /api/auth/*, /api/workspaces, /api/projects/:projectId,
     /api/projects/:projectId/board, /api/projects/:projectId/tasks,
     /api/tasks/:taskId

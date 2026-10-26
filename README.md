@@ -6,8 +6,8 @@ Esqueleto técnico listo (Bun, Vite+, React, Hono, Drizzle, libSQL). Hay login
 por cookie (email y contraseña), las tablas `workspace`, `workspace_member`,
 `project`, `column` y `task`, un seed de aula que no corre al arrancar la API,
 lecturas autenticadas de workspaces y projects, la API del tablero (lectura
-y alta, edición y borrado de tareas) y un dashboard que lista los espacios
-del usuario. La interfaz del tablero todavía no está.
+y alta, edición y borrado de tareas) y un dashboard desde el que se abre
+el tablero de un proyecto para ver, crear, editar y borrar tareas.
 
 ## Requisitos
 
@@ -44,7 +44,7 @@ del profesor en `docs/obsidian/`, que permanece excluido de Git.
 
 Los prompts se ejecutan uno a uno. El prompt 01 (registro, login y sesión por
 cookie), las tablas del 02, las lecturas del 03, el seed del 04 y el
-dashboard del 05 ya están. La interfaz del tablero, no. El [mapa del bloque](prompts/README.md)
+dashboard del 05 ya están. El tablero se abre desde el dashboard, sin router. El [mapa del bloque](prompts/README.md)
 enlaza los prompts y guiones de las sesiones 2–4 con sus respectivos estilos.
 
 ## Arrancar
@@ -147,6 +147,18 @@ Con la de Luis, solo «thePower Demo». `GET /api/projects/proj_ana_notes` con
 la cookie de Luis responde 404, igual que
 `GET /api/projects/proj_ana_notes/board`. Sin cookie, las lecturas responden 401.
 
+## Colección de Postman
+
+Importa `postman/agentic-kanban-session2.postman_collection.json` y
+`postman/agentic-kanban-local.postman_environment.json`, y selecciona el
+entorno. La sesión va en la cookie; no hay Bearer. `baseUrl` sale en
+`http://localhost:3000`; cámbiala a `http://localhost:3002` o a
+`http://localhost:5173` si hace falta. `origin` se queda en
+`http://localhost:5173`: Better Auth responde 403 si un `/api/auth/*` repite
+el login con cookie y sin ese origen. El runner sigue Login Ana → Get
+Workspaces → Get Board → Create Task → Update Task → Delete Task. El bloque
+05 usa `proj_ana_notes` como único id fijo, entra como Luis y vuelve a Ana.
+
 `vp test` no usa `data/agentic-kanban.db`. Cada fichero de test recibe una
 base libSQL temporal (`apps/api/src/test/setup.ts`); `test.env` está en el
 `vite.config.ts` de la raíz.
@@ -159,7 +171,8 @@ funcionando, migra y seedea dentro de `api`; no arranques otra API en el Mac.
 
 ```text
 Navegador (React)
-  → TanStack Query pide GET /api/health y GET /api/workspaces (URL relativa)
+  → TanStack Query pide GET /api/health, GET /api/workspaces y, con un proyecto
+    abierto, GET /api/projects/:projectId/board (URL relativa)
   → authClient.useSession() lee la cookie
   → Vite+ reenvía /api al contenedor api
   → Hono exige sesión en las lecturas y en el CRUD de tareas, y filtra por membresía
@@ -168,5 +181,6 @@ Navegador (React)
 ```
 
 Sin sesión, la pantalla muestra registro e inicio de sesión. Con sesión, el
-nombre, cerrar sesión, el health y la lista de espacios. Ana ve dos; Luis,
-uno. El color de cada espacio sale de su id.
+nombre, cerrar sesión, el health y la lista de espacios. Un proyecto abre
+su tablero. Ana ve dos espacios; Luis, uno. El color de cada espacio sale
+de su id.

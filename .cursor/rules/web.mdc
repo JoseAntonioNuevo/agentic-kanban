@@ -26,10 +26,14 @@ await fetch("http://localhost:3000/api/health");
 `baseURL`, same origin). Read the session with `authClient.useSession()`, not
 `useQuery`. Auth forms use local React state and the shared schemas
 (`safeParse`). Signed out: those forms. Signed in: the user, sign-out, the
-health card (`useHealth`), and `useWorkspaces(userId)`. No router and no
-board yet.
+health card (`useHealth`), and either `useWorkspaces(userId)` or, when a
+project is selected, `useBoard(projectId, userId)`. No router: `App` keeps
+`selectedProjectId` in React state. Task create, edit, and delete go through
+`useTaskMutations`; every board `mutationKey` starts with `["board", projectId]`.
+`boardQueryKey` is `["board", userId, projectId]`.
 
-- Private query keys are `[scope, userId, ...]` (`workspacesQueryKey`).
+- Private query keys are `[scope, userId, ...]` (`workspacesQueryKey`,
+  `boardQueryKey`).
   `useIdentityCacheReset` in `App` removes the previous user's queries when
   the identity changes, and clears the cache when the session becomes null.
 - `signOutAndClearPrivateData` hides the private UI, then `signOut`, then
