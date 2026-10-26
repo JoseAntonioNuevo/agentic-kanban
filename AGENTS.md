@@ -13,9 +13,15 @@ skipped). Git, this file, and the repository documentation are authoritative.
 ## Current scope
 
 The implemented slice is the health check, cookie auth, a classroom seed,
-membership-scoped reads, and a workspace dashboard. Tables `workspace`,
-`workspace_member`, and `project` exist in `@agentic-kanban/db`. The seed
-does not run when the API starts. After migrating, load it with
+membership-scoped reads, a workspace dashboard, the board read, and task
+create, edit, and delete.
+Tables `workspace`, `workspace_member`, `project`, `column`, and `task`
+exist in `@agentic-kanban/db`. The seed does not run when the API starts.
+It inserts three columns and five tasks on `proj_agentic_kanban`
+(`col_kanban_todo` To Do, `col_kanban_doing` In Progress, `col_kanban_done`
+Done, `task_kanban_1` … `task_kanban_5`) and the same three columns plus
+`task_ana_1` on `proj_ana_notes`. Positions run `0..n-1` inside each column.
+After migrating, load it with
 `docker compose exec api bun run db:seed`. Demo accounts use the classroom
 password `Demo1234!`: Ana (`ana@demo.test`) and Luis (`luis@demo.test`).
 Workspaces: `ws_thepower_demo` «thePower Demo» (Ana and Luis) and
@@ -25,17 +31,25 @@ in Ana's. Ana sees both workspaces; Luis sees only the first.
 
 `GET /api/workspaces` returns the caller's workspaces, each with
 `projects: [{ id, name }]`. `GET /api/projects/:projectId` returns the
-project when the caller is a member of its workspace. No session is 401.
-No membership, or a missing project, is 404, never 403. The dashboard lists
-those workspaces and projects; the accent comes from `workspace.id`. The
-board is not implemented. Do not invent further product tables, extra demo
-users, product writes, columns, tasks, a Kanban board, drag-and-drop,
-realtime, comments, mentions, email, deployment, or session tags before the
-corresponding course work asks for them.
+project when the caller is a member of its workspace.
+`GET /api/projects/:projectId/board` returns that project with its columns
+and tasks, both ordered by `position`. `POST /api/projects/:projectId/tasks`
+appends a task to a column of that project (201). `PATCH /api/tasks/:taskId`
+updates title and/or description (200). `DELETE /api/tasks/:taskId` removes
+the task and compacts that column's positions inside a transaction (204).
+No session is 401. No membership, a missing resource, or a `columnId` from
+another project is 404, never 403. The dashboard lists workspaces and
+projects; the accent comes from `workspace.id`. The board UI is not
+implemented. Do not invent further product tables, extra demo users,
+moving tasks, drag-and-drop, realtime, comments, mentions, email,
+deployment, or session tags before the corresponding course work asks
+for them.
 
 ```text
 React → TanStack Query (health, workspaces) and authClient.useSession()
-  → /api/health, /api/auth/*, /api/workspaces, /api/projects/:projectId
+  → /api/health, /api/auth/*, /api/workspaces, /api/projects/:projectId,
+    /api/projects/:projectId/board, /api/projects/:projectId/tasks,
+    /api/tasks/:taskId
   → Vite+ proxy
   → Hono on Bun → Better Auth (email + password, httpOnly cookie)
   → Drizzle → local libSQL (auth and tenant tables in @agentic-kanban/db)

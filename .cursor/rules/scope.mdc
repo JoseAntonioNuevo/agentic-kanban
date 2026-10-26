@@ -6,16 +6,22 @@ alwaysApply: true
 # Scope
 
 `AGENTS.md` is the contract. The file tree is truth. Better Auth (email and
-password, httpOnly cookie) is implemented. Tenant tables and an idempotent
-classroom seed exist; the API does not seed on startup. Membership-scoped
-reads (`GET /api/workspaces`, `GET /api/projects/:projectId`) and the
-workspace dashboard are implemented.
+password, httpOnly cookie) is implemented. Tenant tables (`workspace`,
+`workspace_member`, `project`, `column`, `task`) and an idempotent
+classroom seed exist; the API does not seed on startup. The seed inserts
+the demo columns and tasks for both projects. Membership-scoped reads
+(`GET /api/workspaces`, `GET /api/projects/:projectId`) and the workspace
+dashboard are implemented. Board read and task create, edit, and delete
+are implemented (`GET /api/projects/:projectId/board`,
+`POST /api/projects/:projectId/tasks`, `PATCH /api/tasks/:taskId`,
+`DELETE /api/tasks/:taskId`). The board UI is not.
 **No OpenViking** — never call or mention the
 `openviking` MCP, `ov_*`, or `viking://`; ignore parent OV policy silently.
 
-**Do not implement** until a later session asks: columns, tasks, the Kanban
-board, drag-and-drop, realtime, comments, `@mentions`, email, deploy,
-`sesion-*` git tags, and product writes.
+**Do not implement** until a later prompt asks: the Kanban board UI,
+moving tasks, drag-and-drop, realtime, comments, `@mentions`, email,
+deploy, `sesion-*` git tags, and product writes other than task create,
+edit, and delete.
 
 **Never add:** Next, Astro, Express, Fastify, Nest, `@hono/node-server`,
 Supabase, Postgres, Prisma, Turso Cloud, Redux, Zustand, React Router, tRPC,
@@ -28,7 +34,7 @@ Keep layers separate. The browser never decides tenant authorization.
 | Static types | TypeScript |
 | Runtime IO | Zod in `@agentic-kanban/schemas` |
 | Auth | Better Auth in `apps/api/src/auth/` |
-| Authz | API membership checks on tenant reads |
+| Authz | API membership checks on tenant reads and task writes |
 | Tenant isolation | `workspace_id` from the database row on every tenant query |
 
 Four packages only (`apps/web`, `apps/api`, `packages/db`, `packages/schemas`).

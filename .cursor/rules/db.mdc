@@ -19,21 +19,29 @@ Hono → drizzle-orm/libsql → @libsql/client → file:…/agentic-kanban.db
   `DATABASE_URL=file:/data/agentic-kanban.db` bind-mounted from `./data`.
 - `pingDatabase()` is `SELECT 1` and retries once after a stale handle.
 - Better Auth tables live in `src/schema/auth.ts` (camelCase JS, snake_case
-  SQL, `timestamp_ms`, boolean). Tenant tables live in `src/schema/workspace.ts`
-  and `src/schema/project.ts`: one file per aggregate, reexported from
-  `schema/index.ts`. Foreign keys use `onDelete: "cascade"`.
-  `workspace_member` has no `id` and no `role`; `UNIQUE (workspace_id, user_id)`
-  is the membership identity. Indexes cover `project.workspace_id` and
-  `workspace_member.user_id`. `created_at` is `timestamp_ms` via `nowMs()` in
+  SQL, `timestamp_ms`, boolean). Tenant tables live in `src/schema/workspace.ts`,
+  `src/schema/project.ts`, and `src/schema/board.ts` (`column`, `task`): one
+  file per aggregate, reexported from `schema/index.ts`. Foreign keys use
+  `onDelete: "cascade"`. `workspace_member` has no `id` and no `role`;
+  `UNIQUE (workspace_id, user_id)` is the membership identity. Indexes cover
+  `project.workspace_id`, `workspace_member.user_id`, `column (project_id,
+  position)`, `column.workspace_id`, `task (column_id, position)`, and
+  `task.workspace_id`. `position` is not UNIQUE; a CHECK requires
+  `position >= 0`. `created_at` is `timestamp_ms` via `nowMs()` in
   `src/schema/timestamps.ts` (not reexported). Every tenant-owned query must
   include an authorized `workspace_id`.
 - Idempotent seed writes live in `src/queries/` (`findUserIdByEmail`,
-  `upsertWorkspace`, `upsertProject`, `addWorkspaceMember`): upsert by `id`
-  without rewriting `created_at`, and membership uses `onConflictDoNothing`.
-- Reads: `listWorkspacesForUser(userId)` and
-  `getProjectForMember(projectId, userId)`. `migrateDatabase()` applies
-  `packages/db/migrations` for the test harness. The API does not migrate
-  on startup.
+  `upsertWorkspace`, `upsertProject`, `addWorkspaceMember`, `upsertColumn`,
+  `upsertTask`): upsert by `id` without rewriting `created_at`, and
+  membership uses `onConflictDoNothing`.
+- Reads and task writes: `listWorkspacesForUser(userId)`,
+  `getProjectForMember(projectId, userId)`, `getBoardForMember`,
+  `createTaskForMember`, `updateTaskForMember`, and `deleteTaskForMember`.
+  Create and delete use `db.transaction`: create appends with
+  `max(position) + 1`, and delete compacts that column to `0..n-1`. The
+  `workspace_id` filter always comes from the authorized row.
+  `migrateDatabase()` applies `packages/db/migrations` for the test harness.
+  The API does not migrate on startup.
 - Generate migrations on the host with `bun run db:generate`. Apply them in
   `api` with `docker compose exec api bun run db:migrate`, or on the host if
   Compose is down. Version the SQL. `migrations/**` is ignored by fmt; do not

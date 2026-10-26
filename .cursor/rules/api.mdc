@@ -19,8 +19,12 @@ app.route("/", healthRoutes);
   with `app.use("*")`. It sets `userId` or returns 401 `{ error }`.
   Membership is next: a missing row or a non-member is 404, never 403.
   `workspace_id` comes from the database row, not from the client.
-- Validate params with `@hono/zod-validator` after `requireSession`. Parse
-  responses with `@agentic-kanban/schemas` before `c.json`.
+- Validate params and JSON bodies with `@hono/zod-validator` after
+  `requireSession`. Parse responses with `@agentic-kanban/schemas` before
+  `c.json`. Invalid input is the validator's 400.
+- `src/routes/board.ts` exports `boardRoutes`: board read and task create,
+  update, and delete, with the same 401/404 chain. A `columnId` from
+  another project is 404.
 - Database access only through `@agentic-kanban/db`. Never import
   `@libsql/client` or `drizzle-orm` from the API, including tests.
 - API tests use a temporary libSQL file per test file (`src/test/setup.ts`

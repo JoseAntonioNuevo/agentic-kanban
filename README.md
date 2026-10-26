@@ -3,10 +3,11 @@
 Proyecto starter del curso **thePower — Desarrollo Agéntico**.
 
 Esqueleto técnico listo (Bun, Vite+, React, Hono, Drizzle, libSQL). Hay login
-por cookie (email y contraseña), las tablas `workspace`, `workspace_member`
-y `project`, un seed de aula que no corre al arrancar la API, lecturas
-autenticadas de workspaces y projects, y un dashboard que lista los espacios
-del usuario. El tablero Kanban se construye en las sesiones siguientes.
+por cookie (email y contraseña), las tablas `workspace`, `workspace_member`,
+`project`, `column` y `task`, un seed de aula que no corre al arrancar la API,
+lecturas autenticadas de workspaces y projects, la API del tablero (lectura
+y alta, edición y borrado de tareas) y un dashboard que lista los espacios
+del usuario. La interfaz del tablero todavía no está.
 
 ## Requisitos
 
@@ -43,7 +44,7 @@ del profesor en `docs/obsidian/`, que permanece excluido de Git.
 
 Los prompts se ejecutan uno a uno. El prompt 01 (registro, login y sesión por
 cookie), las tablas del 02, las lecturas del 03, el seed del 04 y el
-dashboard del 05 ya están. El tablero, no. El [mapa del bloque](prompts/README.md)
+dashboard del 05 ya están. La interfaz del tablero, no. El [mapa del bloque](prompts/README.md)
 enlaza los prompts y guiones de las sesiones 2–4 con sus respectivos estilos.
 
 ## Arrancar
@@ -134,12 +135,17 @@ El seed es idempotente y no corre al arrancar la API. Cuentas de aula
 - Ana — `ana@demo.test`. Miembro de `ws_thepower_demo` «thePower Demo» y de
   `ws_ana_demo` «Espacio de Ana».
 - Luis — `luis@demo.test`. Miembro solo de `ws_thepower_demo`.
-- Proyecto `proj_agentic_kanban` «Agentic Kanban» en `ws_thepower_demo`.
-- Proyecto `proj_ana_notes` «Notas de Ana» en `ws_ana_demo`.
+- Proyecto `proj_agentic_kanban` «Agentic Kanban» en `ws_thepower_demo`,
+  con columnas To Do, In Progress y Done (`col_kanban_todo`,
+  `col_kanban_doing`, `col_kanban_done`) y tareas `task_kanban_1` …
+  `task_kanban_5`.
+- Proyecto `proj_ana_notes` «Notas de Ana» en `ws_ana_demo`, con
+  `col_ana_todo`, `col_ana_doing`, `col_ana_done` y la tarea `task_ana_1`.
 
 Con la sesión de Ana, el dashboard lista «thePower Demo» y «Espacio de Ana».
 Con la de Luis, solo «thePower Demo». `GET /api/projects/proj_ana_notes` con
-la cookie de Luis responde 404. Sin cookie, las lecturas responden 401.
+la cookie de Luis responde 404, igual que
+`GET /api/projects/proj_ana_notes/board`. Sin cookie, las lecturas responden 401.
 
 `vp test` no usa `data/agentic-kanban.db`. Cada fichero de test recibe una
 base libSQL temporal (`apps/api/src/test/setup.ts`); `test.env` está en el
@@ -156,7 +162,7 @@ Navegador (React)
   → TanStack Query pide GET /api/health y GET /api/workspaces (URL relativa)
   → authClient.useSession() lee la cookie
   → Vite+ reenvía /api al contenedor api
-  → Hono exige sesión en las lecturas y filtra por membresía
+  → Hono exige sesión en las lecturas y en el CRUD de tareas, y filtra por membresía
   → Drizzle lee libSQL
   → Zod valida el JSON en la API y otra vez en el frontend
 ```

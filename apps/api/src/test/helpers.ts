@@ -5,12 +5,18 @@
  * La cookie se arma desde `set-cookie` y no se imprime. Los fixtures usan
  * las escrituras idempotentes de `@agentic-kanban/db`.
  */
-import { addWorkspaceMember, upsertProject, upsertWorkspace } from "@agentic-kanban/db";
+import {
+  addWorkspaceMember,
+  upsertColumn,
+  upsertProject,
+  upsertTask,
+  upsertWorkspace,
+} from "@agentic-kanban/db";
 import { z } from "zod";
 
 import { app } from "../index.ts";
 
-export { addWorkspaceMember, upsertProject, upsertWorkspace };
+export { addWorkspaceMember, upsertColumn, upsertProject, upsertTask, upsertWorkspace };
 
 const TEST_PASSWORD = "password1";
 
@@ -79,6 +85,27 @@ export async function signUpUser({
     cookie: cookieHeader(response.headers),
     userId: parsed.data.user.id,
   };
+}
+
+/** Petición contra `app`. Con body manda JSON. */
+export async function apiRequest(
+  method: string,
+  path: string,
+  { cookie, body }: { cookie?: string; body?: unknown } = {},
+): Promise<Response> {
+  const headers = new Headers();
+  if (cookie !== undefined) {
+    headers.set("cookie", cookie);
+  }
+  if (body !== undefined) {
+    headers.set("content-type", "application/json");
+  }
+
+  return await app.request(path, {
+    method,
+    headers,
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
 }
 
 /** `GET` contra `app`, con cookie si se pasa. */

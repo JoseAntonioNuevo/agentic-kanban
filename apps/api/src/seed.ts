@@ -1,14 +1,16 @@
 /**
  * Seed de aula. No lo importa `index.ts`: la API no seedea al arrancar.
  *
- * La Sesión 2 añadirá columnas y tareas en estos bloques.
- * Contraseña ficticia, solo para el aula; no se imprime.
+ * Cada bloque hace upsert por id. Una segunda ejecución no duplica filas
+ * ni cambia `created_at`. Contraseña ficticia, solo para el aula; no se imprime.
  */
 import {
   addWorkspaceMember,
   findUserIdByEmail,
   getLibsql,
+  upsertColumn,
   upsertProject,
+  upsertTask,
   upsertWorkspace,
 } from "@agentic-kanban/db";
 import { isAPIError } from "better-auth/api";
@@ -82,6 +84,105 @@ async function seed(): Promise<void> {
     id: "proj_ana_notes",
     workspaceId: "ws_ana_demo",
     name: "Notas de Ana",
+  });
+
+  // 4. columnas y tareas. task_kanban_1 nace en To Do.
+  await upsertColumn({
+    id: "col_kanban_todo",
+    workspaceId: "ws_thepower_demo",
+    projectId: "proj_agentic_kanban",
+    name: "To Do",
+    position: 0,
+  });
+  await upsertColumn({
+    id: "col_kanban_doing",
+    workspaceId: "ws_thepower_demo",
+    projectId: "proj_agentic_kanban",
+    name: "In Progress",
+    position: 1,
+  });
+  await upsertColumn({
+    id: "col_kanban_done",
+    workspaceId: "ws_thepower_demo",
+    projectId: "proj_agentic_kanban",
+    name: "Done",
+    position: 2,
+  });
+  await upsertTask({
+    id: "task_kanban_1",
+    workspaceId: "ws_thepower_demo",
+    projectId: "proj_agentic_kanban",
+    columnId: "col_kanban_todo",
+    title: "Definir columnas y tareas",
+    description: "",
+    position: 0,
+  });
+  await upsertTask({
+    id: "task_kanban_2",
+    workspaceId: "ws_thepower_demo",
+    projectId: "proj_agentic_kanban",
+    columnId: "col_kanban_todo",
+    title: "Sembrar el tablero",
+    description: "",
+    position: 1,
+  });
+  await upsertTask({
+    id: "task_kanban_3",
+    workspaceId: "ws_thepower_demo",
+    projectId: "proj_agentic_kanban",
+    columnId: "col_kanban_doing",
+    title: "Leer el tablero",
+    description: "",
+    position: 0,
+  });
+  await upsertTask({
+    id: "task_kanban_4",
+    workspaceId: "ws_thepower_demo",
+    projectId: "proj_agentic_kanban",
+    columnId: "col_kanban_doing",
+    title: "Mover dentro del project",
+    description: "",
+    position: 1,
+  });
+  await upsertTask({
+    id: "task_kanban_5",
+    workspaceId: "ws_thepower_demo",
+    projectId: "proj_agentic_kanban",
+    columnId: "col_kanban_done",
+    title: "Comprobar el health",
+    description: "",
+    position: 0,
+  });
+
+  await upsertColumn({
+    id: "col_ana_todo",
+    workspaceId: "ws_ana_demo",
+    projectId: "proj_ana_notes",
+    name: "To Do",
+    position: 0,
+  });
+  await upsertColumn({
+    id: "col_ana_doing",
+    workspaceId: "ws_ana_demo",
+    projectId: "proj_ana_notes",
+    name: "In Progress",
+    position: 1,
+  });
+  await upsertColumn({
+    id: "col_ana_done",
+    workspaceId: "ws_ana_demo",
+    projectId: "proj_ana_notes",
+    name: "Done",
+    position: 2,
+  });
+  await upsertTask({
+    id: "task_ana_1",
+    workspaceId: "ws_ana_demo",
+    projectId: "proj_ana_notes",
+    columnId: "col_ana_todo",
+    title: "Nota privada de Ana",
+    description: "",
+    position: 0,
   });
 }
 
