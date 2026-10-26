@@ -3,15 +3,19 @@
  * Web y API importan desde `@agentic-kanban/schemas`, no copian shapes.
  */
 export {
+  applyBoardMove,
   boardColumnSchema,
   boardResponseSchema,
   createTaskBodySchema,
+  moveTaskBodySchema,
   taskIdParamSchema,
   taskSchema,
   updateTaskBodySchema,
   type BoardColumn,
+  type BoardMove,
   type BoardResponse,
   type CreateTaskBody,
+  type MoveTaskBody,
   type Task,
   type TaskIdParam,
   type UpdateTaskBody,

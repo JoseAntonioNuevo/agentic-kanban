@@ -65,9 +65,82 @@ export const updateTaskBodySchema = z
 
 export type UpdateTaskBody = z.infer<typeof updateTaskBodySchema>;
 
-/** Param `taskId` de `PATCH` y `DELETE /api/tasks/:taskId`. */
+/** Param `taskId` de `PATCH`, `DELETE` y `POST /api/tasks/:taskId/move`. */
 export const taskIdParamSchema = z.object({
   taskId: z.string().min(1),
 });
 
 export type TaskIdParam = z.infer<typeof taskIdParamSchema>;
+
+/**
+ * Body de `POST /api/tasks/:taskId/move`.
+ * `position` es el índice en la columna destino después de sacar la tarea.
+ */
+export const moveTaskBodySchema = z.object({
+  columnId: z.string().min(1),
+  position: positionSchema,
+});
+
+export type MoveTaskBody = z.infer<typeof moveTaskBodySchema>;
+
+/** Movimiento que comparten `applyBoardMove` y `POST /api/tasks/:taskId/move`. */
+export type BoardMove = { taskId: string } & MoveTaskBody;
+
+/**
+ * Aplica en memoria el mismo orden que el movimiento del servidor.
+ *
+ * Saca la tarea, la inserta en `position` acotada a `0..n` (índice en el
+ * destino ya sin ella) y renumera `0..n-1` las columnas afectadas. Si la
+ * tarea o la columna no están en el board, devuelve la misma referencia.
+ */
+export function applyBoardMove(board: BoardResponse, move: BoardMove): BoardResponse {
+  const sourceColumn = board.columns.find((column) =>
+    column.tasks.some((task) => task.id === move.taskId),
+  );
+  const task = sourceColumn?.tasks.find((item) => item.id === move.taskId);
+  const targetColumn = board.columns.find((column) => column.id === move.columnId);
+
+  if (sourceColumn === undefined || task === undefined || targetColumn === undefined) {
+    return board;
+  }
+
+  const placed = insertTask(targetColumn.tasks, task, targetColumn.id, move.position);
+
+  return {
+    ...board,
+    columns: board.columns.map((column) => {
+      if (column.id === targetColumn.id) {
+        return { ...column, tasks: placed };
+      }
+
+      if (column.id === sourceColumn.id) {
+        return { ...column, tasks: compactColumn(column.tasks, task.id) };
+      }
+
+      return column;
+    }),
+  };
+}
+
+function insertTask(tasks: Task[], task: Task, columnId: string, position: number): Task[] {
+  const destination = tasks.filter((item) => item.id !== task.id);
+  const index = clampIndex(position, destination.length);
+  const inserted = [...destination.slice(0, index), task, ...destination.slice(index)];
+
+  return inserted.map((item, offset) =>
+    item.position === offset && item.columnId === columnId
+      ? item
+      : { ...item, columnId, position: offset },
+  );
+}
+
+function compactColumn(tasks: Task[], taskId: string): Task[] {
+  return tasks
+    .filter((item) => item.id !== taskId)
+    .map((item, offset) => (item.position === offset ? item : { ...item, position: offset }));
+}
+
+function clampIndex(position: number, length: number): number {
+  const normalized = Number.isFinite(position) ? Math.floor(position) : 0;
+  return Math.min(Math.max(0, normalized), length);
+}

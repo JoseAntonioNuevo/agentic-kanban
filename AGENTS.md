@@ -14,7 +14,7 @@ skipped). Git, this file, and the repository documentation are authoritative.
 
 The implemented slice is the health check, cookie auth, a classroom seed,
 membership-scoped reads, a workspace dashboard, the board read, and task
-create, edit, and delete.
+create, edit, delete, move, and optimistic drag-and-drop.
 Tables `workspace`, `workspace_member`, `project`, `column`, and `task`
 exist in `@agentic-kanban/db`. The seed does not run when the API starts.
 It inserts three columns and five tasks on `proj_agentic_kanban`
@@ -37,16 +37,28 @@ and tasks, both ordered by `position`. `POST /api/projects/:projectId/tasks`
 appends a task to a column of that project (201). `PATCH /api/tasks/:taskId`
 updates title and/or description (200). `DELETE /api/tasks/:taskId` removes
 the task and compacts that column's positions inside a transaction (204).
+`POST /api/tasks/:taskId/move` reorders a task in its column or moves it to
+another column of the same project and returns the moved task (200).
+`position` is the index in the destination after the task is removed,
+clamped to `0..n`; the affected columns are renumbered `0..n-1` in that
+transaction. A destination column from another project is 404.
+Dragging a card calls that endpoint. `applyBoardMove` in
+`@agentic-kanban/schemas` applies the same order to the cached board.
+`useMoveTask` (`mutationKey: ["board", projectId, "move"]`) writes that
+order before the response, restores the snapshot and shows `toast.error`
+if the request fails, then invalidates. The board is not copied into
+React state.
 No session is 401. No membership, a missing resource, or a `columnId` from
 another project is 404, never 403. The dashboard lists workspaces and
-projects; the accent comes from `workspace.id`. The same HTTP contract
-is in `postman/` (`agentic-kanban-session2.postman_collection.json` and
+projects; the accent comes from `workspace.id`. The board read and task
+create, edit, delete, and move contract is in `postman/`
+(`agentic-kanban-session2.postman_collection.json` and
 `agentic-kanban-local.postman_environment.json`): session cookies, `Origin`
 on `/api/auth/*`, and `baseUrl` defaulting to `http://localhost:3000`.
 Choosing a project sets `selectedProjectId` in `App` and opens the board
-(`useBoard`, `useTaskMutations`) without a router; a back button returns to
-the dashboard. Do not invent further product tables, extra demo users,
-moving tasks, drag-and-drop, realtime, comments, mentions, email,
+(`useBoard`, `useTaskMutations`, `useMoveTask`) without a router; a back
+button returns to the dashboard. Do not invent further product tables,
+extra demo users, realtime, comments, mentions, email,
 deployment, or session tags before the corresponding course work asks
 for them.
 
@@ -54,7 +66,7 @@ for them.
 React → TanStack Query (health, workspaces, board) and authClient.useSession()
   → /api/health, /api/auth/*, /api/workspaces, /api/projects/:projectId,
     /api/projects/:projectId/board, /api/projects/:projectId/tasks,
-    /api/tasks/:taskId
+    /api/tasks/:taskId, /api/tasks/:taskId/move
   → Vite+ proxy
   → Hono on Bun → Better Auth (email + password, httpOnly cookie)
   → Drizzle → local libSQL (auth and tenant tables in @agentic-kanban/db)

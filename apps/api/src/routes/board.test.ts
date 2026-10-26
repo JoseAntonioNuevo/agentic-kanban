@@ -1,5 +1,6 @@
 /**
- * Tablero y CRUD de tareas. La base es la temporal del setup; no usa `data/`.
+ * Tablero, CRUD de tareas y movimiento. La base es la temporal del setup;
+ * no usa `data/`.
  */
 import { randomUUID } from "node:crypto";
 
@@ -43,7 +44,7 @@ async function makeProject(userId: string, prefix: string) {
 }
 
 describe("tablero y tareas", () => {
-  it("responde 401 sin cookie en las cuatro rutas", async () => {
+  it("responde 401 sin cookie en las rutas del tablero", async () => {
     const board = await apiGet("/api/projects/proj_missing/board");
     expect(board.status).toBe(401);
     expect(await board.json()).toEqual({ error: "Unauthorized" });
@@ -63,6 +64,12 @@ describe("tablero y tareas", () => {
     const deleted = await apiRequest("DELETE", "/api/tasks/task_missing");
     expect(deleted.status).toBe(401);
     expect(await deleted.json()).toEqual({ error: "Unauthorized" });
+
+    const moved = await apiRequest("POST", "/api/tasks/task_missing/move", {
+      body: { columnId: "col_missing", position: 0 },
+    });
+    expect(moved.status).toBe(401);
+    expect(await moved.json()).toEqual({ error: "Unauthorized" });
   });
 
   it("responde 404 al pedir el board de un project ajeno o inexistente", async () => {
@@ -297,5 +304,239 @@ describe("tablero y tareas", () => {
     const tasks = board.columns[0]?.tasks ?? [];
     expect(tasks.map((item) => item.id)).toEqual([keepId, createdTask.id]);
     expect(tasks.map((item) => item.position)).toEqual([0, 1]);
+  });
+});
+
+async function columnWithTasks(
+  workspaceId: string,
+  projectId: string,
+  name: string,
+  position: number,
+  titles: string[],
+) {
+  const columnId = `col_${randomUUID()}`;
+  await upsertColumn({ id: columnId, workspaceId, projectId, name, position });
+  const taskIds: string[] = [];
+  for (const [index, title] of titles.entries()) {
+    const taskId = `task_${randomUUID()}`;
+    taskIds.push(taskId);
+    await upsertTask({
+      id: taskId,
+      workspaceId,
+      projectId,
+      columnId,
+      title,
+      description: "",
+      position: index,
+    });
+  }
+  return { columnId, taskIds };
+}
+
+async function boardOf(projectId: string, cookie: string) {
+  const response = await apiGet(`/api/projects/${projectId}/board`, cookie);
+  expect(response.status).toBe(200);
+  const board = boardResponseSchema.parse(await response.json());
+  for (const item of board.columns) {
+    expect(item.tasks.map((task) => task.position)).toEqual(item.tasks.map((_, index) => index));
+  }
+  return board;
+}
+
+describe("mover tareas", () => {
+  it("reordena dentro de la misma columna y deja posiciones contiguas", async () => {
+    const own = await makeProject(owner.userId, "same");
+    const todo = await columnWithTasks(own.workspaceId, own.projectId, "To Do", 0, ["A", "B", "C"]);
+    const movedId = todo.taskIds[2];
+    if (movedId === undefined) {
+      throw new Error("falta la tarea");
+    }
+
+    const moved = await apiRequest("POST", `/api/tasks/${movedId}/move`, {
+      cookie: owner.cookie,
+      body: { columnId: todo.columnId, position: 0 },
+    });
+    expect(moved.status).toBe(200);
+    const task = taskSchema.parse(await moved.json());
+    expect(task.id).toBe(movedId);
+    expect(task.columnId).toBe(todo.columnId);
+    expect(task.position).toBe(0);
+
+    const board = await boardOf(own.projectId, owner.cookie);
+    expect(board.columns[0]?.tasks.map((item) => item.id)).toEqual([
+      movedId,
+      todo.taskIds[0],
+      todo.taskIds[1],
+    ]);
+  });
+
+  it("mueve a otra columna en la posición pedida y compacta el origen", async () => {
+    const own = await makeProject(owner.userId, "other");
+    const todo = await columnWithTasks(own.workspaceId, own.projectId, "To Do", 0, ["A", "B", "C"]);
+    const doing = await columnWithTasks(own.workspaceId, own.projectId, "In Progress", 1, [
+      "D",
+      "E",
+    ]);
+    const movedId = todo.taskIds[1];
+    if (movedId === undefined) {
+      throw new Error("falta la tarea");
+    }
+
+    const moved = await apiRequest("POST", `/api/tasks/${movedId}/move`, {
+      cookie: owner.cookie,
+      body: { columnId: doing.columnId, position: 1 },
+    });
+    expect(moved.status).toBe(200);
+    const task = taskSchema.parse(await moved.json());
+    expect(task.columnId).toBe(doing.columnId);
+    expect(task.position).toBe(1);
+
+    const board = await boardOf(own.projectId, owner.cookie);
+    expect(board.columns[0]?.tasks.map((item) => item.id)).toEqual([
+      todo.taskIds[0],
+      todo.taskIds[2],
+    ]);
+    expect(board.columns[1]?.tasks.map((item) => item.id)).toEqual([
+      doing.taskIds[0],
+      movedId,
+      doing.taskIds[1],
+    ]);
+  });
+
+  it("acota la posición al insertar en una columna vacía", async () => {
+    const own = await makeProject(owner.userId, "empty");
+    const todo = await columnWithTasks(own.workspaceId, own.projectId, "To Do", 0, ["A", "B", "C"]);
+    const done = await columnWithTasks(own.workspaceId, own.projectId, "Done", 1, []);
+    const movedId = todo.taskIds[0];
+    if (movedId === undefined) {
+      throw new Error("falta la tarea");
+    }
+
+    const moved = await apiRequest("POST", `/api/tasks/${movedId}/move`, {
+      cookie: owner.cookie,
+      body: { columnId: done.columnId, position: 5 },
+    });
+    expect(moved.status).toBe(200);
+    const task = taskSchema.parse(await moved.json());
+    expect(task.columnId).toBe(done.columnId);
+    expect(task.position).toBe(0);
+
+    const board = await boardOf(own.projectId, owner.cookie);
+    expect(board.columns[0]?.tasks.map((item) => item.id)).toEqual([
+      todo.taskIds[1],
+      todo.taskIds[2],
+    ]);
+    expect(board.columns[1]?.tasks.map((item) => item.id)).toEqual([movedId]);
+  });
+
+  it("responde 404 al mover a una columna de otro project, aunque el usuario sea miembro de ambos workspaces", async () => {
+    const home = await makeProject(both.userId, "home");
+    const notes = await makeProject(both.userId, "notes");
+    const todo = await columnWithTasks(home.workspaceId, home.projectId, "To Do", 0, ["A", "B"]);
+    const foreign = await columnWithTasks(notes.workspaceId, notes.projectId, "To Do", 0, ["Nota"]);
+    const movedId = todo.taskIds[0];
+    if (movedId === undefined) {
+      throw new Error("falta la tarea");
+    }
+
+    const moved = await apiRequest("POST", `/api/tasks/${movedId}/move`, {
+      cookie: both.cookie,
+      body: { columnId: foreign.columnId, position: 0 },
+    });
+    expect(moved.status).toBe(404);
+    expect(await moved.json()).toEqual({ error: "Not found" });
+
+    const board = await boardOf(home.projectId, both.cookie);
+    expect(board.columns[0]?.tasks.map((item) => item.id)).toEqual(todo.taskIds);
+    const notesBoard = await boardOf(notes.projectId, both.cookie);
+    expect(notesBoard.columns[0]?.tasks.map((item) => item.id)).toEqual(foreign.taskIds);
+  });
+
+  it("responde 404 al mover entre dos projects del mismo workspace", async () => {
+    const workspaceId = `ws_siblings_${randomUUID()}`;
+    const leftId = `proj_left_${randomUUID()}`;
+    const rightId = `proj_right_${randomUUID()}`;
+    await upsertWorkspace({ id: workspaceId, name: "Espacio compartido" });
+    await addWorkspaceMember({ workspaceId, userId: both.userId });
+    await upsertProject({ id: leftId, workspaceId, name: "Izquierda" });
+    await upsertProject({ id: rightId, workspaceId, name: "Derecha" });
+    const left = await columnWithTasks(workspaceId, leftId, "To Do", 0, ["A"]);
+    const right = await columnWithTasks(workspaceId, rightId, "To Do", 0, []);
+    const movedId = left.taskIds[0];
+    if (movedId === undefined) {
+      throw new Error("falta la tarea");
+    }
+
+    const moved = await apiRequest("POST", `/api/tasks/${movedId}/move`, {
+      cookie: both.cookie,
+      body: { columnId: right.columnId, position: 0 },
+    });
+    expect(moved.status).toBe(404);
+    expect(await moved.json()).toEqual({ error: "Not found" });
+
+    const board = await boardOf(leftId, both.cookie);
+    expect(board.columns[0]?.tasks.map((item) => item.id)).toEqual([movedId]);
+  });
+
+  it("responde 404 si no hay membresía, si la tarea no existe o si la columna no existe", async () => {
+    const own = await makeProject(owner.userId, "denied");
+    const todo = await columnWithTasks(own.workspaceId, own.projectId, "To Do", 0, ["A", "B"]);
+    const movedId = todo.taskIds[0];
+    if (movedId === undefined) {
+      throw new Error("falta la tarea");
+    }
+
+    const strangerMove = await apiRequest("POST", `/api/tasks/${movedId}/move`, {
+      cookie: stranger.cookie,
+      body: { columnId: todo.columnId, position: 1 },
+    });
+    expect(strangerMove.status).toBe(404);
+    expect(await strangerMove.json()).toEqual({ error: "Not found" });
+
+    const missingTask = await apiRequest("POST", `/api/tasks/task_missing_${randomUUID()}/move`, {
+      cookie: owner.cookie,
+      body: { columnId: todo.columnId, position: 0 },
+    });
+    expect(missingTask.status).toBe(404);
+
+    const missingColumn = await apiRequest("POST", `/api/tasks/${movedId}/move`, {
+      cookie: owner.cookie,
+      body: { columnId: `col_missing_${randomUUID()}`, position: 0 },
+    });
+    expect(missingColumn.status).toBe(404);
+
+    const board = await boardOf(own.projectId, owner.cookie);
+    expect(board.columns[0]?.tasks.map((item) => item.id)).toEqual(todo.taskIds);
+  });
+
+  it("responde 400 con una posición negativa, un columnId vacío o sin posición", async () => {
+    const own = await makeProject(owner.userId, "bad-move");
+    const todo = await columnWithTasks(own.workspaceId, own.projectId, "To Do", 0, ["A"]);
+    const movedId = todo.taskIds[0];
+    if (movedId === undefined) {
+      throw new Error("falta la tarea");
+    }
+
+    const negative = await apiRequest("POST", `/api/tasks/${movedId}/move`, {
+      cookie: owner.cookie,
+      body: { columnId: todo.columnId, position: -1 },
+    });
+    expect(negative.status).toBe(400);
+
+    const emptyColumn = await apiRequest("POST", `/api/tasks/${movedId}/move`, {
+      cookie: owner.cookie,
+      body: { columnId: "", position: 0 },
+    });
+    expect(emptyColumn.status).toBe(400);
+
+    const missingPosition = await apiRequest("POST", `/api/tasks/${movedId}/move`, {
+      cookie: owner.cookie,
+      body: { columnId: todo.columnId },
+    });
+    expect(missingPosition.status).toBe(400);
+
+    const board = await boardOf(own.projectId, owner.cookie);
+    expect(board.columns[0]?.tasks.map((item) => item.id)).toEqual([movedId]);
+    expect(board.columns[0]?.tasks.map((item) => item.position)).toEqual([0]);
   });
 });

@@ -29,8 +29,12 @@ await fetch("http://localhost:3000/api/health");
 health card (`useHealth`), and either `useWorkspaces(userId)` or, when a
 project is selected, `useBoard(projectId, userId)`. No router: `App` keeps
 `selectedProjectId` in React state. Task create, edit, and delete go through
-`useTaskMutations`; every board `mutationKey` starts with `["board", projectId]`.
-`boardQueryKey` is `["board", userId, projectId]`.
+`useTaskMutations`. Moves go through `useMoveTask`
+(`mutationKey: ["board", projectId, "move"]`): `onMutate` cancels the board
+query, snapshots it, and writes `applyBoardMove`; `onError` restores the
+snapshot and calls `toast.error`; `onSettled` invalidates. Every board
+`mutationKey` starts with `["board", projectId]`. `boardQueryKey` is
+`["board", userId, projectId]`. Do not copy the board into `useState`.
 
 - Private query keys are `[scope, userId, ...]` (`workspacesQueryKey`,
   `boardQueryKey`).
@@ -48,6 +52,8 @@ project is selected, `useBoard(projectId, userId)`. No router: `App` keeps
 - Compose classes with `cn()` from `@/lib/utils`.
 - Tailwind 4 via `@import "tailwindcss"` in `src/index.css`. No `tailwind.config`.
 - `next-themes` is the theme helper, not Next.js. Do not add Next, React Router,
-  or React Hook Form. Do not implement drag-and-drop (`@dnd-kit/react` is
-  installed only).
+  or React Hook Form. Drag-and-drop uses the installed `@dnd-kit/react` 0.5.1:
+  `DragDropProvider`, `useSortable` (`id`, `index`, `group` = column id) and a
+  column `useDroppable` so an empty column accepts a task. Do not add
+  `@dnd-kit/helpers`, `@dnd-kit/core`, or `@dnd-kit/sortable`.
 - After `bunx shadcn@4.22.0 add …`, re-pin every new dependency (never `@latest`).

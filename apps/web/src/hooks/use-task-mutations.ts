@@ -1,5 +1,6 @@
 /**
  * Crear, editar y borrar tareas del tablero abierto.
+ * Mover vive en `useMoveTask`, con la misma familia de claves.
  *
  * Cada mutationKey empieza por `["board", projectId]`. La Sesión 3 usa ese
  * prefijo para saber si hay un cambio propio en curso. Al terminar, bien o

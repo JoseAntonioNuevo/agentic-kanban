@@ -156,8 +156,11 @@ entorno. La sesión va en la cookie; no hay Bearer. `baseUrl` sale en
 `http://localhost:5173` si hace falta. `origin` se queda en
 `http://localhost:5173`: Better Auth responde 403 si un `/api/auth/*` repite
 el login con cookie y sin ese origen. El runner sigue Login Ana → Get
-Workspaces → Get Board → Create Task → Update Task → Delete Task. El bloque
-05 usa `proj_ana_notes` como único id fijo, entra como Luis y vuelve a Ana.
+Workspaces → Get Board → Create Task → Update Task → Move Task → Move Task
+To Another Project → Delete Task. `targetColumnId` es la última columna del
+tablero. El bloque 05 usa `proj_ana_notes` como único id fijo de project;
+`col_ana_todo` solo aparece en el 404 entre projects. Entra como Luis y
+vuelve a Ana.
 
 `vp test` no usa `data/agentic-kanban.db`. Cada fichero de test recibe una
 base libSQL temporal (`apps/api/src/test/setup.ts`); `test.env` está en el

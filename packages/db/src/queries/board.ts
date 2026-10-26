@@ -4,8 +4,9 @@
  * El conflicto de `id` en el upsert actualiza el lugar y el orden y deja
  * `created_at` quieto. Las consultas `ForMember` no autorizan con el id
  * que manda el cliente: comprueban la membresía contra el `workspace_id`
- * de la fila. Crear y borrar corren en una transacción para que la
- * posición siguiente y la compactación no se mezclen con otra escritura.
+ * de la fila. Crear, borrar y mover corren en una transacción para que la
+ * posición siguiente, la compactación y el reorden no se mezclen con otra
+ * escritura.
  */
 import { randomUUID } from "node:crypto";
 
@@ -298,5 +299,111 @@ export async function deleteTaskForMember(taskId: string, userId: string): Promi
     }
 
     return true;
+  });
+}
+
+/**
+ * Reordena la tarea en su columna o la mueve a otra del mismo project.
+ *
+ * `position` es el índice en el destino después de sacar la tarea, acotado
+ * a `0..n`. La columna destino tiene que ser del project y del
+ * `workspace_id` de la fila; si no, `undefined`. Las columnas afectadas
+ * quedan en `0..n-1`.
+ */
+export async function moveTaskForMember(
+  taskId: string,
+  userId: string,
+  input: { columnId: string; position: number },
+): Promise<MemberTask | undefined> {
+  return await db.transaction(async (tx) => {
+    const rows = await tx
+      .select({
+        id: task.id,
+        workspaceId: task.workspaceId,
+        projectId: task.projectId,
+        columnId: task.columnId,
+      })
+      .from(task)
+      .innerJoin(
+        workspaceMember,
+        and(eq(workspaceMember.workspaceId, task.workspaceId), eq(workspaceMember.userId, userId)),
+      )
+      .where(eq(task.id, taskId))
+      .limit(1);
+
+    const found = rows[0];
+    if (found === undefined) {
+      return undefined;
+    }
+
+    const targets = await tx
+      .select({ id: column.id })
+      .from(column)
+      .where(
+        and(
+          eq(column.id, input.columnId),
+          eq(column.projectId, found.projectId),
+          eq(column.workspaceId, found.workspaceId),
+        ),
+      )
+      .limit(1);
+
+    const target = targets[0];
+    if (target === undefined) {
+      return undefined;
+    }
+
+    const destinationRows = await tx
+      .select({ id: task.id, position: task.position, columnId: task.columnId })
+      .from(task)
+      .where(and(eq(task.columnId, target.id), eq(task.workspaceId, found.workspaceId)))
+      .orderBy(asc(task.position), asc(task.id));
+
+    const destination = destinationRows.filter((row) => row.id !== found.id);
+    const index = Math.min(input.position, destination.length);
+    const current = destinationRows.find((row) => row.id === found.id) ?? {
+      id: found.id,
+      position: -1,
+      columnId: found.columnId,
+    };
+    const placed = [...destination.slice(0, index), current, ...destination.slice(index)];
+
+    for (const [offset, row] of placed.entries()) {
+      if (row.position === offset && row.columnId === target.id) {
+        continue;
+      }
+
+      await tx
+        .update(task)
+        .set({ position: offset, columnId: target.id })
+        .where(and(eq(task.id, row.id), eq(task.workspaceId, found.workspaceId)));
+    }
+
+    if (found.columnId !== target.id) {
+      const sourceRows = await tx
+        .select({ id: task.id, position: task.position })
+        .from(task)
+        .where(and(eq(task.columnId, found.columnId), eq(task.workspaceId, found.workspaceId)))
+        .orderBy(asc(task.position), asc(task.id));
+
+      for (const [offset, row] of sourceRows.entries()) {
+        if (row.position === offset) {
+          continue;
+        }
+
+        await tx
+          .update(task)
+          .set({ position: offset })
+          .where(and(eq(task.id, row.id), eq(task.workspaceId, found.workspaceId)));
+      }
+    }
+
+    const moved = await tx
+      .select(taskColumns)
+      .from(task)
+      .where(and(eq(task.id, found.id), eq(task.workspaceId, found.workspaceId)))
+      .limit(1);
+
+    return moved[0];
   });
 }

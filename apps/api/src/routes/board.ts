@@ -1,20 +1,22 @@
 /**
- * Lectura del tablero y CRUD de tareas.
+ * Lectura del tablero, CRUD de tareas y movimiento dentro del project.
  *
  * Primero la sesión, después el validador. Sin membresía, o si el recurso
- * no existe, 404: el id del cliente solo identifica. La Sesión 3 publicará
- * eventos desde estas escrituras.
+ * no existe, 404: el id del cliente solo identifica. Una columna de otro
+ * project también es 404. La Sesión 3 publicará eventos desde estas escrituras.
  */
 import {
   createTaskForMember,
   deleteTaskForMember,
   getBoardForMember,
+  moveTaskForMember,
   updateTaskForMember,
   type MemberTask,
 } from "@agentic-kanban/db";
 import {
   boardResponseSchema,
   createTaskBodySchema,
+  moveTaskBodySchema,
   projectIdParamSchema,
   taskIdParamSchema,
   taskSchema,
@@ -114,6 +116,27 @@ boardRoutes.patch(
     }
 
     return c.json(taskSchema.parse(toTask(updated)), 200);
+  },
+);
+
+boardRoutes.post(
+  "/api/tasks/:taskId/move",
+  requireSession,
+  zValidator("param", taskIdParamSchema),
+  zValidator("json", moveTaskBodySchema),
+  async (c) => {
+    const { taskId } = c.req.valid("param");
+    const body = c.req.valid("json");
+    const moved = await moveTaskForMember(taskId, c.get("userId"), {
+      columnId: body.columnId,
+      position: body.position,
+    });
+
+    if (moved === undefined) {
+      return c.json({ error: "Not found" }, 404);
+    }
+
+    return c.json(taskSchema.parse(toTask(moved)), 200);
   },
 );
 

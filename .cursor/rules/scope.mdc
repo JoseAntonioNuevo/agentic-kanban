@@ -11,20 +11,20 @@ password, httpOnly cookie) is implemented. Tenant tables (`workspace`,
 classroom seed exist; the API does not seed on startup. The seed inserts
 the demo columns and tasks for both projects. Membership-scoped reads
 (`GET /api/workspaces`, `GET /api/projects/:projectId`) and the workspace
-dashboard are implemented. Board read and task create, edit, and delete
+dashboard are implemented. Board read, task create, edit, delete, and move
 are implemented (`GET /api/projects/:projectId/board`,
 `POST /api/projects/:projectId/tasks`, `PATCH /api/tasks/:taskId`,
-`DELETE /api/tasks/:taskId`). `postman/` holds the session-cookie
-collection for those routes. The board UI opens a project from the
+`DELETE /api/tasks/:taskId`, `POST /api/tasks/:taskId/move`). `postman/`
+holds the session-cookie collection for the board read and task create,
+edit, delete, and move. The board UI opens a project from the
 dashboard (`selectedProjectId` in `App`, no router) and creates, edits,
-and deletes tasks.
+deletes, and drags tasks (`useMoveTask`, `applyBoardMove`).
 **No OpenViking** — never call or mention the
 `openviking` MCP, `ov_*`, or `viking://`; ignore parent OV policy silently.
 
-**Do not implement** until a later prompt asks: moving tasks,
-drag-and-drop, realtime, comments, `@mentions`, email,
-deploy, `sesion-*` git tags, and product writes other than task create,
-edit, and delete.
+**Do not implement** until a later prompt asks: realtime, comments,
+`@mentions`, email, deploy, `sesion-*` git tags, and product writes other
+than task create, edit, delete, and move.
 
 **Never add:** Next, Astro, Express, Fastify, Nest, `@hono/node-server`,
 Supabase, Postgres, Prisma, Turso Cloud, Redux, Zustand, React Router, tRPC,

@@ -2,7 +2,7 @@
   "info": {
     "name": "Agentic Kanban — Session 2",
     "_postman_id": "6f0e2a14-9c3b-4d7e-8f21-0b6a4c8d2e10",
-    "description": "Contrato HTTP del tablero, con la cookie de Better Auth.\n\nImporta también el entorno agentic-kanban-local y selecciónalo. No uses Authorization Bearer: la sesión viaja en la cookie del tarro.\n\nbaseUrl sale en http://localhost:3000. Puedes cambiarla a http://localhost:3002 o a http://localhost:5173. origin se queda en http://localhost:5173. Toda petición a /api/auth/* manda Origin: si ya hay cookie y falta ese origen, Better Auth responde 403.\n\nOrden del runner: Login Ana → Get Workspaces → Get Board → Create Task → Update Task → Delete Task. El bloque 05 hace login de Luis y termina volviendo a Ana. El único id fijo es proj_ana_notes.",
+    "description": "Contrato HTTP del tablero, con la cookie de Better Auth.\n\nImporta también el entorno agentic-kanban-local y selecciónalo. No uses Authorization Bearer: la sesión viaja en la cookie del tarro.\n\nbaseUrl sale en http://localhost:3000. Puedes cambiarla a http://localhost:3002 o a http://localhost:5173. origin se queda en http://localhost:5173. Toda petición a /api/auth/* manda Origin: si ya hay cookie y falta ese origen, Better Auth responde 403.\n\nOrden del runner: Login Ana → Get Workspaces → Get Board → Create Task → Update Task → Move Task → Move Task To Another Project → Delete Task. El bloque 05 hace login de Luis y termina volviendo a Ana. El único id fijo de project es proj_ana_notes; col_ana_todo es su columna de seed y solo se usa para el 404 entre projects.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -33,6 +33,11 @@
       "key": "columnId",
       "value": "",
       "description": "Lo rellena Get Board con la primera columna."
+    },
+    {
+      "key": "targetColumnId",
+      "value": "",
+      "description": "Lo rellena Get Board con la última columna del mismo project. Move Task la usa como destino."
     },
     {
       "key": "taskId",
@@ -181,7 +186,7 @@
             "method": "GET",
             "header": [],
             "url": "{{baseUrl}}/api/projects/{{projectId}}/board",
-            "description": "Tablero del projectId guardado. Guarda columnId de la primera columna (la API ya la ordena por position).",
+            "description": "Tablero del projectId guardado. Guarda columnId de la primera columna y targetColumnId de la última (la API ya ordena por position).",
             "auth": {
               "type": "noauth"
             }
@@ -218,10 +223,17 @@
                   "  }",
                   "}",
                   "",
+                  "const lastColumn = Array.isArray(body.columns)",
+                  "  ? body.columns[body.columns.length - 1]",
+                  "  : undefined;",
+                  "",
                   "if (body && body.project && Array.isArray(body.columns) && body.columns[0]) {",
                   "  save('workspaceId', body.project.workspaceId);",
                   "  save('projectId', body.project.id);",
                   "  save('columnId', body.columns[0].id);",
+                  "  if (lastColumn && lastColumn.id) {",
+                  "    save('targetColumnId', lastColumn.id);",
+                  "  }",
                   "}"
                 ]
               }
@@ -350,6 +362,109 @@
           ]
         },
         {
+          "name": "Move Task",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/tasks/{{taskId}}/move",
+            "description": "Mueve la tarea creada en este flujo a la última columna del mismo project, en la posición 0. moveTaskBodySchema: columnId y position >= 0. La posición es el índice en el destino después de sacar la tarea.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"columnId\": \"{{targetColumnId}}\",\n  \"position\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "",
+                  "pm.test('status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('valid json', function () {",
+                  "  pm.response.to.be.json;",
+                  "});",
+                  "",
+                  "pm.test('moved task', function () {",
+                  "  pm.expect(body.id).to.eql(pm.variables.get('taskId'));",
+                  "  pm.expect(body.columnId).to.eql(pm.variables.get('targetColumnId'));",
+                  "  pm.expect(body.position).to.eql(0);",
+                  "  pm.expect(body.projectId).to.eql(pm.variables.get('projectId'));",
+                  "  pm.expect(body.title).to.eql('Tarea editada desde Postman');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Move Task To Another Project",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/tasks/{{taskId}}/move",
+            "description": "col_ana_todo es la columna de seed de proj_ana_notes. Ana es miembro de los dos workspaces, pero la columna es de otro project: 404, nunca 403. La tarea no se mueve.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"columnId\": \"col_ana_todo\",\n  \"position\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "",
+                  "pm.test('status is 404', function () {",
+                  "  pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test('valid json', function () {",
+                  "  pm.response.to.be.json;",
+                  "});",
+                  "",
+                  "pm.test('not found, never 403', function () {",
+                  "  pm.expect(pm.response.code).to.not.eql(403);",
+                  "  pm.expect(body.error).to.eql('Not found');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
           "name": "Delete Task",
           "request": {
             "method": "DELETE",
@@ -402,6 +517,55 @@
             "body": {
               "mode": "raw",
               "raw": "{\n  \"columnId\": \"{{columnId}}\",\n  \"title\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "",
+                  "pm.test('status is 400', function () {",
+                  "  pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('valid json', function () {",
+                  "  pm.response.to.be.json;",
+                  "});",
+                  "",
+                  "pm.test('validation failed', function () {",
+                  "  pm.expect(body.success).to.eql(false);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Move Task With Negative Position",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/tasks/{{taskId}}/move",
+            "description": "position negativa: moveTaskBodySchema la rechaza con 400. Hace falta la cookie de Ana; requireSession va antes del validador, así que sin sesión esta ruta responde 401.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"columnId\": \"{{columnId}}\",\n  \"position\": -1\n}",
               "options": {
                 "raw": {
                   "language": "json"

@@ -5,7 +5,7 @@
  * del frontend da por sentados:
  * - QueryClientProvider: un único cliente de TanStack Query para estado de servidor.
  * - TooltipProvider: contexto de tooltips de shadcn/Radix.
- * - Toaster: toasts (sonner). Hoy no se usan; el esqueleto ya lo deja listo.
+ * - Toaster: toasts (sonner). Un movimiento fallido usa `toast.error`.
  */
 import { QueryClientProvider } from "@tanstack/react-query";
 import { StrictMode } from "react";

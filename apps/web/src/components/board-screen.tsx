@@ -2,7 +2,8 @@
  * Tablero de un proyecto: cabecera, columnas y el diálogo de tareas.
  *
  * El board sale de TanStack Query. El único estado local es qué diálogo
- * está abierto (crear en una columna o editar una tarea por id).
+ * está abierto (crear en una columna o editar una tarea por id). Mover
+ * escribe en esa caché; no hay una segunda copia del board.
  */
 import { useEffect, useState } from "react";
 
@@ -11,6 +12,7 @@ import { TaskFormDialog } from "@/components/task-form-dialog.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { BoardNotFoundError, useBoard } from "@/hooks/use-board.ts";
+import { useMoveTask } from "@/hooks/use-move-task.ts";
 
 type DialogState = { mode: "create"; columnId: string } | { mode: "edit"; taskId: string } | null;
 
@@ -25,6 +27,7 @@ export function BoardScreen({
   onBack: () => void;
 }) {
   const board = useBoard(projectId, userId);
+  const moveTask = useMoveTask(projectId, userId);
   const [dialog, setDialog] = useState<DialogState>(null);
 
   const editingTask =
@@ -35,18 +38,19 @@ export function BoardScreen({
       : undefined;
 
   useEffect(() => {
-    if (dialog?.mode !== "edit" || !board.isSuccess) return;
+    if (dialog?.mode !== "edit" || board.data === undefined) return;
     const exists = board.data.columns.some((column) =>
       column.tasks.some((task) => task.id === dialog.taskId),
     );
     if (!exists) setDialog(null);
-  }, [board.data, board.isSuccess, dialog]);
+  }, [board.data, dialog]);
 
-  const title = board.isSuccess
-    ? board.data.project.name
-    : board.error instanceof BoardNotFoundError
-      ? "Proyecto no encontrado"
-      : "Tablero";
+  const title =
+    board.data !== undefined
+      ? board.data.project.name
+      : board.error instanceof BoardNotFoundError
+        ? "Proyecto no encontrado"
+        : "Tablero";
 
   return (
     <section className="flex w-full flex-col gap-4" aria-busy={board.isPending}>
@@ -54,23 +58,17 @@ export function BoardScreen({
         <Button type="button" variant="outline" onClick={onBack}>
           Volver
         </Button>
-        {board.isPending ? (
+        {board.isPending && board.data === undefined ? (
           <Skeleton className="h-7 w-48" />
         ) : (
           <h1 className="min-w-0 truncate text-xl font-medium">{title}</h1>
         )}
       </header>
-      {board.isPending ? (
+      {board.isPending && board.data === undefined ? (
         <LoadingBoard />
       ) : board.error instanceof BoardNotFoundError ? (
         <BoardNotFound onBack={onBack} />
-      ) : board.isError ? (
-        <BoardError
-          onRetry={() => {
-            void board.refetch();
-          }}
-        />
-      ) : (
+      ) : board.data !== undefined ? (
         <KanbanBoard
           board={board.data}
           onCreateTask={(columnId) => {
@@ -78,6 +76,15 @@ export function BoardScreen({
           }}
           onEditTask={(taskId) => {
             setDialog({ mode: "edit", taskId });
+          }}
+          onMoveTask={(move) => {
+            moveTask.mutate(move);
+          }}
+        />
+      ) : (
+        <BoardError
+          onRetry={() => {
+            void board.refetch();
           }}
         />
       )}
@@ -114,7 +121,7 @@ export function BoardScreen({
 /** Tres columnas de marcador mientras llega el tablero. */
 function LoadingBoard() {
   return (
-    <div className="flex gap-4 overflow-x-auto" aria-busy="true">
+    <div className="flex gap-4 overflow-x-auto px-1 pt-1 pb-2" aria-busy="true">
       <p className="sr-only">Cargando el tablero…</p>
       <Skeleton className="h-64 w-72" />
       <Skeleton className="h-64 w-72" />

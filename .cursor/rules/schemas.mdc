@@ -24,5 +24,8 @@ export interface HealthResponse { status: string }
 
 - Re-export public schemas and types from `src/index.ts`.
 - Web and API both `parse()` the same schema. Do not duplicate shapes.
+- `applyBoardMove(board, { taskId, columnId, position })` is pure and lives
+  next to the board schemas. It removes the task, clamps `position` to
+  `0..n`, and renumbers the affected columns. It does not fetch.
 - Tests: `import { describe, expect, it } from "vite-plus/test"`. Cover a
   valid parse and a reject path (see `src/health.test.ts`).

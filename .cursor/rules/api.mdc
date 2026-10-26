@@ -22,9 +22,9 @@ app.route("/", healthRoutes);
 - Validate params and JSON bodies with `@hono/zod-validator` after
   `requireSession`. Parse responses with `@agentic-kanban/schemas` before
   `c.json`. Invalid input is the validator's 400.
-- `src/routes/board.ts` exports `boardRoutes`: board read and task create,
-  update, and delete, with the same 401/404 chain. A `columnId` from
-  another project is 404.
+- `src/routes/board.ts` exports `boardRoutes`: board read, task create,
+  update, delete, and `POST /api/tasks/:taskId/move`, with the same 401/404
+  chain. A `columnId` from another project is 404.
 - Database access only through `@agentic-kanban/db`. Never import
   `@libsql/client` or `drizzle-orm` from the API, including tests.
 - API tests use a temporary libSQL file per test file (`src/test/setup.ts`

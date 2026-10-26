@@ -12,6 +12,7 @@ export {
   createTaskForMember,
   deleteTaskForMember,
   getBoardForMember,
+  moveTaskForMember,
   updateTaskForMember,
   upsertColumn,
   upsertTask,
