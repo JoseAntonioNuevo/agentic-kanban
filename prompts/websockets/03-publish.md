@@ -2,7 +2,7 @@
 
 ## Punto de partida
 
-El hub y el stream funcionan (02); nadie publica todavía. Las escrituras del
+El hub y el canal WebSocket funcionan (02); nadie publica todavía. Las escrituras del
 tablero viven en `apps/api/src/routes/board.ts`.
 
 ## Objetivo
@@ -25,7 +25,7 @@ evento que la describe.
   nunca un id del body. `deleteTaskForMember` hoy solo devuelve un booleano:
   amplíalo para que devuelva el `projectId` de la tarea borrada, sin cambiar
   su autorización ni la compactación.
-- El contrato HTTP no cambia. El stream no es una API de escritura.
+- El contrato HTTP no cambia. El WebSocket no es una API de escritura.
 - Tests: suscríbete al hub directamente desde el test, haz la escritura contra
   `app` y comprueba que llega el evento y que pasa `boardEventSchema`; una
   escritura con 404 (usuario ajeno) y otra con 400 no publican nada.
@@ -50,6 +50,5 @@ Frontend y toasts.
 ## Hecho cuando
 
 - [ ] `vp check` y `vp test` en verde.
-- [ ] En vivo: con el stream de `proj_agentic_kanban` abierto con la cookie de
-      Luis (`curl -N`), Ana crea una tarea y aparece su línea `data:` con
-      `task.created`.
+- [ ] En vivo: con el script «Probar el canal» de la guía abierto como Luis,
+      Ana crea una tarea y llega su mensaje `task.created`.

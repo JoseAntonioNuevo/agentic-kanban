@@ -3,7 +3,7 @@
 ## Punto de partida
 
 Las Sesiones 1 a 3 están completas: auth y tenants, tablero con
-drag-and-drop y tiempo real por SSE con toasts. Todavía no hay comentarios ni
+drag-and-drop y tiempo real por WebSocket con toasts. Todavía no hay comentarios ni
 notificaciones.
 
 ## Objetivo
@@ -32,7 +32,7 @@ Las dos tablas de la última capa, con una migración nueva.
 
 ## Fuera de alcance
 
-API, UI, parser de menciones, Resend, Socket.IO y despliegue.
+API, UI, parser de menciones, envío de email, Socket.IO y despliegue.
 
 ## Cómo trabajar
 

@@ -34,11 +34,11 @@ nuevos. El contrato solo describe el anuncio: no es una API de escritura.
   instalados).
 - Tests de parse para cada tipo y de rechazo: `type` desconocido, falta
   `actorUserId`, `task.moved` sin `position`, `task.created` sin `task`.
-- `AGENTS.md` describe el contrato; el stream todavía no existe.
+- `AGENTS.md` describe el contrato; el canal todavía no existe.
 
 ## Fuera de alcance
 
-Hub, SSE, publicación, frontend, tabla de notificaciones, presencia,
+Hub, WebSocket, publicación, frontend, tabla de notificaciones, presencia,
 comentarios y Socket.IO.
 
 ## Cómo trabajar

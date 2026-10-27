@@ -3,9 +3,10 @@
 ## Punto de partida
 
 El servidor publica `task.created`, `task.updated`, `task.deleted` y
-`task.moved` por `GET /api/projects/:projectId/events` (02 y 03). El tablero se
-pinta con `useBoard` y `boardQueryKey(projectId, userId)`, y las mutations
-llevan una `mutationKey` que empieza por `["board", projectId]` (Sesión 2).
+`task.moved` por el WebSocket de `GET /api/projects/:projectId/events` (02 y
+03). El tablero se pinta con `useBoard` y `boardQueryKey(projectId, userId)`,
+y las mutations llevan una `mutationKey` que empieza por `["board", projectId]`
+(Sesión 2).
 
 ## Objetivo
 
@@ -19,16 +20,17 @@ optimista de Ana.
   el id no está; `task.updated` reemplaza por id; `task.deleted` elimina si
   está y renumera; `task.moved` reutiliza `applyBoardMove`.
 - `useBoardEvents(projectId, userId)` en
-  `apps/web/src/hooks/use-board-events.ts`, montado por `BoardScreen`. La
-  Sesión 4 lo ampliará en lugar de abrir otra conexión.
+  `apps/web/src/hooks/use-board-events.ts`, montado por `BoardScreen`. El 05
+  le añadirá reconexión y avisos, y la Sesión 4 lo ampliará en lugar de abrir
+  otra conexión.
 
 ## Requisitos
 
-- Un solo `EventSource` por tablero, a la URL relativa
-  `/api/projects/${projectId}/events`. Es mismo origen, así que la cookie
-  viaja sola; nunca apuntes a `:3000`.
+- Un solo `WebSocket` por tablero, a `/api/projects/${projectId}/events` en el
+  mismo origen: `ws:` o `wss:` según `location.protocol`, con
+  `location.host`. La cookie viaja sola al abrir; nunca apuntes a `:3000`.
 - `onmessage`: `JSON.parse` y `boardEventSchema.safeParse`. Ignora lo que no
-  parsea.
+  parsea. El cliente no envía nada por el socket.
 - Aplica el evento con
   `setQueryData(boardQueryKey(projectId, userId), (b) => b && applyBoardEvent(b, event))`.
   La queryKey del board es `["board", userId, projectId]`; la `mutationKey`
@@ -38,20 +40,19 @@ optimista de Ana.
   (`queryClient.isMutating({ mutationKey: ["board", projectId] }) > 0`),
   ignóralos, porque su `onSettled` ya reconcilia. Si no, aplícalos: son
   idempotentes y mantienen sincronizada otra pestaña del mismo usuario.
-- Al reconectar (`onopen` después de un error), invalida la query del board:
-  el hub vive en memoria y no repite lo que se perdió durante el corte.
-- Cierra el `EventSource` al desmontar o al cambiar de project.
+- Cierra el socket al desmontar o al cambiar de project.
 - TanStack Query sigue siendo la única fuente del estado del servidor: no
-  copies el board a `useState`. Sin toasts todavía y sin librerías nuevas de
-  realtime.
+  copies el board a `useState`. Sin reconexión ni toasts todavía y sin
+  librerías nuevas de realtime.
 - Tests de `applyBoardEvent`: cada tipo de evento, idempotencia (aplicarlo dos
   veces da lo mismo que una) y evento de una tarea que no está en el board.
-- `AGENTS.md` y `.cursor/rules/web.mdc` describen el cliente realtime; los
-  toasts todavía no existen.
+- `AGENTS.md` y `.cursor/rules/web.mdc` describen el cliente realtime; la
+  reconexión y los toasts todavía no existen.
 
 ## Fuera de alcance
 
-Toasts, presencia, comentarios y Socket.IO.
+Reconexión, toasts, presencia, comentarios, escrituras por el WebSocket y
+Socket.IO.
 
 ## Cómo trabajar
 
@@ -61,7 +62,7 @@ Toasts, presencia, comentarios y Socket.IO.
    Implementa `applyBoardEvent` y sus tests, `useBoardEvents`, su montaje y la
    documentación.
 3. **Comprobar.** Ejecuta `vp check` y `vp test`. Revisa una conexión por
-   tablero, cierre, reconexión y eco mientras hay una mutation en curso, y
+   tablero, el cierre al salir y el eco mientras hay una mutation en curso, y
    prepara la prueba con dos navegadores.
 
 ## Hecho cuando
@@ -70,4 +71,4 @@ Toasts, presencia, comentarios y Socket.IO.
 - [ ] Dos navegadores (lo compruebo yo): Ana mueve una tarjeta en
       `proj_agentic_kanban` y Luis la ve moverse sin refrescar; Ana no nota
       saltos al mover dos tarjetas seguidas.
-- [ ] Luis no puede escuchar `proj_ana_notes` (404).
+- [ ] Luis no puede abrir el canal de `proj_ana_notes` (404).

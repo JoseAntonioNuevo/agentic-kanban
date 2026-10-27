@@ -1,9 +1,9 @@
-# Sesión 4 · 06 — `comment.created` por el stream existente
+# Sesión 4 · 06 — `comment.created` por el canal existente
 
 ## Punto de partida
 
-El stream SSE por project, el hub y `useBoardEvents` funcionan desde la
-Sesión 3. Los comentarios se crean por HTTP con menciones y outbox (02–04) y
+El WebSocket por project, el hub y `useBoardEvents` funcionan desde la
+Sesión 3. Los comentarios se crean por HTTP con menciones y email (02–04) y
 la campana existe (05).
 
 ## Objetivo
@@ -17,10 +17,11 @@ sin refrescar y recibe un aviso, sin abrir una segunda conexión.
   `{ type: "comment.created", projectId, actorUserId, comment }` con
   `commentSchema`. `applyBoardEvent` devuelve el board sin cambios para este
   tipo, con un `switch` exhaustivo que siga compilando.
-- Publica en el `POST` de comentarios después de persistir el comentario, las
-  notificaciones y el outbox. Si el `POST` falla, no publiques.
+- Publica en el `POST` de comentarios después de persistir el comentario y
+  las notificaciones y de intentar la entrega del email. Si el `POST` falla,
+  no publiques.
   `actorUserId` sale de la sesión.
-- En el cliente, dentro de `useBoardEvents` (sin otro `EventSource`), al
+- En el cliente, dentro de `useBoardEvents` (sin otro `WebSocket`), al
   recibir `comment.created`:
   - invalida `commentsQueryKey(comment.taskId, userId)` y
     `["notifications", userId]` **siempre**, también si el actor soy yo
@@ -29,8 +30,8 @@ sin refrescar y recibe un aviso, sin abrir una segunda conexión.
     No ignores el evento entero por ser propio: el toast no es la campana.
 - La fila de la campana la creó el `POST` del prompt 04 si había una mención;
   el evento solo acelera que se vea.
-- HTTP sigue siendo la escritura y el SSE sigue siendo solo de datos
-  (`onmessage`). Sin Socket.IO, sin campana duplicada y sin Resend.
+- HTTP sigue siendo la escritura y el WebSocket solo anuncia: el servidor
+  ignora lo que envíe el cliente. Sin Socket.IO ni campana duplicada.
 - Tests: el schema acepta y rechaza el nuevo tipo; suscrito al hub, un
   comentario correcto publica `comment.created` y uno con 404 no publica
   nada. Si extraes la lógica del cliente a una función pura, pruébala también.
@@ -48,7 +49,7 @@ Cambios en la campana, reenviar emails y presencia.
    plan. Amplía primero el schema y `applyBoardEvent`; después la publicación
    y sus tests, la gestión en `useBoardEvents` y la documentación.
 3. **Comprobar.** Ejecuta `vp check` y `vp test`. Revisa que se reutiliza el
-   `EventSource`, que hilo y campana se invalidan también en eco propio y que
+   `WebSocket`, que hilo y campana se invalidan también en eco propio y que
    el evento no crea filas de notificación.
 
 ## Hecho cuando

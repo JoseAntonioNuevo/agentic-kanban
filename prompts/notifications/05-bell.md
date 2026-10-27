@@ -56,7 +56,7 @@ no leídas y la opción de marcarlas como leídas.
 
 ## Fuera de alcance
 
-Tablas nuevas, reenviar emails, React Router, Resend y realtime de
+Tablas nuevas, reenviar emails, React Router, otros proveedores de correo y realtime de
 comentarios.
 
 ## Cómo trabajar

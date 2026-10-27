@@ -3,12 +3,12 @@
 Las cuatro sesiones se ejecutan en Cursor. Usamos dos estilos con los mismos
 criterios de aceptación:
 
-| Sesión  | Fecha      | Carpeta y guía                           | Estilo                                            | Prompts                  | Resultado esperado                             |
-| ------- | ---------- | ---------------------------------------- | ------------------------------------------------- | ------------------------ | ---------------------------------------------- |
-| 1 (S9)  | Mié 21 oct | [auth](auth/README.md)                   | Agent con Opus orquestando workers Grok, autónomo | 01–06                    | Auth, workspaces aislados y dashboard          |
-| 2 (S10) | Lun 26 oct | [kanban](kanban/README.md)               | Plan con Opus → Agent con Grok, sin subagentes    | 00 plan; 01–08 ejecución | CRUD, orden y drag-and-drop optimista          |
-| 3 (S11) | Mié 28 oct | [websockets](websockets/README.md)       | Plan → Agent, sin subagentes                      | 00 plan; 01–06 ejecución | Dos sesiones sincronizadas por SSE y toasts    |
-| 4 (S12) | Mié 4 nov  | [notifications](notifications/README.md) | Plan → Agent, sin subagentes                      | 00 plan; 01–08 ejecución | Comentarios, menciones, campana, outbox y demo |
+| Sesión  | Fecha      | Carpeta y guía                           | Estilo                                            | Prompts                  | Resultado esperado                                |
+| ------- | ---------- | ---------------------------------------- | ------------------------------------------------- | ------------------------ | ------------------------------------------------- |
+| 1 (S9)  | Mié 21 oct | [auth](auth/README.md)                   | Agent con Opus orquestando workers Grok, autónomo | 01–06                    | Auth, workspaces aislados y dashboard             |
+| 2 (S10) | Lun 26 oct | [kanban](kanban/README.md)               | Plan con Opus → Agent con Grok, sin subagentes    | 00 plan; 01–08 ejecución | CRUD, orden y drag-and-drop optimista             |
+| 3 (S11) | Mié 28 oct | [websockets](websockets/README.md)       | Plan → Agent, sin subagentes                      | 00 plan; 01–06 ejecución | Dos sesiones sincronizadas por WebSocket y toasts |
+| 4 (S12) | Mié 4 nov  | [notifications](notifications/README.md) | Plan → Agent, sin subagentes                      | 00 plan; 01–08 ejecución | Comentarios, menciones, campana, email y deploy   |
 
 El protocolo de modelos, autonomía, propiedad de archivos, verificación y
 CodeRabbit vive en [CURSOR.md](CURSOR.md). El preflight
@@ -39,6 +39,9 @@ versionados permiten seguir el curso sin esas notas personales.
 - En las clases 2 a 4 hay un traspaso de Plan a Agent tras el plan; en la 1
   no hay pausas rutinarias de aprobación. En todas se observan las pruebas
   manuales.
+- Envía la presentación con antelación para subirla a la plataforma y pon el
+  QR de valoración vigente del programa al inicio o al final, explicando para
+  qué sirve.
 
 ## Base de datos en clase
 
@@ -69,8 +72,7 @@ volver a comprobar sobre la implementación real de cada clase.
 | Al cambiar de usuario en la pestaña se veía la caché del anterior                                  | 1·05                                |
 | `UNIQUE` en `position` rompe los reordenados en transacción                                        | 2·01                                |
 | `@dnd-kit/helpers` no está instalado; la API 0.5.1 no es la de `@dnd-kit/core`                     | 2·07                                |
-| Bun corta las conexiones inactivas a los 10 s y el proxy de Vite también puede cortarlas           | 3·02                                |
-| Escribir en el stream desde otra petición no llegaba al cliente en Bun                             | 3·02                                |
+| Con SSE, Bun cortaba a los 10 s y escribir desde otra petición no llegaba; con WebSocket no aplica | 3·02 (`ws: true` y prueba por 5173) |
 | Los nombres que usan sesiones posteriores (`applyBoardMove`, `useBoardEvents`…) no estaban fijados | contratos de cada prompt            |
 | libSQL aplica las FK: sin cascada, borrar una tarea con comentarios falla                          | 2·01, 4·01                          |
 | `ana@demo.test` contiene una `@`: el parser no debe tomarlo por mención                            | 4·04                                |
@@ -95,11 +97,12 @@ un equivalente con otro nombre, el agente lo reutiliza y lo dice en el plan.
 | 2·06   | `POST /api/tasks/:taskId/move`, `moveTaskBodySchema`                                                                                                                                                               |
 | 2·07   | `applyBoardMove`, `useMoveTask`                                                                                                                                                                                    |
 | 3·01   | `boardEventSchema` (`task.created`, `task.updated`, `task.deleted`, `task.moved`)                                                                                                                                  |
-| 3·02   | `GET /api/projects/:projectId/events`, hub `subscribe`/`publish`                                                                                                                                                   |
+| 3·02   | `GET /api/projects/:projectId/events` (WebSocket), hub `subscribe`/`publish`                                                                                                                                       |
 | 3·04   | `applyBoardEvent`, `useBoardEvents`                                                                                                                                                                                |
-| 3·05   | `boardEventToastMessage`                                                                                                                                                                                           |
+| 3·05   | `boardEventToastMessage`, `reconnectDelay`                                                                                                                                                                         |
 | 4·02   | `GET`/`POST /api/tasks/:taskId/comments`, `commentSchema`                                                                                                                                                          |
 | 4·03   | `useComments`, `useCreateComment`, `TaskComments`                                                                                                                                                                  |
-| 4·04   | `extractMentionTokens`, `apps/api/src/mail/outbox.ts`, `OUTBOX_PATH`                                                                                                                                               |
+| 4·04   | `extractMentionTokens`, `deliverEmail` en `apps/api/src/mail/` (Email Service u outbox), `OUTBOX_PATH`, `MAIL_FROM`, `MAIL_REDIRECT_TO`                                                                            |
 | 4·05   | `GET /api/notifications`, `POST /api/notifications/:notificationId/read`, `notificationSchema`, `NotificationBell`                                                                                                 |
 | 4·06   | `comment.created` en `boardEventSchema`                                                                                                                                                                            |
+| 4·07   | `apps/edge` (Worker y `ApiContainer`), `bun run deploy:cloudflare`, `.env.cloudflare.local`                                                                                                                        |

@@ -79,8 +79,9 @@ database via `apps/api/src/test/setup.ts`; `test.env` lives in the root
 `vite.config.ts`. Tests never touch `data/`.
 
 Out of scope: billing, RBAC, attachments, mobile, SSO, automations,
-microservices, queues, Redis, extra cloud services, and additional architecture
-or state-management frameworks.
+microservices, queues, Redis, cloud services other than the Session 4
+Cloudflare deploy (Workers, Containers, Email Service), and additional
+architecture or state-management frameworks.
 
 ## Invariants
 

@@ -12,11 +12,13 @@ prompts. No añadas funcionalidades.
 ## Cómo trabajar
 
 1. **Comprobar.** Ejecuta `vp check`, `vp test` y estas pruebas por
-   `http://localhost:5173`: stream sin cookie → 401; Luis en
+   `http://localhost:5173`: `GET` normal al canal sin cookie → 401; Luis en
    `/api/projects/proj_ana_notes/events` → 404; Ana en
-   `/api/projects/proj_agentic_kanban/events` sigue abierta más de 10 s; una
-   tarea creada por Ana aparece en el stream de Luis; Luis
-   `GET /api/projects/proj_ana_notes/board` → 404 (regresión de la Sesión 2).
+   `/api/projects/proj_agentic_kanban/events` → 426; con el script «Probar el
+   canal» de la guía, el WebSocket de Ana sigue abierto a los 25 s y una tarea
+   creada por Ana llega al de Luis;
+   Luis `GET /api/projects/proj_ana_notes/board` → 404 (regresión de la
+   Sesión 2).
 2. **Contrastar.** Revisa las dimensiones de abajo y confirma cada hallazgo en
    el código con `ruta:línea` y un escenario concreto.
 3. **Corregir y verificar.** Corrige los problemas confirmados y repite los
@@ -24,16 +26,17 @@ prompts. No añadas funcionalidades.
 
 ## Qué revisa cada dimensión
 
-1. **Transporte y autorización.** Escrituras solo por HTTP; el stream solo
-   anuncia; 401 sin sesión y 404 sin membresía, nunca 403; timeouts de Bun y
-   del proxy; bajas del hub al desconectar; sin Socket.IO, Redis ni servicios
-   extra.
+1. **Transporte y autorización.** Escrituras solo por HTTP; el WebSocket solo
+   anuncia y el servidor ignora lo que envíe el cliente; 401 sin sesión y 404
+   sin membresía antes de abrir, nunca 403; `ws: true` en el proxy; bajas del
+   hub al cerrar; sin Socket.IO, Redis ni servicios extra.
 2. **Publicación y contrato.** Eventos solo después de persistir; ninguno si
    la escritura falla; `actorUserId` de la sesión; Zod en los dos lados;
    eventos inválidos ignorados en el cliente.
-3. **Cliente.** Un solo `EventSource` por tablero y cerrado al salir; ningún
-   board en `useState`; el eco propio no rompe el optimista; invalidación al
-   reconectar; ningún toast al autor.
+3. **Cliente.** Un solo `WebSocket` por tablero y cerrado al salir; ningún
+   reintento tras desmontar; reconexión con espera creciente e invalidación al
+   volver; ningún board en `useState`; el eco propio no rompe el optimista;
+   ningún toast al autor.
 4. **Alcance, regresiones y documentación.** Nada de presencia,
    notificaciones persistidas ni comentarios; las pruebas de las Sesiones 1 y 2
    siguen pasando; `AGENTS.md` y `.cursor/rules/` describen el árbol actual y

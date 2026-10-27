@@ -10,7 +10,7 @@ Los requisitos funcionales, pruebas y límites siguen en el prompt correspondien
 | --------------------------- | ----------------------------------- | ---------------------------------------- | ------------------------------------------------------------------------- |
 | 1 · Auth y tenants          | Opus 5.5 en Agent                   | Workers Grok 4.7 xhigh Fast              | Opus orquesta y revisa cada paso de forma autónoma                        |
 | 2 · Kanban y arrastre       | Opus en Plan, después Grok en Agent | Grok 4.7 xhigh Fast en el chat principal | Un plan inicial y un traspaso manual; después Grok ejecuta sin subagentes |
-| 3 · Tiempo real por SSE     | Plan, después Agent                 | El agente del chat principal             | Un plan inicial y un traspaso manual; después ejecuta sin subagentes      |
+| 3 · Tiempo real WebSocket   | Plan, después Agent                 | El agente del chat principal             | Un plan inicial y un traspaso manual; después ejecuta sin subagentes      |
 | 4 · Comentarios y menciones | Plan, después Agent                 | El agente del chat principal             | Un plan inicial y un traspaso manual; después ejecuta sin subagentes      |
 
 En la clase orquestada (1) selecciona Opus 5.5 con esfuerzo alto en el chat
@@ -96,7 +96,7 @@ autorización. Una prueba manual del profesor se declara pendiente hasta
 observarla; no impide seguir con otras comprobaciones independientes y no se
 convierte en una pausa de aprobación del plan.
 
-## Clase 2: un plan y un traspaso
+## Clases 2 a 4: un plan y un traspaso
 
 Ejecuta [00 · Plan de la sesión](kanban/00-plan-sesion.md) con Opus en Plan.
 Lee los ocho pasos y el código de partida; no implementes ni ejecutes cambios
@@ -165,8 +165,8 @@ que queremos enseñar, manteniendo las mismas exigencias de verificación.
 La revisión adicional se decide por riesgo o por una incertidumbre concreta,
 no por contador de prompts. Primero corrige fallos locales conocidos. El
 punto habitual es el cierre de una clase: aislamiento de auth en la 1,
-movimientos y rollback en la 2, ciclo de vida/eco SSE en la 3, transacción y
-destinatarios en la 4. Una duda importante puede justificar adelantarla.
+movimientos y rollback en la 2, ciclo de vida/eco WebSocket en la 3, transacción,
+destinatarios y deploy en la 4. Una duda importante puede justificar adelantarla.
 
 Antes de lanzarla explica qué falta comprobar y qué diff cubrirá. Reutiliza
 un informe mientras siga cubriendo el código actual; revisa solo el tramo

@@ -39,8 +39,8 @@ siempre.
 
 ## Fuera de alcance
 
-Menciones, email, campana, publicación por SSE y frontend. No cambies las
-rutas del tablero ni el stream.
+Menciones, email, campana, publicación por WebSocket y frontend. No cambies
+las rutas del tablero ni el canal de eventos.
 
 ## Cómo trabajar
 
