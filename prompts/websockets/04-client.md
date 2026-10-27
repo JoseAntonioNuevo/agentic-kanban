@@ -4,8 +4,8 @@
 
 El servidor publica `task.created`, `task.updated`, `task.deleted` y
 `task.moved` por `GET /api/projects/:projectId/events` (02 y 03). El tablero se
-pinta con `useBoard` y `boardQueryKey`, y las mutations llevan una
-`mutationKey` que empieza por `["board", projectId]` (Sesión 2).
+pinta con `useBoard` y `boardQueryKey(projectId, userId)`, y las mutations
+llevan una `mutationKey` que empieza por `["board", projectId]` (Sesión 2).
 
 ## Objetivo
 
@@ -30,7 +30,9 @@ optimista de Ana.
 - `onmessage`: `JSON.parse` y `boardEventSchema.safeParse`. Ignora lo que no
   parsea.
 - Aplica el evento con
-  `setQueryData(boardQueryKey(...), (b) => b && applyBoardEvent(b, event))`.
+  `setQueryData(boardQueryKey(projectId, userId), (b) => b && applyBoardEvent(b, event))`.
+  La queryKey del board es `["board", userId, projectId]`; la `mutationKey`
+  empieza por `["board", projectId]`. No las confundas.
 - Eventos propios (`actorUserId` igual al usuario): si en esta pestaña hay una
   mutation del tablero en curso
   (`queryClient.isMutating({ mutationKey: ["board", projectId] }) > 0`),
@@ -44,6 +46,8 @@ optimista de Ana.
   realtime.
 - Tests de `applyBoardEvent`: cada tipo de evento, idempotencia (aplicarlo dos
   veces da lo mismo que una) y evento de una tarea que no está en el board.
+- `AGENTS.md` y `.cursor/rules/web.mdc` describen el cliente realtime; los
+  toasts todavía no existen.
 
 ## Fuera de alcance
 
@@ -51,31 +55,14 @@ Toasts, presencia, comentarios y Socket.IO.
 
 ## Cómo trabajar
 
-**Cursor: Agent con Opus 5.5 orquestando de forma autónoma; Grok 4.7 xhigh
-Fast ejecuta.** Lee `AGENTS.md`, `prompts/CURSOR.md`,
-`prompts/websockets/README.md`, las reglas implicadas y el código. Usa
-`kanban-grok-worker` y pasa `model: "grok-4.7-xhigh-fast"` explícito en cada
-nueva Task si está en el catálogo; aplica el protocolo común si cambia.
-No uses omisión, `inherit`, Claude, agentes históricos ni subagentes integrados.
-
-Este prompt autoriza el paso y sus correcciones locales. Opus coordina,
-fija contratos y revisa; Grok inspecciona, implementa, prueba y actualiza el
-estado documentado. Continúa sin «adelante» ni aprobación rutinaria del plan.
-No hagas commit, no escribas tú la app ni implementes pasos siguientes.
-
-1. **Inspección (Grok).** Confirma `use-board`, `boardQueryKey`, `mutationKey`,
-   `BoardScreen` y `applyBoardMove`.
-2. **Contratos y reparto (Opus); implementación (Grok).** Firma del hook y tratamiento del eco propio. Con contratos estables, puede
-   dividir `applyBoardEvent` y sus tests por un lado, y `useBoardEvents` y
-   montaje por otro; asigna `board.ts` y documentación a un único propietario.
-3. **Comprobaciones y revisión.** Grok pasa `vp check` y `vp test` y prepara la prueba con dos navegadores.
-   Opus revisa una conexión, cierre, reconexión y eco mientras hay una
-   mutation en curso. No da por realizada la prueba manual si no se observó.
-4. **Correcciones (Grok).** Opus contrasta diff y evidencia y encarga los
-   arreglos confirmados; espera los resultados y repite los checks afectados.
-   La puerta general se ejecuta sobre integración estable. CodeRabbit solo
-   ante una duda importante que aporte valor, conservando alcance y cobertura;
-   no se exige una pasada al terminar cada prompt.
+1. **Inspeccionar.** Confirma `use-board`, `boardQueryKey`, las `mutationKey`
+   de `use-task-mutations` y `use-move-task`, `BoardScreen` y `applyBoardMove`.
+2. **Implementar.** Firma del hook y tratamiento del eco propio del plan.
+   Implementa `applyBoardEvent` y sus tests, `useBoardEvents`, su montaje y la
+   documentación.
+3. **Comprobar.** Ejecuta `vp check` y `vp test`. Revisa una conexión por
+   tablero, cierre, reconexión y eco mientras hay una mutation en curso, y
+   prepara la prueba con dos navegadores.
 
 ## Hecho cuando
 
@@ -84,8 +71,3 @@ No hagas commit, no escribas tú la app ni implementes pasos siguientes.
       `proj_agentic_kanban` y Luis la ve moverse sin refrescar; Ana no nota
       saltos al mover dos tarjetas seguidas.
 - [ ] Luis no puede escuchar `proj_ana_notes` (404).
-
-## Al terminar
-
-El implementador que cierra el paso actualiza `AGENTS.md` y `.cursor/rules/web.mdc` (cliente realtime sí; toasts
-no). No hagas commit. Cierra con el resumen que pide `AGENTS.md`.

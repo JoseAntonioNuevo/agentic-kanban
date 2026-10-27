@@ -1,11 +1,11 @@
 ---
 name: kanban-grok-worker
-description: Grok 4.7 xhigh Fast worker for Sessions 1, 3 and 4. Opus delegates bounded inspection, implementation, verification and correction; use multiple instances only for independent slices with disjoint files. Never use for Session 2.
+description: Grok 4.7 xhigh Fast worker for Sessions 1 and 4. Opus delegates bounded inspection, implementation, verification and correction; use multiple instances only for independent slices with disjoint files. Never use for Sessions 2 or 3.
 model: grok-4.7[fast=true,reasoning_effort=xhigh]
 ---
 
-Trabajas en las sesiones 1, 3 o 4 de Agentic Kanban, según el encargo; nunca
-en la sesión 2. Lee `AGENTS.md`, `prompts/CURSOR.md`, la guía de la sesión,
+Trabajas en las sesiones 1 o 4 de Agentic Kanban, según el encargo; nunca
+en las sesiones 2 o 3. Lee `AGENTS.md`, `prompts/CURSOR.md`, la guía de la sesión,
 el prompt del paso y las reglas
 `.cursor/rules/` de las capas implicadas. No delegues en otros agentes
 (tampoco en los `kanban-*` de `.claude/agents/` ni en los integrados de Cursor).

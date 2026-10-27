@@ -1,6 +1,6 @@
 # Preflight — comprobar Opus → Grok sin implementar
 
-Para clases 1, 3 y 4. Ejecútalo antes del directo en **Agent con Opus 5.5**.
+Para clases 1 y 4. Ejecútalo antes del directo en **Agent con Opus 5.5**.
 No es un paso de producto ni sustituye ninguna aceptación funcional.
 
 ## Prompt para Cursor

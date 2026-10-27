@@ -11,7 +11,6 @@ conocidos. La API nunca seedea al arrancar.
 
 ## Datos (exactamente estos)
 
-
 | Tipo      | Datos                                                        |
 | --------- | ------------------------------------------------------------ |
 | usuario   | nombre `Ana`, `ana@demo.test`                                |
@@ -21,7 +20,6 @@ conocidos. La API nunca seedea al arrancar.
 | project   | `proj_agentic_kanban` «Agentic Kanban» en `ws_thepower_demo` |
 | workspace | `ws_ana_demo` «Espacio de Ana»: solo Ana                     |
 | project   | `proj_ana_notes` «Notas de Ana» en `ws_ana_demo`             |
-
 
 El tenant es el workspace, no el usuario. Los nombres `Ana` y `Luis` importan:
 en la Sesión 4 las menciones `@Ana` y `@Luis` se resuelven por `user.name`.
@@ -33,20 +31,18 @@ Endpoints, UI, CORS, paquetes nuevos y más filas de las de la tabla.
 ## Requisitos
 
 - Usuarios con `auth.api.signUpEmail` de Better Auth: sin INSERT en `user` o
-`account`, sin hash propio y sin HTTP a `/api/auth`. Si el email ya existe,
-reutiliza su `user.id` (mediante una consulta en `@agentic-kanban/db`).
+  `account`, sin hash propio y sin HTTP a `/api/auth`. Si el email ya existe,
+  reutiliza su `user.id` (mediante una consulta en `@agentic-kanban/db`).
 - Workspaces, projects y memberships con `upsertWorkspace`, `upsertProject` y
-`addWorkspaceMember` de `@agentic-kanban/db` (upsert por `id` y por
-`UNIQUE (workspace_id, user_id)`). Nunca DELETE masivo.
+  `addWorkspaceMember` de `@agentic-kanban/db` (upsert por `id` y por
+  `UNIQUE (workspace_id, user_id)`). Nunca DELETE masivo.
 - Script en `apps/api/src/seed.ts` (los datos de tenant solo vía
-`@agentic-kanban/db`), script `seed` en `apps/api/package.json` y `db:seed`
-en la raíz (`bun --filter @agentic-kanban/api seed`). Organízalo por bloques:
-la Sesión 2 añadirá columnas y tareas.
+  `@agentic-kanban/db`), script `seed` en `apps/api/package.json` y `db:seed`
+  en la raíz (`bun --filter @agentic-kanban/api seed`). Organízalo por bloques:
+  la Sesión 2 añadirá columnas y tareas.
 - Usa el mismo `.db` que la migración. Con Compose arriba, ejecútalo con
-`docker compose exec api bun run db:seed`. Después de un reset: migrar y
-luego seedear.
-
-
+  `docker compose exec api bun run db:seed`. Después de un reset: migrar y
+  luego seedear.
 
 ## Hecho cuando
 
@@ -61,8 +57,6 @@ luego seedear.
   Luis → 1. Luis `GET /api/projects/proj_ana_notes` → 404.
   ```
 - [ ] `vp check` y `vp test` en verde; health OK.
-
-
 
 ## Al terminar
 

@@ -1,6 +1,6 @@
 ---
 name: kanban-reviewer
-description: Historical agent. Never invoke for the current Sessions 1–4, never select proactively. Current orchestration uses kanban-grok-worker in Sessions 1/3/4; Session 2 has one Grok executor without subagents.
+description: Historical agent. Never invoke for the current Sessions 1–4, never select proactively. Current orchestration uses kanban-grok-worker in Sessions 1/4; Sessions 2/3 have one Agent executor without subagents.
 tools: Read, Grep, Glob, Bash
 model: sonnet
 color: purple

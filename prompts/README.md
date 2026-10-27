@@ -1,13 +1,13 @@
 # Prompts de clase — Agentic Kanban
 
-Las cuatro sesiones se ejecutan en Cursor. Usamos dos estilos, con el mismo
-Grok 4.7 xhigh Fast para ejecutar y los mismos criterios de aceptación:
+Las cuatro sesiones se ejecutan en Cursor. Usamos dos estilos con los mismos
+criterios de aceptación:
 
 | Sesión  | Fecha      | Carpeta y guía                           | Estilo                                            | Prompts                  | Resultado esperado                             |
 | ------- | ---------- | ---------------------------------------- | ------------------------------------------------- | ------------------------ | ---------------------------------------------- |
 | 1 (S9)  | Mié 21 oct | [auth](auth/README.md)                   | Agent con Opus orquestando workers Grok, autónomo | 01–06                    | Auth, workspaces aislados y dashboard          |
 | 2 (S10) | Lun 26 oct | [kanban](kanban/README.md)               | Plan con Opus → Agent con Grok, sin subagentes    | 00 plan; 01–08 ejecución | CRUD, orden y drag-and-drop optimista          |
-| 3 (S11) | Mié 28 oct | [websockets](websockets/README.md)       | Agent con Opus orquestando workers Grok, autónomo | 01–06                    | Dos sesiones sincronizadas por SSE y toasts    |
+| 3 (S11) | Mié 28 oct | [websockets](websockets/README.md)       | Plan → Agent, sin subagentes                      | 00 plan; 01–06 ejecución | Dos sesiones sincronizadas por SSE y toasts    |
 | 4 (S12) | Mié 4 nov  | [notifications](notifications/README.md) | Agent con Opus orquestando workers Grok, autónomo | 01–08                    | Comentarios, menciones, campana, outbox y demo |
 
 El protocolo de modelos, autonomía, propiedad de archivos, verificación y
@@ -36,8 +36,9 @@ versionados permiten seguir el curso sin esas notas personales.
   el SHA de otra clase para su revisión final.
 - Prepara las dos sesiones de navegador y checkpoints ensayados para esta
   versión. Las ramas antiguas `fase1`–`fase4` no son reservas sin validar.
-- En la clase 2 hay un traspaso de modelo tras el plan; en 1/3/4 no hay pausas
-  rutinarias de aprobación. En todas se observan las pruebas manuales.
+- En las clases 2 y 3 hay un traspaso de Plan a Agent tras el plan; en 1 y 4
+  no hay pausas rutinarias de aprobación. En todas se observan las pruebas
+  manuales.
 
 ## Base de datos en clase
 
@@ -96,6 +97,7 @@ un equivalente con otro nombre, el agente lo reutiliza y lo dice en el plan.
 | 3·01   | `boardEventSchema` (`task.created`, `task.updated`, `task.deleted`, `task.moved`)                                                                                                                                  |
 | 3·02   | `GET /api/projects/:projectId/events`, hub `subscribe`/`publish`                                                                                                                                                   |
 | 3·04   | `applyBoardEvent`, `useBoardEvents`                                                                                                                                                                                |
+| 3·05   | `boardEventToastMessage`                                                                                                                                                                                           |
 | 4·02   | `GET`/`POST /api/tasks/:taskId/comments`, `commentSchema`                                                                                                                                                          |
 | 4·03   | `useComments`, `useCreateComment`, `TaskComments`                                                                                                                                                                  |
 | 4·04   | `extractMentionTokens`, `apps/api/src/mail/outbox.ts`, `OUTBOX_PATH`                                                                                                                                               |

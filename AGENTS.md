@@ -115,7 +115,7 @@ Course steps live in `prompts/<session>/NN-*.md` and run one at a time,
 ideally each in a fresh context. A step is self-contained: re-read this file,
 the `.cursor/rules/*.mdc` of the layers it touches and the code itself.
 
-- **Sessions 1, 3 and 4:** follow [the Cursor orchestration guide](prompts/CURSOR.md)
+- **Sessions 1 and 4:** follow [the Cursor orchestration guide](prompts/CURSOR.md)
   and the selected session prompt in Agent mode with Opus 5.5. Opus only
   coordinates, fixes contracts and reviews. Instances of `kanban-grok-worker`
   inspect, implement, verify and correct with Grok 4.7 xhigh Fast. Every new
@@ -127,6 +127,10 @@ the `.cursor/rules/*.mdc` of the layers it touches and the code itself.
   Opus creates the session plan in Plan mode without implementing. The teacher
   then switches to Agent mode with Grok 4.7 xhigh Fast and runs steps 01–08
   against that plan. Grok is the sole executor; do not spawn subagents.
+- **Session 3:** follow [its planning and execution guide](prompts/websockets/README.md)
+  the same way: a session plan in Plan mode, then steps 01–06 in Agent mode
+  against it. Its prompts name no model; the Agent executor is the sole
+  executor and spawns no subagents.
 
 The old `.claude/agents/kanban-*` agents are historical and are not part of
 these four classroom workflows. Do not invoke them or built-in subagents.
