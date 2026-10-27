@@ -49,6 +49,8 @@ notificación persistida y un email generado en un outbox local.
   ninguna; `@Pepe` y `@Ana` escrito por Ana → ninguna; `@Luis` en una tarea
   del workspace privado de Ana → ninguna; `@luis,` → una; sin menciones → 201
   y ninguna.
+- `AGENTS.md` describe las menciones y el outbox; la campana todavía no
+  existe.
 
 ## Fuera de alcance
 
@@ -56,40 +58,18 @@ Campana, frontend de menciones y despliegue.
 
 ## Cómo trabajar
 
-**Cursor: Agent con Opus 5.5 orquestando de forma autónoma; Grok 4.7 xhigh
-Fast ejecuta.** Lee `AGENTS.md`, `prompts/CURSOR.md`,
-`prompts/notifications/README.md`, las reglas implicadas y el código. Usa
-`kanban-grok-worker` y pasa `model: "grok-4.7-xhigh-fast"` explícito en cada
-nueva Task si está en el catálogo; aplica el protocolo común si cambia.
-No uses omisión, `inherit`, Claude, agentes históricos ni subagentes integrados.
-
-Este prompt autoriza el paso y sus correcciones locales. Opus coordina,
-fija contratos y revisa; Grok inspecciona, implementa, prueba y actualiza el
-estado documentado. Continúa sin «adelante» ni aprobación rutinaria del plan.
-No hagas commit, no escribas tú la app ni implementes pasos siguientes.
-
-1. **Inspección (Grok).** Confirma el POST de comentarios, tabla `notification`,
-   resolución de `DATABASE_URL` y arnés de tests.
-2. **Contratos y reparto (Opus); implementación (Grok).** Detalla transacción → outbox → `emailed_at`. Con contratos fijados puede
-   repartir `extractMentionTokens` y tests, y módulo outbox con sus tests y
-   `OUTBOX_PATH` temporal. Después asigna integración de resolución,
-   transacción, tests de extremo a extremo y documentación a un responsable.
-3. **Comprobaciones y revisión.** Grok pasa `vp check`, `vp test` y prueba: Ana comenta `@Luis mira esto` en
-   `task_kanban_1` y la última línea de `data/outbox.jsonl` va a
-   `luis@demo.test`. Opus revisa destinatarios, atomicidad y orden de outbox,
-   incluidos los fallos de escritura del archivo.
-4. **Correcciones (Grok).** Opus contrasta diff y evidencia y encarga los
-   arreglos confirmados; espera los resultados y repite los checks afectados.
-   La puerta general se ejecuta sobre integración estable. CodeRabbit solo
-   ante una duda importante que aporte valor, conservando alcance y cobertura;
-   no se exige una pasada al terminar cada prompt.
+1. **Inspeccionar.** Confirma el `POST` de comentarios, la tabla
+   `notification`, la resolución de `DATABASE_URL` y el arnés de tests.
+2. **Implementar.** Orden transacción → outbox → `emailed_at` del plan.
+   Implementa `extractMentionTokens` y sus tests, el módulo de outbox con
+   `OUTBOX_PATH` temporal, la resolución de miembros, la transacción, los
+   tests de extremo a extremo y la documentación.
+3. **Comprobar.** Ejecuta `vp check`, `vp test` y la prueba en vivo de «Hecho
+   cuando». Revisa destinatarios, atomicidad, orden del outbox y el fallo de
+   escritura del archivo.
 
 ## Hecho cuando
 
 - [ ] `vp check` y `vp test` en verde; los tests no escriben en `data/`.
-- [ ] La prueba en vivo deja la línea del outbox para Luis.
-
-## Al terminar
-
-El implementador que cierra el paso actualiza `AGENTS.md` (menciones y outbox sí; campana no). No hagas commit.
-Cierra con el resumen que pide `AGENTS.md`.
+- [ ] En vivo: Ana comenta `@Luis mira esto` en `task_kanban_1` y la última
+      línea de `data/outbox.jsonl` va a `luis@demo.test`.

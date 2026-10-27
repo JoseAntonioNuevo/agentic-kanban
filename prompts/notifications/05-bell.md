@@ -51,6 +51,8 @@ no leídas y la opción de marcarlas como leídas.
   Luis la marca como leída y `readAt` queda relleno; Ana intentando marcar la
   de Luis → 404; 401 sin sesión; la respuesta real del `GET` pasa
   `notificationListResponseSchema` (las fechas incluidas).
+- `AGENTS.md` describe la campana; el realtime de comentarios todavía no
+  existe.
 
 ## Fuera de alcance
 
@@ -59,42 +61,20 @@ comentarios.
 
 ## Cómo trabajar
 
-**Cursor: Agent con Opus 5.5 orquestando de forma autónoma; Grok 4.7 xhigh
-Fast ejecuta.** Lee `AGENTS.md`, `prompts/CURSOR.md`,
-`prompts/notifications/README.md`, las reglas implicadas y el código. Usa
-`kanban-grok-worker` y pasa `model: "grok-4.7-xhigh-fast"` explícito en cada
-nueva Task si está en el catálogo; aplica el protocolo común si cambia.
-No uses omisión, `inherit`, Claude, agentes históricos ni subagentes integrados.
-
-Este prompt autoriza el paso y sus correcciones locales. Opus coordina,
-fija contratos y revisa; Grok inspecciona, implementa, prueba y actualiza el
-estado documentado. Continúa sin «adelante» ni aprobación rutinaria del plan.
-No hagas commit, no escribas tú la app ni implementes pasos siguientes.
-
-1. **Inspección (Grok).** Confirma consultas de notificaciones, cabeceras del
-   dashboard/tablero y componentes `popover` y `badge`.
-2. **Contratos y reparto (Opus); implementación (Grok).** Schemas y firmas primero. Tras escribir `notification.ts`, puede dividir
-   consultas/rutas/tests de API y hooks/`NotificationBell`/las dos cabeceras,
-   con archivos propios y documentación asignada.
-3. **Comprobaciones y revisión.** Grok pasa `vp check`, `vp test` y prueba tras una mención de Ana: Luis
-   `GET /api/notifications` → 200 con al menos una; Ana → 200 `[]`. Opus
-   comprueba los estados del popover, parse de fechas y lectura solo por el
-   destinatario; prepara la prueba manual de ambas cabeceras.
-4. **Correcciones (Grok).** Opus contrasta diff y evidencia y encarga los
-   arreglos confirmados; espera los resultados y repite los checks afectados.
-   La puerta general se ejecuta sobre integración estable. CodeRabbit solo
-   ante una duda importante que aporte valor, conservando alcance y cobertura;
-   no se exige una pasada al terminar cada prompt.
+1. **Inspeccionar.** Confirma las consultas de notificaciones, las cabeceras
+   del dashboard y del tablero y los componentes `popover` y `badge`.
+2. **Implementar.** Schemas y firmas del plan, empezando por
+   `notification.ts`. Después consultas, rutas y tests de API, hooks,
+   `NotificationBell` en las dos cabeceras y documentación.
+3. **Comprobar.** Ejecuta `vp check`, `vp test` y las pruebas HTTP de «Hecho
+   cuando». Revisa los estados del popover, el parse de fechas y que solo el
+   destinatario marca como leída; prepara la prueba manual de ambas cabeceras.
 
 ## Hecho cuando
 
 - [ ] `vp check` y `vp test` en verde.
-- [ ] Las pruebas HTTP dan lo esperado.
+- [ ] HTTP tras una mención de Ana: Luis `GET /api/notifications` → 200
+      con al menos una; Ana → 200 `[]`.
 - [ ] Dos navegadores (lo compruebo yo): Ana comenta `@Luis mira esto` (botón
       Comentar); Luis ve badge, «Ana te mencionó», título y extracto; la
       campana de Ana dice «No hay menciones.».
-
-## Al terminar
-
-El implementador que cierra el paso actualiza `AGENTS.md` (campana sí; realtime de comentarios no). No hagas
-commit. Cierra con el resumen que pide `AGENTS.md`.

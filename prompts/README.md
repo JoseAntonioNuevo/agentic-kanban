@@ -8,7 +8,7 @@ criterios de aceptación:
 | 1 (S9)  | Mié 21 oct | [auth](auth/README.md)                   | Agent con Opus orquestando workers Grok, autónomo | 01–06                    | Auth, workspaces aislados y dashboard          |
 | 2 (S10) | Lun 26 oct | [kanban](kanban/README.md)               | Plan con Opus → Agent con Grok, sin subagentes    | 00 plan; 01–08 ejecución | CRUD, orden y drag-and-drop optimista          |
 | 3 (S11) | Mié 28 oct | [websockets](websockets/README.md)       | Plan → Agent, sin subagentes                      | 00 plan; 01–06 ejecución | Dos sesiones sincronizadas por SSE y toasts    |
-| 4 (S12) | Mié 4 nov  | [notifications](notifications/README.md) | Agent con Opus orquestando workers Grok, autónomo | 01–08                    | Comentarios, menciones, campana, outbox y demo |
+| 4 (S12) | Mié 4 nov  | [notifications](notifications/README.md) | Plan → Agent, sin subagentes                      | 00 plan; 01–08 ejecución | Comentarios, menciones, campana, outbox y demo |
 
 El protocolo de modelos, autonomía, propiedad de archivos, verificación y
 CodeRabbit vive en [CURSOR.md](CURSOR.md). El preflight
@@ -36,7 +36,7 @@ versionados permiten seguir el curso sin esas notas personales.
   el SHA de otra clase para su revisión final.
 - Prepara las dos sesiones de navegador y checkpoints ensayados para esta
   versión. Las ramas antiguas `fase1`–`fase4` no son reservas sin validar.
-- En las clases 2 y 3 hay un traspaso de Plan a Agent tras el plan; en 1 y 4
+- En las clases 2 a 4 hay un traspaso de Plan a Agent tras el plan; en la 1
   no hay pausas rutinarias de aprobación. En todas se observan las pruebas
   manuales.
 

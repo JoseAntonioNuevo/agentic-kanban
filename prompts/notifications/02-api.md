@@ -34,6 +34,8 @@ siempre.
   privado de Ana → 404 en los dos casos; un miembro crea y lista con
   `authorName`; body vacío → 400; borrar una tarea con comentarios sigue
   devolviendo 204 (la cascada funciona).
+- `AGENTS.md` describe los comentarios por HTTP; las menciones todavía no
+  existen.
 
 ## Fuera de alcance
 
@@ -42,38 +44,16 @@ rutas del tablero ni el stream.
 
 ## Cómo trabajar
 
-**Cursor: Agent con Opus 5.5 orquestando de forma autónoma; Grok 4.7 xhigh
-Fast ejecuta.** Lee `AGENTS.md`, `prompts/CURSOR.md`,
-`prompts/notifications/README.md`, las reglas implicadas y el código. Usa
-`kanban-grok-worker` y pasa `model: "grok-4.7-xhigh-fast"` explícito en cada
-nueva Task si está en el catálogo; aplica el protocolo común si cambia.
-No uses omisión, `inherit`, Claude, agentes históricos ni subagentes integrados.
-
-Este prompt autoriza el paso y sus correcciones locales. Opus coordina,
-fija contratos y revisa; Grok inspecciona, implementa, prueba y actualiza el
-estado documentado. Continúa sin «adelante» ni aprobación rutinaria del plan.
-No hagas commit, no escribas tú la app ni implementes pasos siguientes.
-
-1. **Inspección (Grok).** Confirma rutas, `requireSession`, consultas `ForMember`
+1. **Inspeccionar.** Confirma rutas, `requireSession`, consultas `ForMember`
    y arnés de tests.
-2. **Contratos y reparto (Opus); implementación (Grok).** Fija schemas, rutas y firmas. Primero schemas de `comment.ts`; después
-   consultas/rutas y tests pueden avanzar con archivos independientes.
-   Asigna montaje, barrels y documentación a un responsable.
-3. **Comprobaciones y revisión.** Grok pasa `vp check`, `vp test` y prueba por `:5173`: Ana comenta en
-   `task_kanban_1` → 201; Luis `GET /api/tasks/task_ana_1/comments` → 404.
-   Opus revisa autor desde sesión, autorización de tarea y fechas ISO.
-4. **Correcciones (Grok).** Opus contrasta diff y evidencia y encarga los
-   arreglos confirmados; espera los resultados y repite los checks afectados.
-   La puerta general se ejecuta sobre integración estable. CodeRabbit solo
-   ante una duda importante que aporte valor, conservando alcance y cobertura;
-   no se exige una pasada al terminar cada prompt.
+2. **Implementar.** Schemas, rutas y firmas del plan. Escribe primero
+   `comment.ts`; después consultas, rutas, montaje, tests y documentación.
+3. **Comprobar.** Ejecuta `vp check`, `vp test` y las pruebas HTTP de «Hecho
+   cuando» por `:5173`. Revisa autor desde la sesión, autorización por la
+   tarea y fechas ISO.
 
 ## Hecho cuando
 
 - [ ] `vp check` y `vp test` en verde.
-- [ ] Las dos pruebas HTTP dan 201 y 404.
-
-## Al terminar
-
-El implementador que cierra el paso actualiza `AGENTS.md` (comentarios por HTTP sí; menciones no). No hagas
-commit. Cierra con el resumen que pide `AGENTS.md`.
+- [ ] HTTP por `:5173`: Ana comenta en `task_kanban_1` → 201; Luis
+      `GET /api/tasks/task_ana_1/comments` → 404.

@@ -1,6 +1,6 @@
 ---
 name: kanban-recon
-description: Historical agent. Never invoke for the current Sessions 1–4, never select proactively. Current orchestration uses kanban-grok-worker in Sessions 1/4; Sessions 2/3 have one Agent executor without subagents.
+description: Historical agent. Never invoke for the current Sessions 1–4, never select proactively. Current orchestration uses kanban-grok-worker in Session 1; Sessions 2–4 have one Agent executor without subagents.
 tools: Read, Grep, Glob, Bash
 model: haiku
 color: cyan

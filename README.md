@@ -19,10 +19,10 @@ y las dependencias locales con `bun install --frozen-lockfile`. Vite+ `1.3.0`
 pertenece al workspace; puedes ejecutar `bun run check` y `bun run test`
 (los prompts usan sus comandos `vp check` y `vp test`).
 
-Las cuatro clases se siguen en Cursor: en las clases **1 y 4**, Opus 5.5
-orquesta de forma autónoma workers Grok 4.7 xhigh Fast; en la **2** y la
-**3**, primero se prepara un plan en modo Plan y después se ejecuta en Agent
-sin subagentes. CodeRabbit se usa
+Las cuatro clases se siguen en Cursor: en la clase **1**, Opus 5.5 orquesta
+de forma autónoma workers Grok 4.7 xhigh Fast; en las clases **2 a 4**,
+primero se prepara un plan en modo Plan y después se ejecuta en Agent sin
+subagentes. CodeRabbit se usa
 cuando aporta una revisión necesaria; no hace falta para arrancar la app.
 
 El [mapa de las cuatro sesiones](prompts/README.md), la

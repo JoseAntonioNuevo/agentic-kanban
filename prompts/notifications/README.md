@@ -1,50 +1,74 @@
-# Sesión 4 (S12) — Opus orquesta comentarios y menciones
+# Sesión 4 (S12) — un plan y ocho pasos en Agent
 
 Miércoles 4 de noviembre de 2026, 18:30–20:00. Partimos de la clase 3 aceptada:
 board sincronizado por SSE. Añadimos comentarios, menciones, notificaciones
 privadas y un outbox local para simular email, y cerramos una demo reproducible.
 
-## Reparto durante los ocho pasos
+## Un plan inicial, un traspaso y ocho pasos
 
-**Agent con Opus 5.5 como principal; workers Grok 4.7 xhigh Fast.** Sigue
-[la guía común](../CURSOR.md): Task nueva a `kanban-grok-worker` con modelo
-explícito, autonomía dentro del paso y propietarios de archivos. Opus
-coordina/revisa, Grok inspecciona/implementa/prueba/corrige. No hay aprobación
-rutinaria del plan, implementaciones de Opus ni agentes históricos.
+1. Selecciona **Plan** en Cursor. Ejecuta
+   [00 · Plan de la sesión](00-plan-sesion.md), adjuntando los ocho prompts.
+   El agente inspecciona y produce el plan completo sin implementar.
+2. Revisa una vez contratos, secuencia y aceptación. Guarda el plan de Cursor
+   o su contenido como `docs/planes/S12-comentarios.plan.md`; no es un archivo
+   ya generado por este material. Ese plan concreto acompaña a cada paso.
+3. Cambia manualmente a **Agent** y comprueba los selectores de modo y modelo.
+   Pega el traspaso de abajo y ejecuta 01–08 uno cada vez. No vuelvas a Plan
+   ni pidas un «adelante» entre pasos. Si abres contexto nuevo, adjunta el
+   plan guardado y el prompt actual.
 
-| Paso                                            | Qué mantiene Opus                         | Qué comprobar                                                        |
-| ----------------------------------------------- | ----------------------------------------- | -------------------------------------------------------------------- |
-| [01 · Modelo](01-models.md)                     | FK y propiedad de comentario/notificación | Migración e índices; cascada al borrar tarea                         |
-| [02 · API](02-api.md)                           | Autor desde sesión y permiso de tarea     | 201/200; 400/401/404 y fechas serializadas                           |
-| [03 · Hilo](03-ui.md)                           | Acción Comentar separada de Guardar       | Hilo en edición, estados y ninguna escritura accidental              |
-| [04 · Menciones y outbox](04-mentions-email.md) | Miembro → transacción → outbox → marcado  | Solo destinatario válido; fallo de archivo no revierte el comentario |
-| [05 · Campana](05-bell.md)                      | Destinatario, schema y dos cabeceras      | Luis recibe; Ana ve vacío válido; errores visibles y lectura privada |
-| [06 · Tiempo real](06-realtime.md)              | `comment.created` sobre el SSE existente  | Hilo/campana al día, sin segunda conexión ni filas duplicadas        |
-| [07 · Demo local](07-deploy-demo.md)            | README y alcance reproducible             | Solo web/api, build, Compose y outbox fuera de Git                   |
-| [08 · Revisión](08-review.md)                   | Fronteras y regresiones del producto      | Checks, aislamiento y pendientes reales                              |
+Los prompts no fijan modelo: lo eliges tú en el selector de cada modo. El
+agente de Agent es el único ejecutor y revisor local: inspecciona, implementa,
+prueba y corrige. No crea `Task`, workers ni subagentes. Lee también
+[la guía común](../CURSOR.md) para límites, preparación, comprobaciones y
+CodeRabbit. El preflight de subagentes no corresponde aquí.
 
-En el 04, extracción de tokens y módulo de outbox pueden avanzar en paralelo
-con archivos separados; la transacción se integra después. En 05/06, fija
-schemas antes de dividir API y cliente. El responsable de integración ejecuta
-las pruebas generales; no compiten varios workers por migraciones ni por
-escribir el mismo archivo de eventos.
+```text
+Ejecuta en Agent. Adjunto el plan ya revisado de la sesión 4 y el prompt del
+paso actual. Lee AGENTS.md, prompts/CURSOR.md, prompts/notifications/README.md,
+el plan, las reglas implicadas y el código real. Completa solo ese paso y sus
+correcciones, sin pedir adelante. Eres el único ejecutor: no Task ni
+subagentes. Conserva los contratos del plan, adapta detalles locales al código
+y señala cualquier conflicto importante antes de cambiar el contrato. No hagas
+commit ni implementes pasos futuros. Devuelve evidencia real y aceptación
+manual pendiente.
+```
 
-## Preparación, cierre y guiones
+| Paso                                            | Para qué sirve                     | Qué validar antes de avanzar                                         |
+| ----------------------------------------------- | ---------------------------------- | -------------------------------------------------------------------- |
+| [01 · Modelo](01-models.md)                     | Comentarios y notificaciones       | Migración e índices; cascada al borrar tarea                         |
+| [02 · API](02-api.md)                           | Comentarios por HTTP autorizado    | 201/200; 400/401/404 y fechas serializadas                           |
+| [03 · Hilo](03-ui.md)                           | Hilo en el diálogo de editar       | Comentar separado de Guardar; ninguna escritura accidental           |
+| [04 · Menciones y outbox](04-mentions-email.md) | `@Nombre` y correo de aula         | Solo destinatario válido; fallo de archivo no revierte el comentario |
+| [05 · Campana](05-bell.md)                      | Menciones privadas del usuario     | Luis recibe; Ana ve vacío válido; errores visibles y lectura privada |
+| [06 · Tiempo real](06-realtime.md)              | `comment.created` por el mismo SSE | Hilo y campana al día, sin segunda conexión ni filas duplicadas      |
+| [07 · Demo local](07-deploy-demo.md)            | README y demo reproducible         | Solo web/api, build, Compose y outbox fuera de Git                   |
+| [08 · Revisión](08-review.md)                   | Cierre de fronteras y regresiones  | Evidencia conjunta, revisión justificada y correcciones              |
 
-Guarda `BASE_CLASE` antes del 01 y comprueba el checkpoint de clase 3 con dos
-navegadores. Repite [el preflight](../00-comprobar-delegacion.md) si cambió la
-configuración. Usa las cuentas ficticias Ana y Luis; nunca datos personales.
+Los detalles y nombres públicos del plan deben coincidir con los prompts:
+`commentSchema`, `extractMentionTokens`, `OUTBOX_PATH`, `notificationSchema`
+y `comment.created` cierran el producto. Un plan bonito no sustituye comprobar
+la transacción real, el parser con `ana@demo.test` ni las fechas que valida
+Zod en la campana.
+
+## Preparación, revisión y guiones
+
+Guarda una base propia `BASE_CLASE` antes del 01 y comprueba el checkpoint de
+clase 3 con dos navegadores. Usa las cuentas ficticias Ana y Luis; nunca datos
+personales.
 
 El «email» es una línea de JSON en `data/outbox.jsonl`, no un envío real.
 No hay proveedor SMTP/Resend, credenciales nuevas ni tercer contenedor. El
 paso 07 prepara y verifica la demo **local**: no despliega a producción ni
 ejecuta el procedimiento destructivo de reset para demostrarlo.
 
-En el 08, transacción, privacidad de destinatarios y orden del outbox pueden
-justificar CodeRabbit si no hay cobertura vigente. Opus usa
-[el criterio común](../CURSOR.md#coderabbit-cuando-aporte-valor), contrasta
-hallazgos y delega correcciones; no necesita un «adelante» para arreglos del
-alcance. CLI/cuota pendiente y prueba manual pendiente se declaran por separado.
+En el 08, la transacción, la privacidad de destinatarios y el orden del
+outbox pueden justificar CodeRabbit si no están ya cubiertos. El agente
+consolida la evidencia, ejecuta esa revisión solo cuando aporte valor,
+contrasta sus hallazgos y corrige lo confirmado sin otra aprobación. Aplica
+la [base y cobertura comunes](../CURSOR.md#coderabbit-cuando-aporte-valor);
+no vuelvas a Plan por rutina para el cierre. CLI o cuota pendiente y prueba
+manual pendiente se declaran por separado.
 
 La demo final muestra a Ana comentando `@Luis` en el proyecto compartido:
 Luis recibe hilo, toast y campana; Ana no recibe su propio aviso. El outbox
