@@ -1,8 +1,8 @@
-# Sesión 4 · 04 — Menciones y emails de notificación
+# Sesión 4 · 03 — Menciones y emails de notificación
 
 ## Punto de partida
 
-Comentarios por HTTP (02) y en la interfaz (03). La tabla `notification` ya
+Comentarios por HTTP (01) y en la interfaz (02). La tabla `notification` ya
 tiene los campos del email (01). El seed tiene a `Ana` y a `Luis` como
 `user.name`.
 

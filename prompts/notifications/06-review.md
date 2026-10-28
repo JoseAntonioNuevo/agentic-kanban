@@ -1,11 +1,11 @@
-# Sesión 4 · 08 — Revisión final como una PR
+# Sesión 4 · 06 — Revisión final como una PR
 
 Esta revisión incluye corregir y verificar los problemas confirmados dentro
 del alcance, sin otra aprobación. No añadas funcionalidades.
 
 ## Alcance
 
-Todo lo implementado en la Sesión 4 (prompts 01–07) y las regresiones sobre
+Todo lo implementado en la Sesión 4 (prompts 01–05) y las regresiones sobre
 las Sesiones 1 a 3, contrastado con `AGENTS.md`, `.cursor/rules/` y los propios
 prompts. No añadas funcionalidades.
 

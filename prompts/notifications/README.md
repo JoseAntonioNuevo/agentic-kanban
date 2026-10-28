@@ -1,20 +1,20 @@
-# Sesión 4 (S12) — un plan y ocho pasos en Agent
+# Sesión 4 (S12) — un plan y seis pasos en Agent
 
 Miércoles 4 de noviembre de 2026, 18:30–20:00. Partimos de la clase 3 aceptada:
 board sincronizado por WebSocket. Añadimos comentarios, menciones,
 notificaciones privadas y emails de notificación reales con Cloudflare Email
 Service, y cerramos con el deploy en la cuenta de Cloudflare del profesor.
 
-## Un plan inicial, un traspaso y ocho pasos
+## Un plan inicial, un traspaso y seis pasos
 
 1. Selecciona **Plan** en Cursor. Ejecuta
-   [00 · Plan de la sesión](00-plan-sesion.md), adjuntando los ocho prompts.
+   [00 · Plan de la sesión](00-plan-sesion.md), adjuntando los seis prompts.
    El agente inspecciona y produce el plan completo sin implementar.
 2. Revisa una vez contratos, secuencia y aceptación. Guarda el plan de Cursor
    o su contenido como `docs/planes/S12-comentarios.plan.md`; no es un archivo
    ya generado por este material. Ese plan concreto acompaña a cada paso.
 3. Cambia manualmente a **Agent** y comprueba los selectores de modo y modelo.
-   Pega el traspaso de abajo y ejecuta 01–08 uno cada vez. No vuelvas a Plan
+   Pega el traspaso de abajo y ejecuta 01–06 uno cada vez. No vuelvas a Plan
    ni pidas un «adelante» entre pasos. Si abres contexto nuevo, adjunta el
    plan guardado y el prompt actual.
 
@@ -35,16 +35,15 @@ commit ni implementes pasos futuros. Devuelve evidencia real y aceptación
 manual pendiente.
 ```
 
-| Paso                                           | Para qué sirve                           | Qué validar antes de avanzar                                         |
-| ---------------------------------------------- | ---------------------------------------- | -------------------------------------------------------------------- |
-| [01 · Modelo](01-models.md)                    | Comentarios y notificaciones             | Migración e índices; cascada al borrar tarea                         |
-| [02 · API](02-api.md)                          | Comentarios por HTTP autorizado          | 201/200; 400/401/404 y fechas serializadas                           |
-| [03 · Hilo](03-ui.md)                          | Hilo en el diálogo de editar             | Comentar separado de Guardar; ninguna escritura accidental           |
-| [04 · Menciones y email](04-mentions-email.md) | `@Nombre` y email de notificación real   | Solo destinatario válido; el email llega; un fallo no revierte       |
-| [05 · Campana](05-bell.md)                     | Menciones privadas del usuario           | Luis recibe; Ana ve vacío válido; errores visibles y lectura privada |
-| [06 · Tiempo real](06-realtime.md)             | `comment.created` por el mismo WebSocket | Hilo y campana al día, sin segunda conexión ni filas duplicadas      |
-| [07 · Deploy](07-deploy-cloudflare.md)         | URL pública en Cloudflare y README       | Cuenta comprobada; health, login, 404 y WebSocket en la URL pública  |
-| [08 · Revisión](08-review.md)                  | Cierre de fronteras y regresiones        | Evidencia local y pública, revisión justificada y correcciones       |
+| Paso                                           | Min. | Para qué sirve                           | Qué validar antes de avanzar                                         |
+| ---------------------------------------------- | ---- | ---------------------------------------- | -------------------------------------------------------------------- |
+| [00 · Plan](00-plan-sesion.md)                 | 8    | Un plan para los seis pasos              | Contratos, orden y aceptación revisados; plan guardado               |
+| [01 · Comentarios](01-comments.md)             | 12   | Tablas y API de comentarios              | Migración con cascada; 201/200; 400/401/404 y fechas serializadas    |
+| [02 · Hilo](02-ui.md)                          | 10   | Hilo en el diálogo de editar             | Comentar separado de Guardar; ninguna escritura accidental           |
+| [03 · Menciones y email](03-mentions-email.md) | 12   | `@Nombre` y email de notificación real   | Solo destinatario válido; el email llega; un fallo no revierte       |
+| [04 · Campana](04-bell-realtime.md)            | 15   | Menciones privadas, al día sin refrescar | Luis recibe hilo, toast y campana; Ana ve vacío válido; una conexión |
+| [05 · Deploy](05-deploy-cloudflare.md)         | 12   | URL pública en Cloudflare y README       | Cuenta comprobada; health, login, 404 y WebSocket en la URL pública  |
+| [06 · Revisión](06-review.md)                  | 6    | Cierre de fronteras y regresiones        | Evidencia local y pública, revisión justificada y correcciones       |
 
 Los detalles y nombres públicos del plan deben coincidir con los prompts:
 `commentSchema`, `extractMentionTokens`, `deliverEmail`, `notificationSchema`,
@@ -75,16 +74,19 @@ antes del directo; ninguno de estos pasos se hace con el agente:
    `bunx wrangler whoami`: debe mostrar la cuenta del curso. Docker Desktop
    arrancado.
 
-Ese acceso es el que usará el agente en el 07. No pegues tokens en el chat ni
+Ese acceso es el que usará el agente en el 05. No pegues tokens en el chat ni
 uses credenciales de otros proyectos.
 
 ## Tiempo en directo
 
-Ocho pasos más el plan no caben con holgura en 90 minutos, y el 07 añade la
+Los minutos de la tabla suman 75 de práctica; con unos 10 de presentación y 5
+de cierre y QR no queda margen. Son objetivos ajustados: el 05 añade la
 construcción de la imagen y unos minutos de aprovisionamiento la primera vez.
-Con Cloudflare preparado de antemano, lanza el deploy del 07 y aprovecha esa
-espera para empezar el 08 en local. CodeRabbit va después de la clase salvo
-que sobre tiempo.
+Con Cloudflare preparado de antemano, lanza el deploy del 05 y aprovecha esa
+espera para empezar el 06 en local. Si vas tarde, en el 06 ejecuta las
+pruebas y corrige solo los hallazgos de severidad alta; los demás quedan
+documentados como pendientes. CodeRabbit va después de la clase salvo que
+sobre tiempo.
 
 ## Preparación, revisión y guiones
 
@@ -94,11 +96,11 @@ personales.
 
 El email es real cuando hay credenciales: la API lo envía con la API REST de
 Cloudflare Email Service, sin SMTP ni SDK. Sin credenciales (tests y
-desarrollo) queda en `data/outbox.jsonl`. El 07 despliega en la cuenta
+desarrollo) queda en `data/outbox.jsonl`. El 05 despliega en la cuenta
 comprobada con `wrangler whoami` y documenta el reset local sin ejecutarlo.
 El disco del contenedor es efímero: cada arranque vuelve al seed.
 
-En el 08, la transacción, la privacidad de destinatarios, los secretos y el
+En el 06, la transacción, la privacidad de destinatarios, los secretos y el
 deploy pueden justificar CodeRabbit si no están ya cubiertos. El agente
 consolida la evidencia, ejecuta esa revisión solo cuando aporte valor,
 contrasta sus hallazgos y corrige lo confirmado sin otra aprobación. Aplica

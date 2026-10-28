@@ -1,8 +1,8 @@
-# Sesión 4 · 07 — Deploy en Cloudflare y guion de la demo
+# Sesión 4 · 05 — Deploy en Cloudflare y guion de la demo
 
 ## Punto de partida
 
-El producto del bloque está completo en local (Sesiones 1–4, prompts 01–06),
+El producto del bloque está completo en local (Sesiones 1–4, prompts 01–04),
 con emails reales por Cloudflare Email Service cuando hay credenciales. Falta
 publicarlo en la cuenta de Cloudflare del profesor y dejar la demo
 reproducible.

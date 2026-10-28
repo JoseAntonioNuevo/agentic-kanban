@@ -8,7 +8,7 @@ criterios de aceptación:
 | 1 (S9)  | Mié 21 oct | [auth](auth/README.md)                   | Agent con Opus orquestando workers Grok, autónomo | 01–06                    | Auth, workspaces aislados y dashboard             |
 | 2 (S10) | Lun 26 oct | [kanban](kanban/README.md)               | Plan con Opus → Agent con Grok, sin subagentes    | 00 plan; 01–08 ejecución | CRUD, orden y drag-and-drop optimista             |
 | 3 (S11) | Mié 28 oct | [websockets](websockets/README.md)       | Plan → Agent, sin subagentes                      | 00 plan; 01–06 ejecución | Dos sesiones sincronizadas por WebSocket y toasts |
-| 4 (S12) | Mié 4 nov  | [notifications](notifications/README.md) | Plan → Agent, sin subagentes                      | 00 plan; 01–08 ejecución | Comentarios, menciones, campana, email y deploy   |
+| 4 (S12) | Mié 4 nov  | [notifications](notifications/README.md) | Plan → Agent, sin subagentes                      | 00 plan; 01–06 ejecución | Comentarios, menciones, campana, email y deploy   |
 
 El protocolo de modelos, autonomía, propiedad de archivos, verificación y
 CodeRabbit vive en [CURSOR.md](CURSOR.md). El preflight
@@ -75,9 +75,9 @@ volver a comprobar sobre la implementación real de cada clase.
 | Con SSE, Bun cortaba a los 10 s y escribir desde otra petición no llegaba; con WebSocket no aplica | 3·02 (`ws: true` y prueba por 5173) |
 | Los nombres que usan sesiones posteriores (`applyBoardMove`, `useBoardEvents`…) no estaban fijados | contratos de cada prompt            |
 | libSQL aplica las FK: sin cascada, borrar una tarea con comentarios falla                          | 2·01, 4·01                          |
-| `ana@demo.test` contiene una `@`: el parser no debe tomarlo por mención                            | 4·04                                |
-| Fechas ISO que Zod rechaza y una campana que pinta el éxito vacío como error                       | 4·05                                |
-| `data/outbox.jsonl` está versionado con líneas del ensayo                                          | 4·07                                |
+| `ana@demo.test` contiene una `@`: el parser no debe tomarlo por mención                            | 4·03                                |
+| Fechas ISO que Zod rechaza y una campana que pinta el éxito vacío como error                       | 4·04                                |
+| `data/outbox.jsonl` está versionado con líneas del ensayo                                          | 4·05                                |
 | `AGENTS.md` pasó de 66 a 386 líneas y entra en cada sesión y subagente                             | cada prompt (se actualiza en sitio) |
 
 ## Contratos entre prompts
@@ -100,9 +100,8 @@ un equivalente con otro nombre, el agente lo reutiliza y lo dice en el plan.
 | 3·02   | `GET /api/projects/:projectId/events` (WebSocket), hub `subscribe`/`publish`                                                                                                                                       |
 | 3·04   | `applyBoardEvent`, `useBoardEvents`                                                                                                                                                                                |
 | 3·05   | `boardEventToastMessage`, `reconnectDelay`                                                                                                                                                                         |
-| 4·02   | `GET`/`POST /api/tasks/:taskId/comments`, `commentSchema`                                                                                                                                                          |
-| 4·03   | `useComments`, `useCreateComment`, `TaskComments`                                                                                                                                                                  |
-| 4·04   | `extractMentionTokens`, `deliverEmail` en `apps/api/src/mail/` (Email Service u outbox), `OUTBOX_PATH`, `MAIL_FROM`, `MAIL_REDIRECT_TO`                                                                            |
-| 4·05   | `GET /api/notifications`, `POST /api/notifications/:notificationId/read`, `notificationSchema`, `NotificationBell`                                                                                                 |
-| 4·06   | `comment.created` en `boardEventSchema`                                                                                                                                                                            |
-| 4·07   | `apps/edge` (Worker y `ApiContainer`), `bun run deploy:cloudflare`, `.env.cloudflare.local`                                                                                                                        |
+| 4·01   | tablas `comment` y `notification`, `GET`/`POST /api/tasks/:taskId/comments`, `commentSchema`                                                                                                                       |
+| 4·02   | `useComments`, `useCreateComment`, `TaskComments`                                                                                                                                                                  |
+| 4·03   | `extractMentionTokens`, `deliverEmail` en `apps/api/src/mail/` (Email Service u outbox), `OUTBOX_PATH`, `MAIL_FROM`, `MAIL_REDIRECT_TO`                                                                            |
+| 4·04   | `GET /api/notifications`, `POST /api/notifications/:notificationId/read`, `notificationSchema`, `NotificationBell`, `comment.created` en `boardEventSchema`                                                        |
+| 4·05   | `apps/edge` (Worker y `ApiContainer`), `bun run deploy:cloudflare`, `.env.cloudflare.local`                                                                                                                        |

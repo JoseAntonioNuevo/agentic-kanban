@@ -5,8 +5,8 @@ autorización para implementar comentarios, notificaciones ni el deploy.
 
 ## Encargo de planificación
 
-Lee `AGENTS.md`, `prompts/notifications/README.md`, los ocho prompts
-`prompts/notifications/01-models.md` a `08-review.md`, las reglas implicadas
+Lee `AGENTS.md`, `prompts/notifications/README.md`, los seis prompts
+`prompts/notifications/01-comments.md` a `06-review.md`, las reglas implicadas
 y el código de partida. Comprueba las APIs instaladas o documentadas cuando
 afecten al plan, especialmente las transacciones y FK de Drizzle,
 `z.iso.datetime()` de Zod, `refetchInterval` e invalidación de TanStack
@@ -22,7 +22,7 @@ prerrequisito impide un plan fiable.
 Prepara **un solo plan para toda la sesión 4** para ejecutar paso a paso:
 
 1. Estado observado de partida y supuestos pendientes, separados de hechos.
-2. Orden 01–08, objetivo de cada paso, archivos previstos y dependencias.
+2. Orden 01–06, objetivo de cada paso, archivos previstos y dependencias.
 3. Contratos exactos que no deben divergir: tablas `comment` y
    `notification`, rutas y códigos HTTP, `commentSchema`,
    `extractMentionTokens`, `deliverEmail` con sus dos transportes y sus

@@ -118,7 +118,7 @@ El profesor puede devolver esa cuestión concreta a Opus si resulta necesario.
 
 Las clases 3 y 4 siguen el mismo flujo con su propio plan:
 [00 de la clase 3](websockets/00-plan-sesion.md) con los prompts 01–06 y
-[00 de la clase 4](notifications/00-plan-sesion.md) con los prompts 01–08.
+[00 de la clase 4](notifications/00-plan-sesion.md) con los prompts 01–06.
 Sus prompts no fijan modelo: el profesor lo elige en el selector de Plan y en
 el de Agent, y comprueba ambos. El ejecutor de Agent tampoco crea `Task` ni
 subagentes.
