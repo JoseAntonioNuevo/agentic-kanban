@@ -47,8 +47,9 @@ Funciones puras con tests, junto al hook o en `apps/web/src/lib/`:
   | `task.updated` | `Tarea actualizada: {title}`                               |
   | `task.deleted` | `Tarea eliminada: {title}`, o `Tarea eliminada` sin título |
   | `task.moved`   | `Tarea movida: {title}`, o `Tarea movida` sin título       |
-  - `toast.info` de `sonner`, solo si `actorUserId` es distinto del usuario
-    de la sesión. Se decide en el mismo sitio donde `useBoardEvents` ya
+  - Un método de `sonner` por tipo (`success` crea, `warning` edita, `error`
+    borra, `info` mueve; `<Toaster richColors />`), solo si `actorUserId` es
+    distinto del usuario de la sesión. Se decide en el mismo sitio donde `useBoardEvents` ya
     reconoce los eventos propios. Otra pestaña del mismo usuario aplica el
     cambio, pero no muestra aviso.
   - El título sale del evento (`created` y `updated`) o de la caché del board

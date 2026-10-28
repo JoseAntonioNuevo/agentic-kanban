@@ -51,48 +51,19 @@ order before the response, restores the snapshot and shows `toast.error`
 if the request fails, then invalidates. The board is not copied into
 React state.
 `boardEventSchema` (`BoardEvent`) is a union on `type` (`task.created`/`task.updated` with `task`, `task.deleted` with `taskId`, `task.moved` with final `taskId`, `columnId`, `position`), all with `projectId` and `actorUserId`.
-The in-memory hub in `apps/api/src/realtime/index.ts` exposes
-`subscribe(projectId, listener)` (returns the unsubscribe) and
-`publish(event)`, which validates with `boardEventSchema.safeParse`,
-delivers only to that `projectId`, and never throws (`console.error`).
 `GET /api/projects/:projectId/events` checks session (401), membership
-(404) and `Upgrade: websocket` (426) before `upgradeWebSocket` from
-`hono/bun`; each message is `JSON.stringify(event)` and client messages
-are ignored. Writes still go over HTTP: after the `ForMember` query
-returns (transaction committed) and before responding, each successful
-task create, edit, delete, and move publishes `task.created`,
-`task.updated` (the parsed task that is also the response),
-`task.deleted` (`deleteTaskForMember` returns the row's `projectId` or
-`undefined`), or `task.moved` (final row values). `projectId` comes from
-the row, `actorUserId` from the session; a 4xx publishes nothing.
-`applyBoardEvent(board, event)` in `@agentic-kanban/schemas` is pure and
-idempotent and returns the same reference when nothing changes (task
-already created/deleted/updated, missing task or column, other project).
-`task.created` inserts at the clamped `task.position` and renumbers,
-`task.updated` copies `title` and `description` in place, `task.deleted`
-compacts the column, and `task.moved` reuses `applyBoardMove`, which also
-returns the same board for a no-op move. `BoardScreen` mounts
-`useBoardEvents(projectId, userId, enabled)` with `enabled` only while it
-renders the board (`board.data` and no `BoardNotFoundError`), so a 404
-project never opens the channel. It opens one same-origin `WebSocket`
-(`ws:`/`wss:` from `location.protocol`, `location.host`) per board and
-closes it on cleanup; `onopen` invalidates the board because the hub
-keeps no history. Each message is `JSON.parse` + `safeParse`d; invalid
-messages and other projects are ignored, and the client never sends.
-Events go through `setQueryData(boardQueryKey(...), (b) => b &&
-applyBoardEvent(b, event))`, plus an invalidate if the board is fetching.
-Own events (`actorUserId` = user) are ignored while
-`isMutating({ mutationKey: ["board", projectId] }) > 0` and applied
-otherwise. If the socket closes without the cleanup asking, the hook
-reopens it after `reconnectDelay(attempt)` (`apps/web/src/lib/`: 1 s, 2 s,
-5 s, then 10 s); a successful `onopen` resets `attempt` and its invalidation
-recovers what the outage lost. The cleanup flag, `attempt` and timer are
-local to each effect run (no shared `useRef`), and cleanup cancels the
-pending retry. A change by another user (`actorUserId` differs from the
-session) shows a toast with `boardEventToastMessage(event, title)` (`success` green on create, `warning` yellow on update, `error` red on delete, `info` on move; `<Toaster richColors />`), fired in
-the message handler, never inside the `setQueryData` updater; `title` comes
-from the event (created, updated) or the cache read before applying it
-(deleted, moved). No history, bell, or email.
+(404) and `Upgrade: websocket` (426) before upgrading; the in-memory hub
+(`apps/api/src/realtime/`) keeps no history, and the channel only sends
+server → client. Writes still go over HTTP: each successful task create,
+edit, delete, and move publishes its event after the `ForMember` query
+returns (transaction committed) and before responding; `projectId` comes
+from the row, `actorUserId` from the session, and a 4xx publishes nothing.
+The open board applies events with the pure, idempotent `applyBoardEvent`
+(`@agentic-kanban/schemas`) through `useBoardEvents`, which reconnects with
+`reconnectDelay` and toasts other users' changes with
+`boardEventToastMessage`. No history, bell, or email. Hub, endpoint,
+reducer and hook detail live in `.cursor/rules/api.mdc`, `schemas.mdc` and
+`web.mdc`.
 No session is 401. No membership, a missing resource, or a `columnId` from
 another project is 404, never 403. The dashboard lists workspaces and
 projects; the accent comes from `workspace.id`. The board read and task
@@ -101,8 +72,9 @@ create, edit, delete, and move contract is in `postman/`
 `agentic-kanban-local.postman_environment.json`): session cookies, `Origin`
 on `/api/auth/*`, and `baseUrl` defaulting to `http://localhost:3000`.
 Choosing a project sets `selectedProjectId` in `App` and opens the board
-(`useBoard`, `useTaskMutations`, `useMoveTask`, `useBoardEvents`) without a router; a back
-button returns to the dashboard. Do not invent further product tables,
+(`useBoard`, `useTaskMutations`, `useMoveTask`, `useBoardEvents`) without a router;
+`useSelectedProject` mirrors it in `?project=<id>` (`pushState`, `popstate`) so a
+reload or pasted link reopens that board, and a back button returns to the dashboard. Do not invent further product tables,
 extra demo users, realtime beyond this channel, comments, mentions, email,
 deployment, or session tags before the corresponding course work asks
 for them.

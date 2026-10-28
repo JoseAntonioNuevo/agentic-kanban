@@ -5,7 +5,8 @@
  * excepción a TanStack Query: no va envuelta en `useQuery`. Sin sesión
  * se muestran los formularios y no se monta la lista de workspaces.
  * Con sesión, el nombre del usuario, la card de health y los espacios.
- * Un proyecto abre su tablero (`selectedProjectId`); no hay router.
+ * Un proyecto abre su tablero (`selectedProjectId`); no hay router, pero
+ * `useSelectedProject` lo guarda en `?project=` para recargar o compartir.
  * El userId de la sesión limpia la caché privada al cambiar de identidad.
  * Al cerrar sesión la lista se desmonta antes de la petición: `signOut`
  * resuelve mientras `useSession` aún tiene datos.
@@ -21,6 +22,7 @@ import { Button } from "@/components/ui/button.tsx";
 import { Card, CardContent, CardHeader } from "@/components/ui/card.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { useIdentityCacheReset } from "@/hooks/use-identity-cache-reset.ts";
+import { useSelectedProject } from "@/hooks/use-selected-project.ts";
 import { authClient } from "@/lib/auth-client.ts";
 import { queryClient } from "@/lib/query-client.ts";
 import { signOutAndClearPrivateData } from "@/lib/sign-out.ts";
@@ -33,7 +35,7 @@ export default function App() {
   useIdentityCacheReset(userId);
 
   return (
-    <main className="flex min-h-svh items-center justify-center bg-background p-6">
+    <main className="flex min-h-svh items-center justify-center bg-background p-4 sm:p-6">
       {isPending ? (
         <SessionSkeleton />
       ) : data ? (
@@ -73,7 +75,7 @@ function SessionSkeleton() {
 function SignedIn({ name, email, userId }: { name: string; email: string; userId: string }) {
   const [signingOut, setSigningOut] = useState(false);
   const [privateVisible, setPrivateVisible] = useState(true);
-  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  const [selectedProjectId, setSelectedProjectId] = useSelectedProject();
 
   async function handleSignOut() {
     setSigningOut(true);

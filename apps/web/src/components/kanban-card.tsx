@@ -1,7 +1,9 @@
 /**
  * Tarjeta de una tarea. El clic abre el diálogo; un arrastre la mueve.
  * El elemento sortable es el propio botón: así dnd-kit no bloquea el gesto
- * por haber un control dentro de otro.
+ * por haber un control dentro de otro. En táctil el gesto deja hacer scroll:
+ * el sensor de dnd-kit arrastra tras una pulsación larga (250 ms) y entonces
+ * bloquea el desplazamiento; por eso no hay `touch-none`.
  */
 import { useSortable } from "@dnd-kit/react/sortable";
 import type { Task } from "@agentic-kanban/schemas";
@@ -46,7 +48,8 @@ export function KanbanCard({
       }}
       className={cn(
         "w-full cursor-grab rounded-lg bg-background px-3 py-2 text-left ring-1 ring-foreground/10",
-        "touch-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
+        "touch-manipulation select-none [-webkit-touch-callout:none]",
+        "hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
         isDragging && "cursor-grabbing opacity-80",
       )}
     >

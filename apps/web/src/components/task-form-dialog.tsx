@@ -115,7 +115,7 @@ export function TaskFormDialog(props: TaskFormDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="max-h-[calc(100svh-2rem)] overflow-y-auto sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{heading}</DialogTitle>
           <DialogDescription>

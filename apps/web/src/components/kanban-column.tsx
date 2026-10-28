@@ -31,7 +31,7 @@ export function KanbanColumn({
   });
 
   return (
-    <Card className="w-72 shrink-0">
+    <Card className="w-full shrink-0 sm:w-72">
       <CardHeader>
         <CardTitle className="min-w-0 truncate text-sm">{column.name}</CardTitle>
         <CardAction>
@@ -41,7 +41,10 @@ export function KanbanColumn({
       <CardContent className="flex flex-col gap-2">
         <div
           ref={ref}
-          className={cn("flex min-h-24 flex-col gap-2 rounded-lg p-1", isDropTarget && "bg-muted")}
+          className={cn(
+            "flex min-h-16 flex-col gap-2 rounded-lg p-1 sm:min-h-24",
+            isDropTarget && "bg-muted",
+          )}
         >
           {column.tasks.length === 0 ? (
             <p className="text-sm text-muted-foreground">Sin tareas</p>

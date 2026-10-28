@@ -12,8 +12,8 @@ export function boardEventToastMessage(event: BoardEvent, title?: string): strin
     case "task.updated":
       return `Tarea actualizada: ${event.task.title}`;
     case "task.deleted":
-      return title ? `Tarea eliminada: ${title}` : "Tarea eliminada sin título";
+      return title ? `Tarea eliminada: ${title}` : "Tarea eliminada";
     case "task.moved":
-      return title ? `Tarea movida: ${title}` : "Tarea movida sin título";
+      return title ? `Tarea movida: ${title}` : "Tarea movida";
   }
 }

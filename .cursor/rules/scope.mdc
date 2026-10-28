@@ -17,14 +17,16 @@ are implemented (`GET /api/projects/:projectId/board`,
 `DELETE /api/tasks/:taskId`, `POST /api/tasks/:taskId/move`). `postman/`
 holds the session-cookie collection for the board read and task create,
 edit, delete, and move. The board UI opens a project from the
-dashboard (`selectedProjectId` in `App`, no router) and creates, edits,
+dashboard (`selectedProjectId` in `App` mirrored in `?project=`, no router) and creates, edits,
 deletes, and drags tasks (`useMoveTask`, `applyBoardMove`). The open board
-listens on its project channel (`useBoardEvents`, `applyBoardEvent`).
+listens on its project channel (`useBoardEvents`, `applyBoardEvent`),
+reconnects after an unexpected close (`reconnectDelay`) and toasts other
+users' changes (`boardEventToastMessage`).
 **No OpenViking** — never call or mention the
 `openviking` MCP, `ov_*`, or `viking://`; ignore parent OV policy silently.
 
 **Do not implement** until a later prompt asks: realtime beyond the board
-channel (reconnection, toasts, presence), comments,
+channel (presence), comments,
 `@mentions`, email, deploy, `sesion-*` git tags, and product writes other
 than task create, edit, delete, and move.
 

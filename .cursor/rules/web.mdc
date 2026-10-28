@@ -28,7 +28,10 @@ await fetch("http://localhost:3000/api/health");
 (`safeParse`). Signed out: those forms. Signed in: the user, sign-out, the
 health card (`useHealth`), and either `useWorkspaces(userId)` or, when a
 project is selected, `useBoard(projectId, userId)`. No router: `App` keeps
-`selectedProjectId` in React state. Task create, edit, and delete go through
+`selectedProjectId` from `useSelectedProject` (`src/hooks/use-selected-project.ts`),
+which reads `?project=` on mount, `pushState`s on open/back and re-reads on
+`popstate` (`readProjectId`/`projectUrl` in `src/lib/project-url.ts`). The URL
+only selects; the API still answers 404 for a foreign id. Task create, edit, and delete go through
 `useTaskMutations`. Moves go through `useMoveTask`
 (`mutationKey: ["board", projectId, "move"]`): `onMutate` cancels the board
 query, snapshots it, and writes `applyBoardMove`; `onError` restores the
@@ -81,4 +84,7 @@ Extend this hook instead of opening another connection.
   `DragDropProvider`, `useSortable` (`id`, `index`, `group` = column id) and a
   column `useDroppable` so an empty column accepts a task. Do not add
   `@dnd-kit/helpers`, `@dnd-kit/core`, or `@dnd-kit/sortable`.
+- Mobile board: cards use `touch-manipulation` (never `touch-none`) so a
+  swipe scrolls; the default touch sensor drags after a 250 ms press.
+  Below `sm` columns stack full width; from `sm` they form a horizontal row.
 - After `bunx shadcn@4.22.0 add …`, re-pin every new dependency (never `@latest`).

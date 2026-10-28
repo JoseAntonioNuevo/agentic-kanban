@@ -66,7 +66,7 @@ export function BoardScreen({
         {board.isPending && board.data === undefined ? (
           <Skeleton className="h-7 w-48" />
         ) : (
-          <h1 className="min-w-0 truncate text-xl font-medium">{title}</h1>
+          <h1 className="min-w-0 truncate text-lg font-medium sm:text-xl">{title}</h1>
         )}
       </header>
       {board.isPending && board.data === undefined ? (
@@ -126,11 +126,11 @@ export function BoardScreen({
 /** Tres columnas de marcador mientras llega el tablero. */
 function LoadingBoard() {
   return (
-    <div className="flex gap-4 overflow-x-auto px-1 pt-1 pb-2" aria-busy="true">
+    <div className="flex flex-col gap-3 sm:flex-row sm:gap-4 sm:overflow-x-hidden" aria-busy="true">
       <p className="sr-only">Cargando el tablero…</p>
-      <Skeleton className="h-64 w-72" />
-      <Skeleton className="h-64 w-72" />
-      <Skeleton className="h-64 w-72" />
+      <Skeleton className="h-40 w-full shrink-0 sm:h-64 sm:w-72" />
+      <Skeleton className="h-40 w-full shrink-0 sm:h-64 sm:w-72" />
+      <Skeleton className="h-40 w-full shrink-0 sm:h-64 sm:w-72" />
     </div>
   );
 }

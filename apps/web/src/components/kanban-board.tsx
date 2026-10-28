@@ -1,5 +1,5 @@
 /**
- * Columnas del proyecto en una fila con scroll horizontal.
+ * Columnas del proyecto: apiladas en móvil, en fila con scroll horizontal desde `sm`.
  *
  * El board llega de la caché de TanStack Query. dnd-kit reordena el DOM
  * mientras se arrastra; la key del proveedor sigue el orden de esa caché
@@ -60,7 +60,10 @@ export function KanbanBoard({
         if (move !== null) onMoveTask(move);
       }}
     >
-      <div className="flex items-start gap-4 overflow-x-auto pb-2">
+      <p className="hidden text-xs text-muted-foreground pointer-coarse:block">
+        Mantén pulsada una tarea para moverla.
+      </p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4 sm:overflow-x-auto sm:pb-2">
         {board.columns.map((column) => (
           <KanbanColumn
             key={column.id}

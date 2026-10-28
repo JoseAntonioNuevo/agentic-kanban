@@ -40,9 +40,9 @@ describe("boardEventToastMessage", () => {
     expect(boardEventToastMessage(moved, "Diseñar login")).toBe("Tarea movida: Diseñar login");
   });
 
-  it("deleted y moved sin título dicen «sin título»", () => {
-    expect(boardEventToastMessage(deleted)).toBe("Tarea eliminada sin título");
-    expect(boardEventToastMessage(moved)).toBe("Tarea movida sin título");
-    expect(boardEventToastMessage(moved, "")).toBe("Tarea movida sin título");
+  it("deleted y moved sin título dicen solo la acción", () => {
+    expect(boardEventToastMessage(deleted)).toBe("Tarea eliminada");
+    expect(boardEventToastMessage(moved)).toBe("Tarea movida");
+    expect(boardEventToastMessage(moved, "")).toBe("Tarea movida");
   });
 });
