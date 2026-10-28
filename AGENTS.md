@@ -48,6 +48,7 @@ Dragging a card calls that endpoint. `applyBoardMove` in
 order before the response, restores the snapshot and shows `toast.error`
 if the request fails, then invalidates. The board is not copied into
 React state.
+`boardEventSchema` (`BoardEvent`) is a union on `type` (`task.created`/`task.updated` with `task`, `task.deleted` with `taskId`, `task.moved` with final `taskId`, `columnId`, `position`), all with `projectId` and `actorUserId`; no channel sends it yet.
 No session is 401. No membership, a missing resource, or a `columnId` from
 another project is 404, never 403. The dashboard lists workspaces and
 projects; the accent comes from `workspace.id`. The board read and task

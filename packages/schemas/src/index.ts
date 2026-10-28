@@ -26,6 +26,7 @@ export {
   type SignInInput,
   type SignUpInput,
 } from "./auth.ts";
+export { boardEventSchema, type BoardEvent } from "./events.ts";
 export {
   healthResponseSchema,
   serviceStatusSchema,
