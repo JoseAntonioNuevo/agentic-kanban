@@ -83,7 +83,16 @@ Events go through `setQueryData(boardQueryKey(...), (b) => b &&
 applyBoardEvent(b, event))`, plus an invalidate if the board is fetching.
 Own events (`actorUserId` = user) are ignored while
 `isMutating({ mutationKey: ["board", projectId] }) > 0` and applied
-otherwise. There is no reconnection or realtime toast yet.
+otherwise. If the socket closes without the cleanup asking, the hook
+reopens it after `reconnectDelay(attempt)` (`apps/web/src/lib/`: 1 s, 2 s,
+5 s, then 10 s); a successful `onopen` resets `attempt` and its invalidation
+recovers what the outage lost. The cleanup flag, `attempt` and timer are
+local to each effect run (no shared `useRef`), and cleanup cancels the
+pending retry. A change by another user (`actorUserId` differs from the
+session) shows a toast with `boardEventToastMessage(event, title)` (`success` green on create, `warning` yellow on update, `error` red on delete, `info` on move; `<Toaster richColors />`), fired in
+the message handler, never inside the `setQueryData` updater; `title` comes
+from the event (created, updated) or the cache read before applying it
+(deleted, moved). No history, bell, or email.
 No session is 401. No membership, a missing resource, or a `columnId` from
 another project is 404, never 403. The dashboard lists workspaces and
 projects; the accent comes from `workspace.id`. The board read and task

@@ -48,8 +48,18 @@ it. `onopen` invalidates the board. `onmessage` parses with `JSON.parse` in
 applyBoardEvent(b, event))`, invalidating as well if the board is fetching.
 Own events are skipped while `isMutating({ mutationKey: ["board",
 projectId] }) > 0`. The socket never sends. StrictMode's first socket
-closing before it connects is expected. No reconnection or realtime toasts
-yet; extend this hook instead of opening another connection.
+closing before it connects is expected. Reconnection: a close not asked
+by the cleanup schedules a new socket after `reconnectDelay(attempt)`
+(`src/lib/reconnect-delay.ts`) and increments `attempt`; `onopen` resets it
+and its invalidation recovers missed changes (no extra invalidate). The
+closed-by-cleanup flag, `attempt` and timer are local variables of each
+effect run, never a shared `useRef`; cleanup sets the flag, clears the
+timer and closes the socket, leaving no timer or socket alive. Toasts: when
+`actorUserId` differs from `userId`, `handleBoardEvent` calls
+a toast of `boardEventToastMessage(event, title)` (`success` create, `warning` update, `error` delete, `info` move; `richColors` on the Toaster)
+(`src/lib/board-event-toast.ts`), before `setQueryData` and never inside
+its updater; `title` is read with `getQueryData` for deleted and moved.
+Extend this hook instead of opening another connection.
 
 - Private query keys are `[scope, userId, ...]` (`workspacesQueryKey`,
   `boardQueryKey`).

@@ -5,7 +5,10 @@
  * El canal solo anuncia; las escrituras siguen por HTTP y el cliente no
  * envía nada. Al abrir se invalida el board, porque el hub no guarda
  * historial. Un evento propio con una mutation del tablero en curso se
- * ignora: su `onSettled` ya reconcilia. Sin reconexión ni avisos todavía.
+ * ignora: su `onSettled` ya reconcilia. Si el socket se cierra sin que lo
+ * pida el cleanup, se reabre con `reconnectDelay`; el `onopen` siguiente
+ * invalida el board y recupera lo perdido. Un evento de otro usuario además
+ * lanza un toast (verde crea, amarillo edita, rojo borra, info mueve).
  */
 import {
   applyBoardEvent,
@@ -15,6 +18,10 @@ import {
 } from "@agentic-kanban/schemas";
 import { useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
+import { toast } from "sonner";
+
+import { boardEventToastMessage } from "../lib/board-event-toast.ts";
+import { reconnectDelay } from "../lib/reconnect-delay.ts";
 
 import { boardQueryKey } from "./use-board.ts";
 
@@ -39,6 +46,29 @@ export function parseBoardEvent(data: unknown): BoardEvent | undefined {
   return result.success ? result.data : undefined;
 }
 
+/** Título de la tarea afectada según la caché, o `undefined` si no está. */
+function cachedTaskTitle(
+  queryClient: QueryClient,
+  queryKey: ReturnType<typeof boardQueryKey>,
+  event: BoardEvent,
+): string | undefined {
+  if (event.type !== "task.deleted" && event.type !== "task.moved") return undefined;
+  const board = queryClient.getQueryData<BoardResponse>(queryKey);
+  for (const column of board?.columns ?? []) {
+    const found = column.tasks.find((item) => item.id === event.taskId);
+    if (found) return found.title;
+  }
+  return undefined;
+}
+
+/** Color del aviso según el tipo: verde crea, amarillo edita, rojo borra. */
+const BOARD_EVENT_TOAST: Record<BoardEvent["type"], (message: string) => unknown> = {
+  "task.created": (message) => toast.success(message),
+  "task.updated": (message) => toast.warning(message),
+  "task.deleted": (message) => toast.error(message),
+  "task.moved": (message) => toast.info(message),
+};
+
 type BoardChannel = { queryClient: QueryClient; projectId: string; userId: string };
 
 /** Aplica un evento ya parseado a la caché del board de `userId`. */
@@ -58,6 +88,14 @@ export function handleBoardEvent(
   }
 
   const queryKey = boardQueryKey(projectId, userId);
+
+  // Fuera del updater, que debe seguir puro. El título de deleted y moved
+  // se lee antes de aplicar el evento: después la tarea ya no está o cambió.
+  if (event.actorUserId !== userId) {
+    const message = boardEventToastMessage(event, cachedTaskTitle(queryClient, queryKey, event));
+    BOARD_EVENT_TOAST[event.type](message);
+  }
+
   const refetching = queryClient.isFetching({ queryKey }) > 0;
   queryClient.setQueryData<BoardResponse>(
     queryKey,
@@ -70,22 +108,47 @@ export function handleBoardEvent(
   }
 }
 
-/** Abre el canal del proyecto. Devuelve el cleanup, que cierra el socket. */
+/**
+ * Abre el canal del proyecto y lo reabre solo si se corta. Devuelve el
+ * cleanup: marca el cierre como intencionado, cancela el reintento pendiente
+ * y cierra el socket. `closedByCleanup`, `attempt` y `timer` son locales a
+ * cada llamada, así el cierre del primer socket de StrictMode no afecta al
+ * segundo.
+ */
 export function connectBoardEvents(channel: BoardChannel): () => void {
   const queryKey = boardQueryKey(channel.projectId, channel.userId);
-  const socket = new WebSocket(boardEventsUrl(channel.projectId));
+  let closedByCleanup = false;
+  let attempt = 0;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  let socket: WebSocket;
 
-  socket.onopen = () => {
-    void channel.queryClient.invalidateQueries({ queryKey });
+  const open = () => {
+    timer = undefined;
+    socket = new WebSocket(boardEventsUrl(channel.projectId));
+    socket.onopen = () => {
+      attempt = 0;
+      void channel.queryClient.invalidateQueries({ queryKey });
+    };
+    socket.onmessage = (message: MessageEvent) => {
+      const event = parseBoardEvent(message.data);
+      if (event !== undefined) handleBoardEvent(channel, event);
+    };
+    socket.onclose = () => {
+      if (closedByCleanup) return;
+      timer = setTimeout(open, reconnectDelay(attempt));
+      attempt += 1;
+    };
   };
-  socket.onmessage = (message: MessageEvent) => {
-    const event = parseBoardEvent(message.data);
-    if (event !== undefined) handleBoardEvent(channel, event);
-  };
+
+  open();
 
   return () => {
+    closedByCleanup = true;
+    if (timer !== undefined) clearTimeout(timer);
+    timer = undefined;
     socket.onopen = null;
     socket.onmessage = null;
+    socket.onclose = null;
     socket.close();
   };
 }

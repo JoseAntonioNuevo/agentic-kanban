@@ -4,6 +4,7 @@
  */
 import type { BoardEvent, BoardResponse } from "@agentic-kanban/schemas";
 import { MutationObserver, QueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { boardQueryKey } from "./use-board.ts";
@@ -13,6 +14,10 @@ import {
   handleBoardEvent,
   parseBoardEvent,
 } from "./use-board-events.ts";
+
+vi.mock("sonner", () => ({
+  toast: { info: vi.fn(), error: vi.fn(), success: vi.fn(), warning: vi.fn() },
+}));
 
 const projectId = "proj_agentic_kanban";
 const ana = "user_ana";
@@ -58,6 +63,7 @@ class FakeWebSocket {
   static instances: FakeWebSocket[] = [];
   onopen: (() => void) | null = null;
   onmessage: ((message: { data: unknown }) => void) | null = null;
+  onclose: (() => void) | null = null;
   closed = false;
   readonly send = vi.fn();
   readonly url: string;
@@ -87,9 +93,14 @@ beforeEach(() => {
   FakeWebSocket.instances = [];
   vi.stubGlobal("WebSocket", FakeWebSocket);
   vi.stubGlobal("location", { protocol: "http:", host: "localhost:5173" });
+  vi.useFakeTimers();
 });
 
 afterEach(() => {
+  vi.useRealTimers();
+  for (const fn of [toast.info, toast.error, toast.success, toast.warning]) {
+    vi.mocked(fn).mockClear();
+  }
   queryClient.clear();
   vi.unstubAllGlobals();
 });
@@ -143,6 +154,114 @@ describe("connectBoardEvents", () => {
     expect(socket?.onmessage).toBeNull();
     expect(socket?.send).not.toHaveBeenCalled();
     expect(FakeWebSocket.instances).toHaveLength(1);
+  });
+});
+
+describe("reconexión", () => {
+  it("reabre con reconnectDelay tras un cierre ajeno y vuelve a 0 al abrir", () => {
+    const close = connectBoardEvents({ queryClient, projectId, userId: luis });
+    const sockets = FakeWebSocket.instances;
+
+    sockets[0]?.onclose?.();
+    vi.advanceTimersByTime(999);
+    expect(sockets).toHaveLength(1);
+    vi.advanceTimersByTime(1);
+    expect(sockets).toHaveLength(2);
+
+    sockets[1]?.onclose?.();
+    vi.advanceTimersByTime(2000);
+    expect(sockets).toHaveLength(3);
+
+    sockets[2]?.onclose?.();
+    vi.advanceTimersByTime(5000);
+    expect(sockets).toHaveLength(4);
+
+    sockets[3]?.onclose?.();
+    vi.advanceTimersByTime(10_000);
+    expect(sockets).toHaveLength(5);
+
+    sockets[4]?.onopen?.();
+    sockets[4]?.onclose?.();
+    vi.advanceTimersByTime(1000);
+    expect(sockets).toHaveLength(6);
+
+    close();
+  });
+
+  it("el cleanup cancela el reintento pendiente y no deja timers ni sockets", () => {
+    const close = connectBoardEvents({ queryClient, projectId, userId: luis });
+    FakeWebSocket.instances[0]?.onclose?.();
+    expect(vi.getTimerCount()).toBe(1);
+
+    close();
+    expect(vi.getTimerCount()).toBe(0);
+    vi.advanceTimersByTime(60_000);
+    expect(FakeWebSocket.instances).toHaveLength(1);
+  });
+
+  it("cerrar el primer canal no programa reintento ni pisa al segundo (StrictMode)", () => {
+    const closeFirst = connectBoardEvents({ queryClient, projectId, userId: luis });
+    const first = FakeWebSocket.instances[0];
+    const onclose = first?.onclose;
+    closeFirst();
+    const closeSecond = connectBoardEvents({ queryClient, projectId, userId: luis });
+
+    // Aunque el navegador dispare close del primero después del cleanup.
+    onclose?.();
+    expect(vi.getTimerCount()).toBe(0);
+    vi.advanceTimersByTime(60_000);
+    expect(FakeWebSocket.instances).toHaveLength(2);
+    expect(FakeWebSocket.instances[1]?.closed).toBe(false);
+
+    closeSecond();
+  });
+});
+
+describe("avisos de cambios ajenos", () => {
+  const movedByAna: BoardEvent = {
+    type: "task.moved",
+    projectId,
+    actorUserId: ana,
+    taskId: "task_kanban_1",
+    columnId: "col_kanban_todo",
+    position: 1,
+  };
+
+  it("avisa al otro usuario con el título de la caché", () => {
+    handleBoardEvent({ queryClient, projectId, userId: luis }, movedByAna);
+    expect(toast.info).toHaveBeenCalledWith("Tarea movida: task_kanban_1");
+
+    handleBoardEvent({ queryClient, projectId, userId: luis }, deletedByAna);
+    expect(toast.error).toHaveBeenLastCalledWith("Tarea eliminada: task_kanban_1");
+  });
+
+  it("usa verde al crear, amarillo al editar y rojo al borrar", () => {
+    const newTask = { ...task("task_new", 2), title: "Nueva" };
+    handleBoardEvent(
+      { queryClient, projectId, userId: luis },
+      { type: "task.created", projectId, actorUserId: ana, task: newTask },
+    );
+    expect(toast.success).toHaveBeenCalledWith("Nueva tarea: Nueva");
+
+    handleBoardEvent(
+      { queryClient, projectId, userId: luis },
+      { type: "task.updated", projectId, actorUserId: ana, task: { ...newTask, title: "Editada" } },
+    );
+    expect(toast.warning).toHaveBeenCalledWith("Tarea actualizada: Editada");
+  });
+
+  it("no avisa al autor, ni con otra pestaña ni con mutation en curso", () => {
+    handleBoardEvent({ queryClient, projectId, userId: ana }, movedByAna);
+    expect(toast.info).not.toHaveBeenCalled();
+    expect(toast.error).not.toHaveBeenCalled();
+  });
+
+  it("no avisa de otro proyecto", () => {
+    handleBoardEvent(
+      { queryClient, projectId, userId: luis },
+      { ...movedByAna, projectId: "proj_ana_notes" },
+    );
+    expect(toast.info).not.toHaveBeenCalled();
   });
 });
 
