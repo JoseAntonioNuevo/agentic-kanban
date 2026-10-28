@@ -15,7 +15,7 @@ skipped). Git, this file, and the repository documentation are authoritative.
 The implemented slice is the health check, cookie auth, a classroom seed,
 membership-scoped reads, a workspace dashboard, the board read, and task
 create, edit, delete, move, and optimistic drag-and-drop, plus an
-authenticated per-project WebSocket channel that nothing publishes to yet.
+authenticated per-project WebSocket channel fed by those writes.
 Tables `workspace`, `workspace_member`, `project`, `column`, and `task`
 exist in `@agentic-kanban/db`. The seed does not run when the API starts.
 It inserts three columns and five tasks on `proj_agentic_kanban`
@@ -57,8 +57,14 @@ delivers only to that `projectId`, and never throws (`console.error`).
 `GET /api/projects/:projectId/events` checks session (401), membership
 (404) and `Upgrade: websocket` (426) before `upgradeWebSocket` from
 `hono/bun`; each message is `JSON.stringify(event)` and client messages
-are ignored. Writes still go over HTTP and do not publish yet; there is
-no browser client.
+are ignored. Writes still go over HTTP: after the `ForMember` query
+returns (transaction committed) and before responding, each successful
+task create, edit, delete, and move publishes `task.created`,
+`task.updated` (the parsed task that is also the response),
+`task.deleted` (`deleteTaskForMember` returns the row's `projectId` or
+`undefined`), or `task.moved` (final row values). `projectId` comes from
+the row, `actorUserId` from the session; a 4xx publishes nothing. There
+is no browser client yet.
 No session is 401. No membership, a missing resource, or a `columnId` from
 another project is 404, never 403. The dashboard lists workspaces and
 projects; the accent comes from `workspace.id`. The board read and task

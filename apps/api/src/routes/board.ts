@@ -3,7 +3,12 @@
  *
  * Primero la sesión, después el validador. Sin membresía, o si el recurso
  * no existe, 404: el id del cliente solo identifica. Una columna de otro
- * project también es 404. La Sesión 3 publicará eventos desde estas escrituras.
+ * project también es 404.
+ *
+ * Cada escritura correcta publica su evento en el hub cuando la consulta
+ * `ForMember` ya ha devuelto (transacción confirmada) y antes de responder.
+ * Un 4xx no publica. La tarea del evento es la misma que la respuesta;
+ * `projectId` sale de la fila y `actorUserId` de la sesión.
  */
 import {
   createTaskForMember,
@@ -26,6 +31,7 @@ import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 
 import { requireSession, type SessionEnv } from "../middleware/session.ts";
+import { publish } from "../realtime/index.ts";
 
 export const boardRoutes = new Hono<SessionEnv>();
 
@@ -83,6 +89,7 @@ boardRoutes.post(
   async (c) => {
     const { projectId } = c.req.valid("param");
     const body = c.req.valid("json");
+    const userId = c.get("userId");
     const created = await createTaskForMember(
       {
         projectId,
@@ -90,14 +97,17 @@ boardRoutes.post(
         title: body.title,
         description: body.description ?? "",
       },
-      c.get("userId"),
+      userId,
     );
 
     if (created === undefined) {
       return c.json({ error: "Not found" }, 404);
     }
 
-    return c.json(taskSchema.parse(toTask(created)), 201);
+    const saved = taskSchema.parse(toTask(created));
+    publish({ type: "task.created", projectId: saved.projectId, actorUserId: userId, task: saved });
+
+    return c.json(saved, 201);
   },
 );
 
@@ -109,13 +119,17 @@ boardRoutes.patch(
   async (c) => {
     const { taskId } = c.req.valid("param");
     const body = c.req.valid("json");
-    const updated = await updateTaskForMember(taskId, c.get("userId"), body);
+    const userId = c.get("userId");
+    const updated = await updateTaskForMember(taskId, userId, body);
 
     if (updated === undefined) {
       return c.json({ error: "Not found" }, 404);
     }
 
-    return c.json(taskSchema.parse(toTask(updated)), 200);
+    const saved = taskSchema.parse(toTask(updated));
+    publish({ type: "task.updated", projectId: saved.projectId, actorUserId: userId, task: saved });
+
+    return c.json(saved, 200);
   },
 );
 
@@ -127,7 +141,8 @@ boardRoutes.post(
   async (c) => {
     const { taskId } = c.req.valid("param");
     const body = c.req.valid("json");
-    const moved = await moveTaskForMember(taskId, c.get("userId"), {
+    const userId = c.get("userId");
+    const moved = await moveTaskForMember(taskId, userId, {
       columnId: body.columnId,
       position: body.position,
     });
@@ -136,7 +151,17 @@ boardRoutes.post(
       return c.json({ error: "Not found" }, 404);
     }
 
-    return c.json(taskSchema.parse(toTask(moved)), 200);
+    const saved = taskSchema.parse(toTask(moved));
+    publish({
+      type: "task.moved",
+      projectId: saved.projectId,
+      actorUserId: userId,
+      taskId: saved.id,
+      columnId: saved.columnId,
+      position: saved.position,
+    });
+
+    return c.json(saved, 200);
   },
 );
 
@@ -146,11 +171,14 @@ boardRoutes.delete(
   zValidator("param", taskIdParamSchema),
   async (c) => {
     const { taskId } = c.req.valid("param");
-    const deleted = await deleteTaskForMember(taskId, c.get("userId"));
+    const userId = c.get("userId");
+    const projectId = await deleteTaskForMember(taskId, userId);
 
-    if (!deleted) {
+    if (projectId === undefined) {
       return c.json({ error: "Not found" }, 404);
     }
+
+    publish({ type: "task.deleted", projectId, actorUserId: userId, taskId });
 
     return c.body(null, 204);
   },

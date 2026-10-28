@@ -40,9 +40,10 @@ Hono → drizzle-orm/libsql → @libsql/client → file:…/agentic-kanban.db
   `moveTaskForMember`. Create, delete, and move use `db.transaction`: create
   appends with `max(position) + 1`, delete compacts that column to `0..n-1`,
   and move inserts at `position` clamped to `0..n` after removal, then
-  renumbers the affected columns to `0..n-1`. The destination column must
-  be the task's project and `workspace_id`. The `workspace_id` filter always
-  comes from the authorized row.
+  renumbers the affected columns to `0..n-1`. `deleteTaskForMember`
+  returns the deleted row's `projectId`, or `undefined`. The destination
+  column must be the task's project and `workspace_id`. The `workspace_id`
+  filter always comes from the authorized row.
   `migrateDatabase()` applies `packages/db/migrations` for the test harness.
   The API does not migrate on startup.
 - Generate migrations on the host with `bun run db:generate`. Apply them in

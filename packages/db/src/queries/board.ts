@@ -254,14 +254,19 @@ export async function updateTaskForMember(
 
 /**
  * Borra la tarea y compacta las posiciones de su columna a `0..n-1`.
- * Todo en una transacción. Sin membresía, o si no existe, `false`.
+ * Todo en una transacción. Devuelve el `projectId` de la tarea borrada;
+ * sin membresía, o si no existe, `undefined`.
  */
-export async function deleteTaskForMember(taskId: string, userId: string): Promise<boolean> {
+export async function deleteTaskForMember(
+  taskId: string,
+  userId: string,
+): Promise<string | undefined> {
   return await db.transaction(async (tx) => {
     const rows = await tx
       .select({
         id: task.id,
         workspaceId: task.workspaceId,
+        projectId: task.projectId,
         columnId: task.columnId,
       })
       .from(task)
@@ -274,7 +279,7 @@ export async function deleteTaskForMember(taskId: string, userId: string): Promi
 
     const found = rows[0];
     if (found === undefined) {
-      return false;
+      return undefined;
     }
 
     await tx
@@ -298,7 +303,7 @@ export async function deleteTaskForMember(taskId: string, userId: string): Promi
         .where(and(eq(task.id, row.id), eq(task.workspaceId, found.workspaceId)));
     }
 
-    return true;
+    return found.projectId;
   });
 }
 

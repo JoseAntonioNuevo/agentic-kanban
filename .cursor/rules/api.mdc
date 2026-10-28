@@ -24,7 +24,12 @@ app.route("/", healthRoutes);
   `c.json`. Invalid input is the validator's 400.
 - `src/routes/board.ts` exports `boardRoutes`: board read, task create,
   update, delete, and `POST /api/tasks/:taskId/move`, with the same 401/404
-  chain. A `columnId` from another project is 404.
+  chain. A `columnId` from another project is 404. Each successful write
+  publishes its `BoardEvent` in the route, after the `ForMember` query
+  returns and before responding, never inside the transaction: parse the
+  task once with `taskSchema` and use that object for the event and the
+  response. `projectId` comes from the row and `actorUserId` from the
+  session; a 4xx publishes nothing.
 - Database access only through `@agentic-kanban/db`. Never import
   `@libsql/client` or `drizzle-orm` from the API, including tests.
 - API tests use a temporary libSQL file per test file (`src/test/setup.ts`
