@@ -37,7 +37,19 @@ app.route("/", healthRoutes);
   The built-in in-memory rate limit applies only to sign-up and sign-in
   (`AUTH_RATE_LIMIT_MAX`; `"**": false` last). Do not import `drizzle-orm` in
   the API (the adapter does).
-- `src/realtime/index.ts` stays a placeholder. Realtime must stay in this
-  process (SSE or WebSocket). No Socket.IO, Redis, or extra service.
+- `src/realtime/index.ts` is the in-memory hub: `subscribe(projectId,
+  listener)` returns the unsubscribe; `publish(event)` validates with
+  `boardEventSchema.safeParse`, delivers only to that project and never
+  throws (invalid events and failing listeners go to `console.error`).
+  Realtime stays in this process: no Socket.IO, Redis, or extra service.
+- `src/routes/events.ts` exports `eventRoutes` and `boardSocketEvents`.
+  `GET /api/projects/:projectId/events` runs `requireSession` (401), param
+  + `getProjectForMember` (404), an `Upgrade: websocket` check (426, our
+  own: on a failed `server.upgrade` Hono calls `next()`), then
+  `upgradeWebSocket` from `hono/bun`. `onOpen` subscribes and sends
+  `JSON.stringify(event)`; `onClose` unsubscribes; no `onMessage`.
+  `src/index.ts` exports `websocket` next to `fetch`; Bun handles pings
+  and the idle timeout. Root `test.alias` points `hono/bun` at its
+  WebSocket module because the barrel reads the `Bun` global in Node.
 - Do not auto-run migrations or seed. Dev: `bun run --hot`. Listen
   `0.0.0.0:${API_PORT:-3000}`.

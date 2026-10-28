@@ -25,6 +25,8 @@ export default defineConfig({
       "/api": {
         target: process.env.API_PROXY_TARGET ?? "http://localhost:3000",
         changeOrigin: true,
+        // Reenvía también la apertura del WebSocket del canal del tablero.
+        ws: true,
       },
     },
   },

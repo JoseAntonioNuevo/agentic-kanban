@@ -6,6 +6,8 @@
  * activan las rules de React; en la API se permite `console` (logs de health).
  * Las migraciones de Drizzle se ignoran en fmt: drizzle-kit no sigue Oxfmt.
  */
+import { fileURLToPath, URL } from "node:url";
+
 import { configDefaults, defineConfig } from "vite-plus";
 
 export default defineConfig({
@@ -51,6 +53,17 @@ export default defineConfig({
       BETTER_AUTH_URL: "http://localhost:5173",
       AUTH_RATE_LIMIT_MAX: "10000",
     },
+    // El barrel `hono/bun` lee el global `Bun` al importarse (`ssg.js`) y
+    // los tests corren en Node. Solo aquí se resuelve al módulo real de
+    // WebSocket (`upgradeWebSocket`, `websocket`); la API sigue en Bun.
+    alias: [
+      {
+        find: /^hono\/bun$/,
+        replacement: fileURLToPath(
+          new URL("./node_modules/hono/dist/adapter/bun/websocket.js", import.meta.url),
+        ),
+      },
+    ],
     setupFiles: ["apps/api/src/test/setup.ts"],
     exclude: [...configDefaults.exclude, "**/.claude/worktrees/**"],
   },

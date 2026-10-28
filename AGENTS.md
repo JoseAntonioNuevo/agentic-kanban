@@ -14,7 +14,8 @@ skipped). Git, this file, and the repository documentation are authoritative.
 
 The implemented slice is the health check, cookie auth, a classroom seed,
 membership-scoped reads, a workspace dashboard, the board read, and task
-create, edit, delete, move, and optimistic drag-and-drop.
+create, edit, delete, move, and optimistic drag-and-drop, plus an
+authenticated per-project WebSocket channel that nothing publishes to yet.
 Tables `workspace`, `workspace_member`, `project`, `column`, and `task`
 exist in `@agentic-kanban/db`. The seed does not run when the API starts.
 It inserts three columns and five tasks on `proj_agentic_kanban`
@@ -48,7 +49,16 @@ Dragging a card calls that endpoint. `applyBoardMove` in
 order before the response, restores the snapshot and shows `toast.error`
 if the request fails, then invalidates. The board is not copied into
 React state.
-`boardEventSchema` (`BoardEvent`) is a union on `type` (`task.created`/`task.updated` with `task`, `task.deleted` with `taskId`, `task.moved` with final `taskId`, `columnId`, `position`), all with `projectId` and `actorUserId`; no channel sends it yet.
+`boardEventSchema` (`BoardEvent`) is a union on `type` (`task.created`/`task.updated` with `task`, `task.deleted` with `taskId`, `task.moved` with final `taskId`, `columnId`, `position`), all with `projectId` and `actorUserId`.
+The in-memory hub in `apps/api/src/realtime/index.ts` exposes
+`subscribe(projectId, listener)` (returns the unsubscribe) and
+`publish(event)`, which validates with `boardEventSchema.safeParse`,
+delivers only to that `projectId`, and never throws (`console.error`).
+`GET /api/projects/:projectId/events` checks session (401), membership
+(404) and `Upgrade: websocket` (426) before `upgradeWebSocket` from
+`hono/bun`; each message is `JSON.stringify(event)` and client messages
+are ignored. Writes still go over HTTP and do not publish yet; there is
+no browser client.
 No session is 401. No membership, a missing resource, or a `columnId` from
 another project is 404, never 403. The dashboard lists workspaces and
 projects; the accent comes from `workspace.id`. The board read and task
@@ -59,7 +69,7 @@ on `/api/auth/*`, and `baseUrl` defaulting to `http://localhost:3000`.
 Choosing a project sets `selectedProjectId` in `App` and opens the board
 (`useBoard`, `useTaskMutations`, `useMoveTask`) without a router; a back
 button returns to the dashboard. Do not invent further product tables,
-extra demo users, realtime, comments, mentions, email,
+extra demo users, realtime beyond this channel, comments, mentions, email,
 deployment, or session tags before the corresponding course work asks
 for them.
 
@@ -67,8 +77,9 @@ for them.
 React → TanStack Query (health, workspaces, board) and authClient.useSession()
   → /api/health, /api/auth/*, /api/workspaces, /api/projects/:projectId,
     /api/projects/:projectId/board, /api/projects/:projectId/tasks,
-    /api/tasks/:taskId, /api/tasks/:taskId/move
-  → Vite+ proxy
+    /api/tasks/:taskId, /api/tasks/:taskId/move,
+    /api/projects/:projectId/events (WebSocket, server → client only)
+  → Vite+ proxy (ws: true)
   → Hono on Bun → Better Auth (email + password, httpOnly cookie)
   → Drizzle → local libSQL (auth and tenant tables in @agentic-kanban/db)
 ```
