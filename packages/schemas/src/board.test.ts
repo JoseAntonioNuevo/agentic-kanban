@@ -3,7 +3,9 @@
  */
 import { describe, expect, it } from "vite-plus/test";
 
+import type { BoardEvent } from "./events.ts";
 import {
+  applyBoardEvent,
   applyBoardMove,
   boardResponseSchema,
   createTaskBodySchema,
@@ -242,6 +244,17 @@ describe("applyBoardMove", () => {
     expect(emptyOverflow.columns[2]?.tasks[0]?.position).toBe(0);
   });
 
+  it("deja el mismo board si la tarea ya está en ese sitio", () => {
+    const board = sampleBoard();
+
+    expect(applyBoardMove(board, { taskId: "task_b", columnId: "col_todo", position: 1 })).toBe(
+      board,
+    );
+    expect(applyBoardMove(board, { taskId: "task_c", columnId: "col_todo", position: 9 })).toBe(
+      board,
+    );
+  });
+
   it("deja el mismo board si la tarea o la columna no existen", () => {
     const board = sampleBoard();
 
@@ -251,6 +264,197 @@ describe("applyBoardMove", () => {
     expect(applyBoardMove(board, { taskId: "task_a", columnId: "col_missing", position: 0 })).toBe(
       board,
     );
+  });
+});
+
+describe("applyBoardEvent", () => {
+  const actor = { projectId: "proj_agentic_kanban", actorUserId: "user_ana" };
+
+  function eventTask(id: string, columnId: string, position: number, title = id) {
+    return {
+      id,
+      projectId: "proj_agentic_kanban",
+      columnId,
+      title,
+      description: "",
+      position,
+      createdAt,
+    };
+  }
+
+  function ids(board: BoardResponse, index: number) {
+    return board.columns[index]?.tasks.map((task) => task.id);
+  }
+
+  function positions(board: BoardResponse, index: number) {
+    return board.columns[index]?.tasks.map((task) => task.position);
+  }
+
+  /** Aplicarlo dos veces da lo mismo que una, y la segunda es la misma referencia. */
+  function applyTwice(board: BoardResponse, event: BoardEvent): BoardResponse {
+    const once = applyBoardEvent(board, event);
+    const twice = applyBoardEvent(once, event);
+    expect(twice).toBe(once);
+    expect(twice).toEqual(once);
+    return once;
+  }
+
+  it("task.created inserta en su posición, renumera y es idempotente", () => {
+    const board = sampleBoard();
+    const event: BoardEvent = {
+      type: "task.created",
+      ...actor,
+      task: eventTask("task_new", "col_todo", 1),
+    };
+
+    const next = applyTwice(board, event);
+
+    expect(ids(next, 0)).toEqual(["task_a", "task_new", "task_b", "task_c"]);
+    expect(positions(next, 0)).toEqual([0, 1, 2, 3]);
+    expect(next.columns[1]).toBe(board.columns[1]);
+    expect(ids(board, 0)).toEqual(["task_a", "task_b", "task_c"]);
+  });
+
+  it("task.created acota la posición al final de la columna", () => {
+    const next = applyBoardEvent(sampleBoard(), {
+      type: "task.created",
+      ...actor,
+      task: eventTask("task_new", "col_done", 7),
+    });
+
+    expect(ids(next, 2)).toEqual(["task_new"]);
+    expect(positions(next, 2)).toEqual([0]);
+  });
+
+  it("task.created con un id existente o una columna ausente deja la misma referencia", () => {
+    const board = sampleBoard();
+
+    expect(
+      applyBoardEvent(board, {
+        type: "task.created",
+        ...actor,
+        task: eventTask("task_b", "col_done", 0),
+      }),
+    ).toBe(board);
+    expect(
+      applyBoardEvent(board, {
+        type: "task.created",
+        ...actor,
+        task: eventTask("task_new", "col_missing", 0),
+      }),
+    ).toBe(board);
+  });
+
+  it("task.updated copia título y descripción sin mover la tarea", () => {
+    const board = sampleBoard();
+    const event: BoardEvent = {
+      type: "task.updated",
+      ...actor,
+      task: { ...eventTask("task_b", "col_done", 0, "Nuevo título"), description: "Detalle" },
+    };
+
+    const next = applyTwice(board, event);
+
+    expect(ids(next, 0)).toEqual(["task_a", "task_b", "task_c"]);
+    expect(next.columns[0]?.tasks[1]).toMatchObject({
+      id: "task_b",
+      columnId: "col_todo",
+      position: 1,
+      title: "Nuevo título",
+      description: "Detalle",
+    });
+    expect(next.columns[0]?.tasks[0]).toBe(board.columns[0]?.tasks[0]);
+    expect(ids(next, 2)).toEqual([]);
+  });
+
+  it("task.updated de una tarea ausente deja la misma referencia", () => {
+    const board = sampleBoard();
+
+    expect(
+      applyBoardEvent(board, {
+        type: "task.updated",
+        ...actor,
+        task: eventTask("task_missing", "col_todo", 0),
+      }),
+    ).toBe(board);
+  });
+
+  it("task.deleted elimina la tarea y renumera su columna", () => {
+    const board = sampleBoard();
+
+    const next = applyTwice(board, { type: "task.deleted", ...actor, taskId: "task_a" });
+
+    expect(ids(next, 0)).toEqual(["task_b", "task_c"]);
+    expect(positions(next, 0)).toEqual([0, 1]);
+    expect(next.columns[1]).toBe(board.columns[1]);
+  });
+
+  it("task.deleted de una tarea ausente deja la misma referencia", () => {
+    const board = sampleBoard();
+
+    expect(applyBoardEvent(board, { type: "task.deleted", ...actor, taskId: "task_missing" })).toBe(
+      board,
+    );
+  });
+
+  it("task.moved aplica el mismo orden que applyBoardMove", () => {
+    const board = sampleBoard();
+    const move = { taskId: "task_b", columnId: "col_doing", position: 1 };
+
+    const next = applyTwice(board, { type: "task.moved", ...actor, ...move });
+
+    expect(next).toEqual(applyBoardMove(board, move));
+    expect(ids(next, 0)).toEqual(["task_a", "task_c"]);
+    expect(ids(next, 1)).toEqual(["task_d", "task_b", "task_e"]);
+    expect(positions(next, 1)).toEqual([0, 1, 2]);
+  });
+
+  it("task.moved dentro de la misma columna es idempotente", () => {
+    const next = applyTwice(sampleBoard(), {
+      type: "task.moved",
+      ...actor,
+      taskId: "task_c",
+      columnId: "col_todo",
+      position: 0,
+    });
+
+    expect(ids(next, 0)).toEqual(["task_c", "task_a", "task_b"]);
+  });
+
+  it("task.moved de una tarea o a una columna ausentes deja la misma referencia", () => {
+    const board = sampleBoard();
+
+    expect(
+      applyBoardEvent(board, {
+        type: "task.moved",
+        ...actor,
+        taskId: "task_missing",
+        columnId: "col_todo",
+        position: 0,
+      }),
+    ).toBe(board);
+    expect(
+      applyBoardEvent(board, {
+        type: "task.moved",
+        ...actor,
+        taskId: "task_a",
+        columnId: "col_missing",
+        position: 0,
+      }),
+    ).toBe(board);
+  });
+
+  it("un evento de otro proyecto deja la misma referencia", () => {
+    const board = sampleBoard();
+
+    expect(
+      applyBoardEvent(board, {
+        type: "task.deleted",
+        projectId: "proj_ana_notes",
+        actorUserId: "user_ana",
+        taskId: "task_a",
+      }),
+    ).toBe(board);
   });
 });
 

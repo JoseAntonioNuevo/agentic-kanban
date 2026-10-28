@@ -36,6 +36,21 @@ snapshot and calls `toast.error`; `onSettled` invalidates. Every board
 `mutationKey` starts with `["board", projectId]`. `boardQueryKey` is
 `["board", userId, projectId]`. Do not copy the board into `useState`.
 
+Realtime: `BoardScreen` calls `useBoardEvents(projectId, userId, enabled)`
+(`src/hooks/use-board-events.ts`) with `enabled` true only while it renders
+`KanbanBoard` (`board.data` and no `BoardNotFoundError`). One `useEffect`
+on `projectId`, `userId`, `enabled` opens one `WebSocket` to
+`${ws|wss}//${location.host}/api/projects/${encodeURIComponent(projectId)}/events`
+(same origin, cookie travels alone, never `:3000`) and its cleanup closes
+it. `onopen` invalidates the board. `onmessage` parses with `JSON.parse` in
+`try` and `boardEventSchema.safeParse`, drops other projects, then
+`setQueryData(boardQueryKey(projectId, userId), (b) => b &&
+applyBoardEvent(b, event))`, invalidating as well if the board is fetching.
+Own events are skipped while `isMutating({ mutationKey: ["board",
+projectId] }) > 0`. The socket never sends. StrictMode's first socket
+closing before it connects is expected. No reconnection or realtime toasts
+yet; extend this hook instead of opening another connection.
+
 - Private query keys are `[scope, userId, ...]` (`workspacesQueryKey`,
   `boardQueryKey`).
   `useIdentityCacheReset` in `App` removes the previous user's queries when

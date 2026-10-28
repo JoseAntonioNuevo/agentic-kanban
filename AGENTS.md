@@ -15,7 +15,8 @@ skipped). Git, this file, and the repository documentation are authoritative.
 The implemented slice is the health check, cookie auth, a classroom seed,
 membership-scoped reads, a workspace dashboard, the board read, and task
 create, edit, delete, move, and optimistic drag-and-drop, plus an
-authenticated per-project WebSocket channel fed by those writes.
+authenticated per-project WebSocket channel fed by those writes and a
+browser client that patches the cached board from it.
 Tables `workspace`, `workspace_member`, `project`, `column`, and `task`
 exist in `@agentic-kanban/db`. The seed does not run when the API starts.
 It inserts three columns and five tasks on `proj_agentic_kanban`
@@ -63,8 +64,26 @@ task create, edit, delete, and move publishes `task.created`,
 `task.updated` (the parsed task that is also the response),
 `task.deleted` (`deleteTaskForMember` returns the row's `projectId` or
 `undefined`), or `task.moved` (final row values). `projectId` comes from
-the row, `actorUserId` from the session; a 4xx publishes nothing. There
-is no browser client yet.
+the row, `actorUserId` from the session; a 4xx publishes nothing.
+`applyBoardEvent(board, event)` in `@agentic-kanban/schemas` is pure and
+idempotent and returns the same reference when nothing changes (task
+already created/deleted/updated, missing task or column, other project).
+`task.created` inserts at the clamped `task.position` and renumbers,
+`task.updated` copies `title` and `description` in place, `task.deleted`
+compacts the column, and `task.moved` reuses `applyBoardMove`, which also
+returns the same board for a no-op move. `BoardScreen` mounts
+`useBoardEvents(projectId, userId, enabled)` with `enabled` only while it
+renders the board (`board.data` and no `BoardNotFoundError`), so a 404
+project never opens the channel. It opens one same-origin `WebSocket`
+(`ws:`/`wss:` from `location.protocol`, `location.host`) per board and
+closes it on cleanup; `onopen` invalidates the board because the hub
+keeps no history. Each message is `JSON.parse` + `safeParse`d; invalid
+messages and other projects are ignored, and the client never sends.
+Events go through `setQueryData(boardQueryKey(...), (b) => b &&
+applyBoardEvent(b, event))`, plus an invalidate if the board is fetching.
+Own events (`actorUserId` = user) are ignored while
+`isMutating({ mutationKey: ["board", projectId] }) > 0` and applied
+otherwise. There is no reconnection or realtime toast yet.
 No session is 401. No membership, a missing resource, or a `columnId` from
 another project is 404, never 403. The dashboard lists workspaces and
 projects; the accent comes from `workspace.id`. The board read and task
@@ -73,7 +92,7 @@ create, edit, delete, and move contract is in `postman/`
 `agentic-kanban-local.postman_environment.json`): session cookies, `Origin`
 on `/api/auth/*`, and `baseUrl` defaulting to `http://localhost:3000`.
 Choosing a project sets `selectedProjectId` in `App` and opens the board
-(`useBoard`, `useTaskMutations`, `useMoveTask`) without a router; a back
+(`useBoard`, `useTaskMutations`, `useMoveTask`, `useBoardEvents`) without a router; a back
 button returns to the dashboard. Do not invent further product tables,
 extra demo users, realtime beyond this channel, comments, mentions, email,
 deployment, or session tags before the corresponding course work asks

@@ -6,6 +6,7 @@
  */
 import { z } from "zod";
 
+import type { BoardEvent } from "./events.ts";
 import { projectSchema } from "./workspace.ts";
 
 const positionSchema = z.int().min(0);
@@ -91,7 +92,8 @@ export type BoardMove = { taskId: string } & MoveTaskBody;
  *
  * Saca la tarea, la inserta en `position` acotada a `0..n` (índice en el
  * destino ya sin ella) y renumera `0..n-1` las columnas afectadas. Si la
- * tarea o la columna no están en el board, devuelve la misma referencia.
+ * tarea o la columna no están en el board, o la tarea ya está en ese sitio,
+ * devuelve la misma referencia.
  */
 export function applyBoardMove(board: BoardResponse, move: BoardMove): BoardResponse {
   const sourceColumn = board.columns.find((column) =>
@@ -105,6 +107,10 @@ export function applyBoardMove(board: BoardResponse, move: BoardMove): BoardResp
   }
 
   const placed = insertTask(targetColumn.tasks, task, targetColumn.id, move.position);
+
+  if (targetColumn.id === sourceColumn.id && sameTasks(placed, targetColumn.tasks)) {
+    return board;
+  }
 
   return {
     ...board,
@@ -120,6 +126,100 @@ export function applyBoardMove(board: BoardResponse, move: BoardMove): BoardResp
       return column;
     }),
   };
+}
+
+/**
+ * Aplica a la caché un anuncio del canal del proyecto.
+ *
+ * Es idempotente: si no hay nada que cambiar (tarea ya creada, borrada o con
+ * esos valores, columna o tarea ausentes, otro proyecto) devuelve la misma
+ * referencia. `task.updated` no mueve la tarea; `task.moved` reutiliza
+ * `applyBoardMove` con la columna y la posición finales.
+ */
+export function applyBoardEvent(board: BoardResponse, event: BoardEvent): BoardResponse {
+  if (event.projectId !== board.project.id) {
+    return board;
+  }
+
+  switch (event.type) {
+    case "task.created": {
+      const exists = board.columns.some((column) =>
+        column.tasks.some((task) => task.id === event.task.id),
+      );
+      const targetColumn = board.columns.find((column) => column.id === event.task.columnId);
+      if (exists || targetColumn === undefined) {
+        return board;
+      }
+
+      const placed = insertTask(
+        targetColumn.tasks,
+        event.task,
+        targetColumn.id,
+        event.task.position,
+      );
+      return replaceColumnTasks(board, targetColumn.id, placed);
+    }
+
+    case "task.updated": {
+      const column = findTaskColumn(board, event.task.id);
+      const task = column?.tasks.find((item) => item.id === event.task.id);
+      if (
+        column === undefined ||
+        task === undefined ||
+        (task.title === event.task.title && task.description === event.task.description)
+      ) {
+        return board;
+      }
+
+      return replaceColumnTasks(
+        board,
+        column.id,
+        column.tasks.map((item) =>
+          item.id === task.id
+            ? { ...item, title: event.task.title, description: event.task.description }
+            : item,
+        ),
+      );
+    }
+
+    case "task.deleted": {
+      const column = findTaskColumn(board, event.taskId);
+      if (column === undefined) {
+        return board;
+      }
+
+      return replaceColumnTasks(board, column.id, compactColumn(column.tasks, event.taskId));
+    }
+
+    case "task.moved":
+      return applyBoardMove(board, {
+        taskId: event.taskId,
+        columnId: event.columnId,
+        position: event.position,
+      });
+
+    default: {
+      const unhandled: never = event;
+      return unhandled;
+    }
+  }
+}
+
+function findTaskColumn(board: BoardResponse, taskId: string): BoardColumn | undefined {
+  return board.columns.find((column) => column.tasks.some((task) => task.id === taskId));
+}
+
+function replaceColumnTasks(board: BoardResponse, columnId: string, tasks: Task[]): BoardResponse {
+  return {
+    ...board,
+    columns: board.columns.map((column) =>
+      column.id === columnId ? { ...column, tasks } : column,
+    ),
+  };
+}
+
+function sameTasks(left: Task[], right: Task[]): boolean {
+  return left.length === right.length && left.every((task, index) => task === right[index]);
 }
 
 function insertTask(tasks: Task[], task: Task, columnId: string, position: number): Task[] {

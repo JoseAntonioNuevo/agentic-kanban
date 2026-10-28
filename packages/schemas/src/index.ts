@@ -3,6 +3,7 @@
  * Web y API importan desde `@agentic-kanban/schemas`, no copian shapes.
  */
 export {
+  applyBoardEvent,
   applyBoardMove,
   boardColumnSchema,
   boardResponseSchema,

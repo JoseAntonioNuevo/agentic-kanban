@@ -3,7 +3,8 @@
  *
  * El board sale de TanStack Query. El único estado local es qué diálogo
  * está abierto (crear en una columna o editar una tarea por id). Mover
- * escribe en esa caché; no hay una segunda copia del board.
+ * escribe en esa caché; no hay una segunda copia del board. Mientras se
+ * pinta el tablero, `useBoardEvents` mantiene abierto su canal en vivo.
  */
 import { useEffect, useState } from "react";
 
@@ -11,6 +12,7 @@ import { KanbanBoard } from "@/components/kanban-board.tsx";
 import { TaskFormDialog } from "@/components/task-form-dialog.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
+import { useBoardEvents } from "@/hooks/use-board-events.ts";
 import { BoardNotFoundError, useBoard } from "@/hooks/use-board.ts";
 import { useMoveTask } from "@/hooks/use-move-task.ts";
 
@@ -28,6 +30,9 @@ export function BoardScreen({
 }) {
   const board = useBoard(projectId, userId);
   const moveTask = useMoveTask(projectId, userId);
+  // Misma condición que la rama que pinta `KanbanBoard`: un 404 nunca abre canal.
+  const showsBoard = board.data !== undefined && !(board.error instanceof BoardNotFoundError);
+  useBoardEvents(projectId, userId, showsBoard);
   const [dialog, setDialog] = useState<DialogState>(null);
 
   const editingTask =
