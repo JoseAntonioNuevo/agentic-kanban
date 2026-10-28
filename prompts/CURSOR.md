@@ -10,16 +10,17 @@ Los requisitos funcionales, pruebas y límites siguen en el prompt correspondien
 | --------------------------- | ----------------------------------- | ---------------------------------------- | ------------------------------------------------------------------------- |
 | 1 · Auth y tenants          | Opus 5.5 en Agent                   | Workers Grok 4.7 xhigh Fast              | Opus orquesta y revisa cada paso de forma autónoma                        |
 | 2 · Kanban y arrastre       | Opus en Plan, después Grok en Agent | Grok 4.7 xhigh Fast en el chat principal | Un plan inicial y un traspaso manual; después Grok ejecuta sin subagentes |
-| 3 · Tiempo real WebSocket   | Plan, después Agent                 | El agente del chat principal             | Un plan inicial y un traspaso manual; después ejecuta sin subagentes      |
+| 3 · Tiempo real WebSocket   | Opus 5.5 en Agent                   | Opus en el chat principal                | Sin plan previo; Opus ejecuta 01–06 uno cada vez, sin subagentes          |
 | 4 · Comentarios y menciones | Plan, después Agent                 | El agente del chat principal             | Un plan inicial y un traspaso manual; después ejecuta sin subagentes      |
 
 En la clase orquestada (1) selecciona Opus 5.5 con esfuerzo alto en el chat
 principal. Opus coordina, fija contratos a partir de la inspección y revisa
 diffs e informes; Grok inspecciona, implementa, prueba y corrige. Todos los
 prompts de esa clase conservan ese reparto, también los pasos pequeños.
-Las clases 2 a 4 permiten comparar el coste de coordinación y el seguimiento
-de un plan frente a la supervisión continua. La elección didáctica no demuestra
-que toda tarea pequeña necesite un orquestador.
+Las clases 2 y 4 permiten comparar el seguimiento de un plan con la
+supervisión continua de la 1; la 3 muestra a Opus como único ejecutor, sin plan
+ni delegación. La elección didáctica no demuestra que toda tarea pequeña
+necesite un orquestador.
 
 ## Delegación: modelo real, no nombre del agente
 
@@ -96,7 +97,7 @@ autorización. Una prueba manual del profesor se declara pendiente hasta
 observarla; no impide seguir con otras comprobaciones independientes y no se
 convierte en una pausa de aprobación del plan.
 
-## Clases 2 a 4: un plan y un traspaso
+## Clases 2 y 4: un plan y un traspaso
 
 Ejecuta [00 · Plan de la sesión](kanban/00-plan-sesion.md) con Opus en Plan.
 Lee los ocho pasos y el código de partida; no implementes ni ejecutes cambios
@@ -116,12 +117,26 @@ contrato importante del plan, identifica la discrepancia y solicita la decisión
 indispensable; no inventa un cambio de alcance ni llama a Opus automáticamente.
 El profesor puede devolver esa cuestión concreta a Opus si resulta necesario.
 
-Las clases 3 y 4 siguen el mismo flujo con su propio plan:
-[00 de la clase 3](websockets/00-plan-sesion.md) con los prompts 01–06 y
+La clase 4 sigue el mismo flujo con su propio plan:
 [00 de la clase 4](notifications/00-plan-sesion.md) con los prompts 01–06.
 Sus prompts no fijan modelo: el profesor lo elige en el selector de Plan y en
 el de Agent, y comprueba ambos. El ejecutor de Agent tampoco crea `Task` ni
 subagentes.
+
+## Clase 3: Opus en Agent, sin plan
+
+La clase 3 no tiene paso de plan. Selecciona **Agent con Opus 5.5** con
+esfuerzo alto, comprueba ambos selectores y sigue
+[la guía de la sesión](websockets/README.md): un chat para 01–05, uno cada
+vez, y un chat nuevo para la revisión del 06. Cada prompt es autosuficiente:
+fija sus contratos y su aceptación, y el código del paso anterior es el punto
+de partida.
+
+Opus es el único ejecutor: inspecciona, implementa, verifica, revisa y
+corrige sin `Task`, sin subagentes y sin un «adelante» en cada paso. Si un
+contrato del prompt choca con el código real, explica la discrepancia y pide
+la decisión indispensable antes de cambiarlo; los detalles locales los adapta
+sin preguntar.
 
 Plan Mode no arregla `Task.model`. Tampoco hay una prohibición general de
 Plan Mode en la guía de Opus 5.5: usamos ambos estilos por la forma de trabajar

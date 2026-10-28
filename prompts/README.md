@@ -7,7 +7,7 @@ criterios de aceptación:
 | ------- | ---------- | ---------------------------------------- | ------------------------------------------------- | ------------------------ | ------------------------------------------------- |
 | 1 (S9)  | Mié 21 oct | [auth](auth/README.md)                   | Agent con Opus orquestando workers Grok, autónomo | 01–06                    | Auth, workspaces aislados y dashboard             |
 | 2 (S10) | Lun 26 oct | [kanban](kanban/README.md)               | Plan con Opus → Agent con Grok, sin subagentes    | 00 plan; 01–08 ejecución | CRUD, orden y drag-and-drop optimista             |
-| 3 (S11) | Mié 28 oct | [websockets](websockets/README.md)       | Plan → Agent, sin subagentes                      | 00 plan; 01–06 ejecución | Dos sesiones sincronizadas por WebSocket y toasts |
+| 3 (S11) | Mié 28 oct | [websockets](websockets/README.md)       | Agent con Opus, sin plan ni subagentes            | 01–06                    | Dos sesiones sincronizadas por WebSocket y toasts |
 | 4 (S12) | Mié 4 nov  | [notifications](notifications/README.md) | Plan → Agent, sin subagentes                      | 00 plan; 01–06 ejecución | Comentarios, menciones, campana, email y deploy   |
 
 El protocolo de modelos, autonomía, propiedad de archivos, verificación y
@@ -18,11 +18,13 @@ como material histórico y no se usan en estos flujos.
 
 ## Material para conducir el directo
 
-[Índice de guiones de Obsidian](../docs/obsidian/README.md): cada clase tiene
-un guion operativo y otro con texto literal antes, durante y después de cada
-prompt, apertura tras la presentación y cierre previo a preguntas. Son notas
-locales del profesor en `docs/obsidian/`, carpeta excluida de Git; los prompts
-versionados permiten seguir el curso sin esas notas personales.
+[Índice de guiones de Obsidian](../docs/obsidian/README.md): las clases 1, 2
+y 4 tienen un guion operativo y otro con texto literal antes, durante y
+después de cada prompt, apertura tras la presentación y cierre previo a
+preguntas. La clase 3 se conduce con [su guía](websockets/README.md), que
+incluye el horario. Son notas locales del profesor en `docs/obsidian/`,
+carpeta excluida de Git; los prompts versionados permiten seguir el curso sin
+esas notas personales.
 
 ## Antes de cada clase
 
@@ -36,9 +38,9 @@ versionados permiten seguir el curso sin esas notas personales.
   el SHA de otra clase para su revisión final.
 - Prepara las dos sesiones de navegador y checkpoints ensayados para esta
   versión. Las ramas antiguas `fase1`–`fase4` no son reservas sin validar.
-- En las clases 2 a 4 hay un traspaso de Plan a Agent tras el plan; en la 1
-  no hay pausas rutinarias de aprobación. En todas se observan las pruebas
-  manuales.
+- En las clases 2 y 4 hay un traspaso de Plan a Agent tras el plan; en la 1
+  y la 3 no hay plan previo ni pausas rutinarias de aprobación. En todas se
+  observan las pruebas manuales.
 - Envía la presentación con antelación para subirla a la plataforma y pon el
   QR de valoración vigente del programa al inicio o al final, explicando para
   qué sirve.
@@ -83,7 +85,8 @@ volver a comprobar sobre la implementación real de cada clase.
 ## Contratos entre prompts
 
 Los nombres que fija un prompt los usan los siguientes. Si en el repo ya existe
-un equivalente con otro nombre, el agente lo reutiliza y lo dice en el plan.
+un equivalente con otro nombre, el agente lo reutiliza y lo dice en el plan o,
+si la clase no tiene plan, en su informe.
 
 | Prompt | Contrato                                                                                                                                                                                                           |
 | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |

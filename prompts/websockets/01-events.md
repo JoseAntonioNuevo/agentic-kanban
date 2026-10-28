@@ -14,9 +14,10 @@ API y el navegador.
 
 ## Contrato que fijas aquí
 
-`boardEventSchema` en `packages/schemas/src/events.ts` (exportado con su tipo
-`BoardEvent` desde `@agentic-kanban/schemas`): una unión discriminada por
-`type`.
+`boardEventSchema` en `packages/schemas/src/events.ts`, exportado con su tipo
+`BoardEvent` desde `@agentic-kanban/schemas`: una unión discriminada por
+`type`. Todas las variantes llevan `projectId` y `actorUserId`
+(`z.string().min(1)`).
 
 | `type`         | Campos además de `projectId` y `actorUserId` |
 | -------------- | -------------------------------------------- |
@@ -25,16 +26,21 @@ API y el navegador.
 | `task.deleted` | `taskId`                                     |
 | `task.moved`   | `taskId`, `columnId`, `position` (finales)   |
 
-Reutiliza `taskSchema` y los campos de `moveTaskBodySchema`; no inventes campos
-nuevos. El contrato solo describe el anuncio: no es una API de escritura.
+Reutiliza `taskSchema` y los campos de `moveTaskBodySchema` (`columnId`,
+`position`); no inventes campos nuevos. El contrato solo describe el anuncio:
+no es una API de escritura. La Sesión 4 añadirá `comment.created` a esta misma
+unión.
 
 ## Requisitos
 
 - `z.discriminatedUnion("type", [...])` de Zod 4.6.7 (compruébalo en los tipos
   instalados).
-- Tests de parse para cada tipo y de rechazo: `type` desconocido, falta
-  `actorUserId`, `task.moved` sin `position`, `task.created` sin `task`.
-- `AGENTS.md` describe el contrato; el canal todavía no existe.
+- `events.ts` importa de `board.ts`; `board.ts` no importa valores de
+  `events.ts` (el 04 solo importará el tipo).
+- Tests en `packages/schemas/src/events.test.ts`: parse de cada tipo y
+  rechazo de `type` desconocido, falta de `actorUserId`, `task.moved` sin
+  `position` y `task.created` sin `task`.
+- `AGENTS.md` describe el contrato en una línea; el canal todavía no existe.
 
 ## Fuera de alcance
 
@@ -45,8 +51,8 @@ comentarios y Socket.IO.
 
 1. **Inspeccionar.** Confirma `taskSchema`, `moveTaskBodySchema`, el barrel de
    `@agentic-kanban/schemas` y la API de `z.discriminatedUnion` instalada.
-2. **Implementar.** Variantes y payloads del plan. Escribe el schema, su
-   exportación, los tests y la línea de `AGENTS.md`.
+2. **Implementar.** Escribe el schema, su exportación, los tests y la línea de
+   `AGENTS.md`.
 3. **Comprobar.** Ejecuta `vp check` y `vp test`. Revisa que cada variante
    lleva solo sus campos y que la unión rechaza los eventos inválidos.
 
