@@ -18,11 +18,10 @@ create, edit, delete, move, and optimistic drag-and-drop, plus an
 authenticated per-project WebSocket channel fed by those writes, a
 browser client that patches the cached board from it, and task comments over
 HTTP with a thread in the edit-task dialog, whose `@Nombre` mentions persist
-notifications, hand their email to a local outbox, and appear in a paginated
+notifications, hand their email to `deliverEmail`, and appear in a paginated
 in-app bell.
 Tables `workspace`, `workspace_member`, `project`, `column`, `task`,
-`comment`, and `notification` exist in `@agentic-kanban/db`. There is no
-Cloudflare email transport yet.
+`comment`, and `notification` exist in `@agentic-kanban/db`.
 The seed does not run when the API starts.
 It inserts three columns and five tasks on `proj_agentic_kanban`
 (`col_kanban_todo` To Do, `col_kanban_doing` In Progress, `col_kanban_done`
@@ -85,9 +84,12 @@ ignored. In the comment's transaction, each match inserts a `mention`
 mencionó en "{título}"», text body with title, comment and
 `BETTER_AUTH_URL/?project=<id>`) and `emailed_at` null. After commit, the
 route calls `deliverEmail` (`apps/api/src/mail/`, the only sending entry
-point) once per notification; it appends a JSON line to `OUTBOX_PATH` or
-`outbox.jsonl` next to the `DATABASE_URL` file (`data/outbox.jsonl`, ignored
-by Git) and only a successful delivery sets `emailed_at`. A failed delivery
+point) once per notification; with `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_EMAIL_TOKEN` and `MAIL_FROM` it
+sends through the Email Service REST API (`mail/cloudflare.ts`; optional
+`MAIL_REDIRECT_TO` redirects every email, naming the original recipient);
+otherwise it appends a JSON line to `OUTBOX_PATH` or `outbox.jsonl` next to
+the `DATABASE_URL` file (`data/outbox.jsonl`, ignored by Git). Only a
+successful delivery sets `emailed_at`. A failed delivery
 is logged and the comment still returns 201; the HTTP contract is unchanged.
 After that attempt a successful `POST` publishes `comment.created`
 (`{ projectId, actorUserId, comment }`) on the project channel; a 4xx
@@ -122,13 +124,15 @@ Choosing a project sets `selectedProjectId` in `App` and opens the board
 (`useBoard`, `useTaskMutations`, `useMoveTask`, `useBoardEvents`) without a router;
 `useSelectedProject` mirrors it in `?project=<id>` (`pushState`, `popstate`) so a
 reload or pasted link reopens that board, and a back button returns to the dashboard. Do not invent further product tables,
-extra demo users, realtime beyond this channel, real email transports, or session tags before the corresponding course work asks
+extra demo users, realtime beyond this channel, SMTP or other mail providers, or session tags before the corresponding course work asks
 for them.
 
 Locally, Compose runs `web` and `api`. Publicly, `apps/edge` (Worker +
 Container, `bun run deploy:cloudflare`) serves `apps/web/dist` at
 `https://thepower-kanban.josenuevo.dev` and forwards `/api/*` (HTTP and
-WebSocket) to one `ApiContainer` instance `"main"` running the same Bun API.
+WebSocket) to one `ApiContainer` instance `"main"` running the same Bun API, with real email through Cloudflare Email
+Service (secrets `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_EMAIL_TOKEN`,
+`MAIL_FROM`, `MAIL_REDIRECT_TO`). Locally, without them, the outbox is used.
 Its disk is ephemeral: every start migrates and seeds again. Secrets come
 only from the ignored `.env.cloudflare.local`. Detail in
 `.cursor/rules/edge.mdc`.

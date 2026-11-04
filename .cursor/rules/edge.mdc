@@ -16,8 +16,11 @@ Public deploy only. Locally the app is still Compose (`web` + `api`).
   Use `fetch`, never `containerFetch` (RPC; it breaks the WebSocket
   upgrade). Everything else → `env.ASSETS.fetch(request)`.
 - `ApiContainer extends Container<Env>`: `defaultPort = 3000`,
-  `sleepAfter = "4h"`, `envVars` from the Worker secrets
-  (`BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`) plus
+  `sleepAfter = "4h"`, `enableInternet = true` (default in
+  `@cloudflare/containers`; needed to reach Email Service), `envVars` from
+  the Worker secrets (`BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`,
+  `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_EMAIL_TOKEN`, `MAIL_FROM`,
+  `MAIL_REDIRECT_TO`; all in `secrets.required`) plus
   `DATABASE_URL=file:/data/agentic-kanban.db` and `API_PORT=3000`.
   Durable Object binding `API`, migration `new_sqlite_classes`,
   `max_instances: 1`, `instance_type: "basic"`. Always the `"main"`

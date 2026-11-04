@@ -17,6 +17,12 @@ services:
       # Placeholders de Better Auth; la Sesión 1 los usará de verdad.
       BETTER_AUTH_SECRET: local-dev-only-change-in-session-1
       BETTER_AUTH_URL: http://localhost:5173
+      # Email real por Cloudflare Email Service. Sin las tres primeras, el
+      # outbox local (data/outbox.jsonl). Valores solo desde el entorno/.env.
+      CLOUDFLARE_ACCOUNT_ID: ${CLOUDFLARE_ACCOUNT_ID:-}
+      CLOUDFLARE_EMAIL_TOKEN: ${CLOUDFLARE_EMAIL_TOKEN:-}
+      MAIL_FROM: ${MAIL_FROM:-}
+      MAIL_REDIRECT_TO: ${MAIL_REDIRECT_TO:-}
     volumes:
       - .:/app
       - /app/node_modules # anónimo: el node_modules de Linux no lo pisa el Mac

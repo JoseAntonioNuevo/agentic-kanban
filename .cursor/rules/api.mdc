@@ -44,10 +44,15 @@ app.route("/", healthRoutes);
   response is still 201 with the same body.
 - `src/mail/index.ts` `deliverEmail({ notificationId, to, subject, text })`
   is the only sending entry point; it never throws and returns whether it
-  delivered. Today it only uses `src/mail/outbox.ts`, which appends one JSON
-  line (`to`, `subject`, `body`, `notificationId`, `createdAt`) to
-  `OUTBOX_PATH` or `outbox.jsonl` next to the `DATABASE_URL` file. No
-  Cloudflare/SMTP transport yet. After delivery the comment `POST` publishes
+  delivered. With `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_EMAIL_TOKEN` and `MAIL_FROM`
+  it uses `src/mail/cloudflare.ts` (REST `email/sending/send`, native
+  `fetch`; success = 2xx, `success: true`, recipient not in
+  `permanent_bounces`; `MAIL_REDIRECT_TO` replaces the recipient and names
+  the original in the body; errors are logged without the token). Otherwise
+  `src/mail/outbox.ts` appends one JSON line (`to`, `subject`, `body`,
+  `notificationId`, `createdAt`) to `OUTBOX_PATH` or `outbox.jsonl` next to
+  the `DATABASE_URL` file. Tests delete the four mail variables in
+  `test/setup.ts` and inject a fake `fetch`; no SMTP. After delivery the comment `POST` publishes
   `comment.created` with the parsed response and the session actor.
 - `src/routes/notifications.ts` (`notificationRoutes`): session first (401),
   then validators. `GET /api/notifications` validates `?before` with

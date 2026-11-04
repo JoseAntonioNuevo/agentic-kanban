@@ -26,7 +26,14 @@ export class ApiContainer extends Container<Env> {
     BETTER_AUTH_URL: this.env.BETTER_AUTH_URL,
     DATABASE_URL: "file:/data/agentic-kanban.db",
     API_PORT: "3000",
+    // Correo real por Email Service (secretos del Worker).
+    CLOUDFLARE_ACCOUNT_ID: this.env.CLOUDFLARE_ACCOUNT_ID,
+    CLOUDFLARE_EMAIL_TOKEN: this.env.CLOUDFLARE_EMAIL_TOKEN,
+    MAIL_FROM: this.env.MAIL_FROM,
+    MAIL_REDIRECT_TO: this.env.MAIL_REDIRECT_TO,
   };
+  // Salida a internet: necesaria para llamar a la API de Email Service.
+  enableInternet = true;
 }
 
 export default {

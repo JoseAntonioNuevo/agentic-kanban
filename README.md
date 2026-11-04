@@ -193,7 +193,16 @@ tiempo real vive en memoria y todos deben llegar al mismo proceso).
    `BETTER_AUTH_URL=https://thepower-kanban.josenuevo.dev`,
    `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_EMAIL_TOKEN`, `MAIL_FROM` y
    `MAIL_REDIRECT_TO`. No lo muestres ni lo pegues en ningún chat.
-5. Docker Desktop arrancado: wrangler construye la imagen
+5. **Email Service** (cuenta del curso): incorpora el dominio en _Email
+   Sending_ (`wrangler email sending list` lo muestra `enabled`) y publica
+   los registros SPF, DKIM y DMARC que pide el panel. Crea un token de API
+   con el permiso «Email Sending: Edit» y guárdalo solo como
+   `CLOUDFLARE_EMAIL_TOKEN` (nunca como `CLOUDFLARE_API_TOKEN`: wrangler lo
+   usaría para desplegar). `MAIL_FROM` es una dirección de ese dominio
+   (`kanban@josenuevo.dev`); `MAIL_REDIRECT_TO=jose@josenuevo.dev` envía
+   todos los emails a esa bandeja con el destinatario original en el cuerpo,
+   porque los usuarios demo (`@demo.test`) no reciben correo.
+6. Docker Desktop arrancado: wrangler construye la imagen
    `apps/edge/Dockerfile` en local y la sube al registro de Cloudflare.
 
 ### Deploy
@@ -214,6 +223,27 @@ la prueba de [la guía de la sesión 4](prompts/notifications/README.md#probar-l
 > contenedor aplica las migraciones y el seed desde cero, y lo que se cree en
 > la URL pública se pierde cuando el contenedor duerme (tras unas horas sin
 > tráfico) o se redespliega. Es una demo de aula; no hay otra base de datos.
+
+### Email: Cloudflare y outbox de reserva
+
+`deliverEmail` usa Cloudflare Email Service (API REST, `fetch` nativo) si
+existen `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_EMAIL_TOKEN` y `MAIL_FROM`; si
+falta alguna escribe en el outbox (`data/outbox.jsonl` en local). Compose
+pasa las cuatro variables desde `.env` (vacías por defecto, ver
+`.env.example`). En público llegan como secretos del Worker al Container. Si
+el envío falla, el comentario responde 201 y `emailed_at` queda vacío.
+
+### Guion de la demo
+
+1. Dos navegadores en `https://thepower-kanban.josenuevo.dev`; Luis en una
+   ventana privada. Ana y Luis entran en thePower Demo → Agentic Kanban.
+2. Ana mueve una tarjeta: Luis la ve moverse y recibe un toast.
+3. Ana edita una tarjeta, escribe `@Luis mira esto` y pulsa **Comentar** (no
+   Guardar).
+4. Luis: hilo actualizado, toast y campana con badge.
+5. Ana: su campana dice «No hay menciones.» (no «No se pudieron cargar»).
+6. El email de la mención llega a `jose@josenuevo.dev` (`MAIL_REDIRECT_TO`).
+7. Luis no ve tableros, comentarios ni notificaciones de `proj_ana_notes`.
 
 ## Cómo está conectado
 

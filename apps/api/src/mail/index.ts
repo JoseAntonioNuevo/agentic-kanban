@@ -1,10 +1,12 @@
 /**
  * Único punto de entrada para enviar correo.
  *
- * Hoy solo escribe en el outbox local (`outbox.ts`); el paso 06 añadirá aquí
- * el transporte de Cloudflare Email Service sin cambiar las llamadas. Nunca
- * lanza: devuelve `true` si la entrega fue bien y registra el error si no.
+ * Con `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_EMAIL_TOKEN` y `MAIL_FROM` usa
+ * Cloudflare Email Service (`cloudflare.ts`); si falta alguna, el outbox
+ * local (`outbox.ts`). Nunca lanza: devuelve `true` si la entrega fue bien y
+ * registra el error (sin el token) si no.
  */
+import { readCloudflareMailConfig, sendWithCloudflare } from "./cloudflare.ts";
 import { writeToOutbox } from "./outbox.ts";
 
 export type OutgoingEmail = {
@@ -14,12 +16,21 @@ export type OutgoingEmail = {
   text: string;
 };
 
-export async function deliverEmail(email: OutgoingEmail): Promise<boolean> {
+export async function deliverEmail(
+  email: OutgoingEmail,
+  fetchImpl: typeof fetch = fetch,
+): Promise<boolean> {
   try {
-    await writeToOutbox(email);
+    const config = readCloudflareMailConfig();
+    if (config) {
+      await sendWithCloudflare(email, config, fetchImpl);
+    } else {
+      await writeToOutbox(email);
+    }
     return true;
   } catch (error) {
-    console.error(`No se pudo entregar el correo de ${email.notificationId}`, error);
+    const message = error instanceof Error ? error.message : "error desconocido";
+    console.error(`No se pudo entregar el correo de ${email.notificationId}: ${message}`);
     return false;
   }
 }
