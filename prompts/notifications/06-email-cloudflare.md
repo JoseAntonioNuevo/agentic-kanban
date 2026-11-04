@@ -22,7 +22,8 @@ bandeja de demo.
   `CLOUDFLARE_EMAIL_TOKEN` y `MAIL_FROM`; si falta alguna, sigue el outbox del 04. Las llamadas a `deliverEmail` no cambian.
 - Variables: `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_EMAIL_TOKEN` (token con el
   permiso «Email Sending: Edit»), `MAIL_FROM` (dirección de un dominio
-  incorporado a Email Sending) y `MAIL_REDIRECT_TO` (opcional).
+  incorporado a Email Sending) y `MAIL_REDIRECT_TO` (en la demo del curso,
+  `jose@josenuevo.dev`).
 
 ## Requisitos
 
@@ -33,9 +34,9 @@ bandeja de demo.
   respuesta en la referencia REST de Email Service. Es correcto si responde
   2xx con `success: true` y el destinatario no aparece en
   `permanent_bounces`.
-- **Redirección.** Si existe `MAIL_REDIRECT_TO`, todos los emails van a esa
-  dirección y el cuerpo indica el destinatario original: los usuarios de demo
-  usan `@demo.test`, que no recibe correo.
+- **Redirección.** Si existe `MAIL_REDIRECT_TO` (p. ej. `jose@josenuevo.dev`),
+  todos los emails van a esa dirección y el cuerpo indica el destinatario
+  original: los usuarios de demo usan `@demo.test`, que no recibe correo.
 - **Fallos.** `emailed_at` se marca solo si la entrega fue bien. Si falla (red,
   error de Cloudflare), se registra el error sin el token, `emailed_at` se
   queda vacío y el comentario igualmente responde 201. `fetch` nativo: sin
@@ -72,7 +73,7 @@ bandeja de demo.
   Ana edita una tarjeta, escribe "@Luis mira esto" y pulsa Comentar (no Guardar).
   Luis: hilo actualizado, toast y campana con badge.
   Ana: su campana dice "No hay menciones." (no "No se pudieron cargar").
-  El email de la mención llega a la bandeja de demo (MAIL_REDIRECT_TO).
+  El email de la mención llega a jose@josenuevo.dev (MAIL_REDIRECT_TO).
   Luis no ve tableros, comentarios ni notificaciones de proj_ana_notes.
   ```
 
@@ -110,4 +111,4 @@ fallidos, otra base de datos, CI/CD y borrar recursos de Cloudflare.
       y, tras la mención de Ana, Luis `GET /api/notifications` → 200 con al
       menos una y Ana → 200 `[]`.
 - [ ] Demo con dos navegadores en la URL pública (lo compruebo yo), incluido
-      el email de la mención en la bandeja de `MAIL_REDIRECT_TO`.
+      el email de la mención en `jose@josenuevo.dev` (`MAIL_REDIRECT_TO`).

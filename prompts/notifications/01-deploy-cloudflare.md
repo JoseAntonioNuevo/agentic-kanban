@@ -27,8 +27,8 @@ WebSocket, y deja hecho el aprovisionamiento lento del primer deploy.
   profesor): `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`
   (`https://thepower-kanban.josenuevo.dev`) y las cuatro variables de correo
   (`CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_EMAIL_TOKEN`, `MAIL_FROM`,
-  `MAIL_REDIRECT_TO`), que no se usan hasta el 06. No muestres su contenido
-  (ni con `cat` ni en logs): solo se pasa a wrangler.
+  `MAIL_REDIRECT_TO=jose@josenuevo.dev`), que no se usan hasta el 06. No
+  muestres su contenido (ni con `cat` ni en logs): solo se pasa a wrangler.
 
 ## Requisitos
 

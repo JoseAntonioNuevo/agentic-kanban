@@ -106,14 +106,14 @@ antes del directo; ninguno de estos pasos de cuenta los hace el agente:
 4. Un token de API con el permiso **Email Sending: Edit**
    (`CLOUDFLARE_EMAIL_TOKEN`) y el ID de la cuenta (`CLOUDFLARE_ACCOUNT_ID`).
    No lo llames `CLOUDFLARE_API_TOKEN`: wrangler lo usaría para desplegar.
-5. Una bandeja tuya para la demo (`MAIL_REDIRECT_TO`): los usuarios de demo
-   usan `@demo.test` y no reciben correo.
+5. Bandeja para la demo (`MAIL_REDIRECT_TO=jose@josenuevo.dev`): los usuarios
+   de demo usan `@demo.test` y no reciben correo.
 6. `.env.cloudflare.local` en la raíz (Git lo ignora) con
    `BETTER_AUTH_SECRET` (nuevo y largo),
    `BETTER_AUTH_URL=https://thepower-kanban.josenuevo.dev`,
    `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_EMAIL_TOKEN`, `MAIL_FROM` y
-   `MAIL_REDIRECT_TO`. El `.env` local **no** necesita las de correo: en local
-   el email va al outbox.
+   `MAIL_REDIRECT_TO=jose@josenuevo.dev`. El `.env` local **no** necesita las
+   de correo: en local el email va al outbox.
 7. En la terminal donde vas a lanzar Claude Code, `bunx wrangler login` y
    después `bunx wrangler whoami`: debe mostrar la cuenta del curso. Docker
    Desktop arrancado.
@@ -199,17 +199,17 @@ setTimeout(() => {
 
 En local (02–05) el email va siempre al outbox (`data/outbox.jsonl`; en tests,
 `OUTBOX_PATH`). En producción (06) la API lo envía con la API REST de
-Cloudflare Email Service, sin SMTP ni SDK, redirigido a `MAIL_REDIRECT_TO`. El
-disco del contenedor es efímero: cada arranque vuelve al seed. El reset local
-se documenta, no se ejecuta.
+Cloudflare Email Service, sin SMTP ni SDK, redirigido a `MAIL_REDIRECT_TO`
+(`jose@josenuevo.dev`). El disco del contenedor es efímero: cada arranque
+vuelve al seed. El reset local se documenta, no se ejecuta.
 
 La demo final se hace con dos navegadores en la URL pública: Ana comenta
 `@Luis mira esto` en `proj_agentic_kanban` (pulsando **Comentar**, no
 Guardar); Luis recibe hilo actualizado, toast y campana con badge; la campana
-de Ana dice «No hay menciones.». El email de la mención llega a la bandeja de
-demo. Luis sigue sin acceder a `proj_ana_notes`, a sus comentarios ni a su
-canal de eventos. Marcar una notificación como leída solo puede hacerlo su
-destinatario.
+de Ana dice «No hay menciones.». El email de la mención llega a
+`jose@josenuevo.dev`. Luis sigue sin acceder a `proj_ana_notes`, a sus
+comentarios ni a su canal de eventos. Marcar una notificación como leída solo
+puede hacerlo su destinatario.
 
 En el 07, la transacción comentario + notificaciones, la privacidad de
 destinatarios, los secretos y el deploy pueden justificar CodeRabbit si no

@@ -51,9 +51,9 @@ prompts `prompts/notifications/01-deploy-cloudflare.md` a
    - Emails entregados antes de confirmar la transacción.
    - `emailed_at` marcado sin una entrega correcta, o un fallo de entrega que
      revierte el 201 del comentario.
-   - Producción sin `MAIL_REDIRECT_TO` con usuarios ficticios; outbox
-     versionado o fuera de `./data`; tests que salen a la red, leen
-     credenciales reales o tocan `data/`.
+   - Producción sin `MAIL_REDIRECT_TO` (`jose@josenuevo.dev`) con usuarios
+     ficticios; outbox versionado o fuera de `./data`; tests que salen a la
+     red, leen credenciales reales o tocan `data/`.
    - Borrado de tareas con comentarios sin cascada.
 3. **Tiempo real y cliente.**
    - WebSocket usado para escribir, o un segundo `WebSocket` abierto.
