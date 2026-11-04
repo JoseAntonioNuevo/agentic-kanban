@@ -1,0 +1,40 @@
+// Worker público de https://thepower-kanban.josenuevo.dev.
+//
+// - Assets: el build de apps/web (SPA). `run_worker_first` hace que /api/*
+//   pase siempre por el Worker, que lo reenvía al Container.
+// - Container: la misma API de Bun (apps/api) en una sola instancia "main";
+//   el hub de WebSocket vive en memoria y todos deben llegar a la misma.
+// - Secretos: BETTER_AUTH_SECRET y BETTER_AUTH_URL llegan con
+//   `wrangler deploy --secrets-file ../../.env.cloudflare.local`; aquí no
+//   hay ningún valor secreto.
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "thepower-kanban",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-01",
+  "observability": { "enabled": true },
+  "routes": [{ "pattern": "thepower-kanban.josenuevo.dev", "custom_domain": true }],
+  "assets": {
+    "directory": "../web/dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"],
+  },
+  "secrets": {
+    "required": ["BETTER_AUTH_SECRET", "BETTER_AUTH_URL"],
+  },
+  "containers": [
+    {
+      "class_name": "ApiContainer",
+      // Dockerfile de producción; el contexto es la raíz del monorepo.
+      "image": "./Dockerfile",
+      "image_build_context": "../..",
+      "instance_type": "basic",
+      "max_instances": 1,
+    },
+  ],
+  "durable_objects": {
+    "bindings": [{ "name": "API", "class_name": "ApiContainer" }],
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["ApiContainer"] }],
+}

@@ -32,5 +32,21 @@ export interface HealthResponse { status: string }
   avoids a value cycle with `events.ts`). It switches exhaustively on
   `event.type`, is idempotent, and returns the same reference when nothing
   changes.
+- `src/comment.ts` holds `commentSchema` (`createdAt` as `z.iso.datetime()`,
+  with `authorName`), `commentListResponseSchema` (array), and
+  `createCommentBodySchema` (`body` trimmed, 1–2000). `:taskId` reuses
+  `taskIdParamSchema` from `board.ts`.
+- `src/notification.ts` holds `notificationSchema` (`kind: "mention"`, ISO
+  `createdAt`, nullable ISO `readAt`, `commentPreview` may be empty),
+  `notificationListResponseSchema` (array, at most `NOTIFICATION_PAGE_SIZE`),
+  `notificationIdParamSchema`, `notificationListQuerySchema` (`before`
+  parsed from `createdAt|id` by `notificationCursor`),
+  `notificationUnreadCountResponseSchema` (`{ count }`) and
+  `notificationReadAllResponseSchema` (`{ updated }`). `comment.created` in
+  `boardEventSchema` carries a `commentSchema` comment.
+- `src/mentions.ts` holds `extractMentionTokens(body)`: pure, NFC-normalized,
+  `@` + `\p{L}+` only at the start or after a non-letter, non-digit (so
+  `ana@demo.test` mentions nobody); punctuation ends the name; deduped
+  case-insensitively, keeping the first spelling. It resolves no users.
 - Tests: `import { describe, expect, it } from "vite-plus/test"`. Cover a
   valid parse and a reject path (see `src/health.test.ts`).

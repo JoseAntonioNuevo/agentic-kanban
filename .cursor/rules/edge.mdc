@@ -1,0 +1,42 @@
+---
+description: Cloudflare deploy — apps/edge Worker, ApiContainer, production Dockerfile, secrets
+globs: apps/edge/**,.dockerignore
+alwaysApply: false
+---
+
+# Edge (`apps/edge`)
+
+Public deploy only. Locally the app is still Compose (`web` + `api`).
+
+- `wrangler.jsonc`: Worker `thepower-kanban`, custom domain
+  `thepower-kanban.josenuevo.dev` (zone in the same account). Assets from
+  `../web/dist` with `not_found_handling: "single-page-application"` and
+  `run_worker_first: ["/api/*"]`.
+- `src/index.ts`: `/api/*` → `getContainer(env.API, "main").fetch(request)`.
+  Use `fetch`, never `containerFetch` (RPC; it breaks the WebSocket
+  upgrade). Everything else → `env.ASSETS.fetch(request)`.
+- `ApiContainer extends Container<Env>`: `defaultPort = 3000`,
+  `sleepAfter = "4h"`, `envVars` from the Worker secrets
+  (`BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`) plus
+  `DATABASE_URL=file:/data/agentic-kanban.db` and `API_PORT=3000`.
+  Durable Object binding `API`, migration `new_sqlite_classes`,
+  `max_instances: 1`, `instance_type: "basic"`. Always the `"main"`
+  instance: the board hub is in memory, so every user must reach the same
+  process.
+- `Dockerfile` (build context = repo root via `image_build_context: "../.."`):
+  Bun 1.4.3, copies every workspace manifest, then
+  `bun install --frozen-lockfile --filter` for api, db and schemas. No
+  `--hot`, no bind mount. CMD runs `db:migrate`, `db:seed`, then the API as
+  user `bun`. The Containers disk is ephemeral: each start begins from the
+  seed and changes are lost when the container sleeps. Do not add another
+  database.
+- `worker-configuration.d.ts` comes from `wrangler types` (run inside
+  `apps/edge`, `bun run types`) after any `wrangler.jsonc` change. It is
+  excluded from fmt; do not edit it by hand.
+- Secrets: only in the ignored `.env.cloudflare.local`, passed with
+  `--secrets-file` by `bun run deploy:cloudflare`. Never print it, commit
+  it, bake it into the image, or expose it to `apps/web`. `.dockerignore`
+  excludes `.env`, `.env.*`, `*.local` and all of `data/`.
+- Before deploying: `bunx wrangler whoami` shows the course account and
+  Docker is running. Never use other projects' credentials. The first
+  deploy needs a few minutes for the certificate and container.

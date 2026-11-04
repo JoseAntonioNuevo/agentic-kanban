@@ -26,7 +26,15 @@ Hono → drizzle-orm/libsql → @libsql/client → file:…/agentic-kanban.db
   `UNIQUE (workspace_id, user_id)` is the membership identity. Indexes cover
   `project.workspace_id`, `workspace_member.user_id`, `column (project_id,
   position)`, `column.workspace_id`, `task (column_id, position)`, and
-  `task.workspace_id`. `position` is not UNIQUE; a CHECK requires
+  `task.workspace_id`. `comment` (`src/schema/comment.ts`: `workspace_id`,
+  `project_id`, `task_id`, `author_id` → `user.id`, `body`, `created_at`) and
+  `notification` (`src/schema/notification.ts`: `recipient_user_id`,
+  `actor_user_id`, `task_id`, `comment_id`, `kind`, nullable `read_at`,
+  `email_to/subject/body`, nullable `emailed_at`, `created_at`) carry their
+  own `workspace_id`; every FK is `onDelete: "cascade"` so deleting a task
+  with comments still works. Their indexes: `comment (task_id, created_at)`,
+  `notification (recipient_user_id, created_at)`, and `workspace_id` on both.
+  `position` is not UNIQUE; a CHECK requires
   `position >= 0`. `created_at` is `timestamp_ms` via `nowMs()` in
   `src/schema/timestamps.ts` (not reexported). Every tenant-owned query must
   include an authorized `workspace_id`.
@@ -46,6 +54,31 @@ Hono → drizzle-orm/libsql → @libsql/client → file:…/agentic-kanban.db
   filter always comes from the authorized row.
   `migrateDatabase()` applies `packages/db/migrations` for the test harness.
   The API does not migrate on startup.
+- `listCommentsForMember(taskId, userId)` and `createCommentForMember(taskId,
+  userId, body)` (`src/queries/comments.ts`) find the task by membership of
+  its own `workspace_id`; `undefined` means 404. They copy `workspace_id` and
+  `project_id` from the task row, take `author_id` from the argument, join
+  `user.name` as `authorName`, and the list orders by `created_at`, `id`.
+  Create runs in `db.transaction` and takes `{ tokens, composeEmail }`: it
+  reads the members of the task's workspace except the author in one query,
+  matches `user.name` against the tokens in JS with `normalize("NFC")` +
+  `toLowerCase()` (SQLite `lower()` only folds ASCII, so `@íñigo` would miss
+  `Íñigo`), and inserts one `kind: "mention"`
+  `notification` per match with the drafted `email_*` and `emailed_at` null.
+  It returns `{ comment, notifications }`; nothing is delivered inside the
+  transaction. `markNotificationEmailed(id, workspaceId)`
+  (`src/queries/notifications.ts`) sets `emailed_at` afterwards.
+- Bell queries (`src/queries/notifications.ts`) only touch rows whose
+  `recipient_user_id` is the caller and whose `workspace_id` is one of the
+  caller's `workspace_member` rows. `listNotificationsForRecipient(userId,
+  before?)` pages by keyset on `(created_at, id)` descending, 50 per page
+  (`NOTIFICATION_LIST_LIMIT`), never `OFFSET`;
+  `countUnreadNotificationsForRecipient` counts every unread row;
+  `markAllNotificationsReadForRecipient` sets one `read_at` on unread rows
+  and returns `rowsAffected`; `markNotificationReadForRecipient` keeps the
+  first `read_at`.
+  `resolveDatabaseUrl()` is exported so the API's outbox sits next to the
+  database file.
 - Generate migrations on the host with `bun run db:generate`. Apply them in
   `api` with `docker compose exec api bun run db:migrate`, or on the host if
   Compose is down. Version the SQL. `migrations/**` is ignored by fmt; do not

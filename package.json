@@ -15,7 +15,8 @@
     "build": "vp build apps/web",
     "db:generate": "bun --filter @agentic-kanban/db generate",
     "db:migrate": "bun --filter @agentic-kanban/db migrate",
-    "db:seed": "bun --filter @agentic-kanban/api seed"
+    "db:seed": "bun --filter @agentic-kanban/api seed",
+    "deploy:cloudflare": "vp build apps/web && wrangler deploy --config apps/edge/wrangler.jsonc --secrets-file .env.cloudflare.local"
   },
   "devDependencies": {
     "typescript": "7.0.2",

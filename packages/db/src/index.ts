@@ -19,7 +19,26 @@ export {
   type BoardForMember,
   type MemberTask,
 } from "./queries/board.ts";
-export { db, getDb, getLibsql, libsql, pingDatabase } from "./client.ts";
+export {
+  createCommentForMember,
+  listCommentsForMember,
+  type CreatedComment,
+  type MemberComment,
+  type MentionEmail,
+  type MentionEmailInput,
+  type PendingNotificationEmail,
+} from "./queries/comments.ts";
+export {
+  countUnreadNotificationsForRecipient,
+  listNotificationsForRecipient,
+  markAllNotificationsReadForRecipient,
+  markNotificationEmailed,
+  markNotificationReadForRecipient,
+  NOTIFICATION_LIST_LIMIT,
+  type NotificationCursor,
+  type RecipientNotification,
+} from "./queries/notifications.ts";
+export { db, getDb, getLibsql, libsql, pingDatabase, resolveDatabaseUrl } from "./client.ts";
 export { migrateDatabase } from "./migrate.ts";
 export { getProjectForMember, upsertProject } from "./queries/project.ts";
 export { findUserIdByEmail } from "./queries/user.ts";

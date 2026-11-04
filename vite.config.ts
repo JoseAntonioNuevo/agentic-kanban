@@ -4,7 +4,8 @@
  * El frontend no usa ESLint/Prettier. `prefer-vite-plus-imports` obliga a
  * importar `defineConfig` / `test` desde `vite-plus`. En `apps/web` se
  * activan las rules de React; en la API se permite `console` (logs de health).
- * Las migraciones de Drizzle se ignoran en fmt: drizzle-kit no sigue Oxfmt.
+ * Las migraciones de Drizzle y los tipos que genera `wrangler types`
+ * (apps/edge/worker-configuration.d.ts) se ignoran en fmt: no siguen Oxfmt.
  */
 import { fileURLToPath, URL } from "node:url";
 
@@ -12,7 +13,7 @@ import { configDefaults, defineConfig } from "vite-plus";
 
 export default defineConfig({
   fmt: {
-    ignorePatterns: ["packages/db/migrations/**"],
+    ignorePatterns: ["packages/db/migrations/**", "apps/edge/worker-configuration.d.ts"],
   },
   lint: {
     jsPlugins: [{ name: "vite-plus", specifier: "vite-plus/oxlint-plugin" }],

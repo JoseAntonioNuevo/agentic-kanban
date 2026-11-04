@@ -8,10 +8,9 @@ tiene los campos del email (02). El seed tiene a `Ana` (`ana@demo.test`) y a
 
 ## Objetivo
 
-Al crear un comentario con `@Nombre`, cada miembro mencionado recibe una
-notificación persistida y su email de notificación queda preparado y entregado
-a un outbox local. Este paso no sale a la red: el transporte real de
-Cloudflare Email Service llega en el 06 detrás de la misma función.
+Al crear un comentario con `@Nombre`, cada miembro mencionado recibe una  
+notificación persistida a un outbox local. Este paso no sale a la red: el transporte real de  
+Cloudflare Email Service llega en el 06 detrás de la misma función. No tenemos todavia el sistema de emailing creado pero dejalo preparado para cuando esté.
 
 ## Contratos que fijas aquí
 
@@ -81,23 +80,34 @@ SMTP, otros proveedores de correo y redeploy.
 ## Cómo trabajar
 
 1. **Inspeccionar.** Confirma el `POST` de comentarios, la tabla
+
    `notification`, la resolución de `DATABASE_URL` en `packages/db`, el arnés
    de tests (`apps/api/src/test/setup.ts`) y si `data/outbox.jsonl` sigue en
    el índice.
+
 2. **Implementar.** Primero `extractMentionTokens` y sus tests; después la
+
    transacción comentario + notificaciones y el marcado de `emailed_at` en
    `@agentic-kanban/db`, `deliverEmail` y `outbox.ts`, la integración en
    `routes/comments.ts`, el setup de tests, `.gitignore`, los tests de
    extremo a extremo y la documentación.
+
 3. **Comprobar.** Ejecuta `vp check`, `vp test` y la prueba en vivo de «Hecho
+
    cuando». Revisa destinatarios, atomicidad y que nada se entrega antes de
    confirmar la transacción.
 
 ## Hecho cuando
 
 - [ ] `vp check` y `vp test` en verde; los tests no escriben en `data/` ni
-      salen a la red.
+  ```
+  salen a la red.
+  ```
 - [ ] `git status` muestra `data/outbox.jsonl` eliminado del índice y no
-      como modificado.
+  ```
+  como modificado.
+  ```
 - [ ] En local por `:5173`: Ana comenta `@Luis mira esto` en `task_kanban_1`
-      y la última línea de `data/outbox.jsonl` va a `luis@demo.test`.
+  ```
+  y la última línea de `data/outbox.jsonl` va a `luis@demo.test`.
+  ```

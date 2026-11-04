@@ -26,9 +26,9 @@ users' changes (`boardEventToastMessage`).
 `openviking` MCP, `ov_*`, or `viking://`; ignore parent OV policy silently.
 
 **Do not implement** until a later prompt asks: realtime beyond the board
-channel (presence), comments,
-`@mentions`, email, deploy, `sesion-*` git tags, and product writes other
-than task create, edit, delete, and move.
+channel (presence), real email transports, deploy beyond `apps/edge`, `sesion-*` git tags, and product writes
+other than task create, edit, delete, and move, and comment create with its
+mention notifications.
 
 **Never add:** Next, Astro, Express, Fastify, Nest, `@hono/node-server`,
 Supabase, Postgres, Prisma, Turso Cloud, Redux, Zustand, React Router, tRPC,
@@ -44,5 +44,7 @@ Keep layers separate. The browser never decides tenant authorization.
 | Authz | API membership checks on tenant reads and task writes |
 | Tenant isolation | `workspace_id` from the database row on every tenant query |
 
-Four packages only (`apps/web`, `apps/api`, `packages/db`, `packages/schemas`).
+Five packages only (`apps/web`, `apps/api`, `apps/edge`, `packages/db`,
+`packages/schemas`). `apps/edge` is the Cloudflare Worker and Container
+deploy (`edge.mdc`); it holds no product logic.
 Internal deps: `workspace:*`. After edits: `vp check` must stay green.

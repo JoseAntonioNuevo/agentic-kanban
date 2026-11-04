@@ -4,14 +4,20 @@ node_modules
 **/.git
 dist
 **/dist
-data/*.db
-data/*.db-*
+# Secretos: nunca entran en una imagen (local ni de Cloudflare).
+.env
+.env.*
+*.local
+**/*.local
+# Bases locales y outbox: la imagen de producción parte siempre del seed.
+data
 *.db
 *.db-shm
 *.db-wal
-.env
 **/.DS_Store
 coverage
 *.tsbuildinfo
 .vite
 .cache
+.wrangler
+**/.wrangler

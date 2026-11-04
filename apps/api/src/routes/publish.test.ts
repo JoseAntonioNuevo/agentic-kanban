@@ -1,13 +1,15 @@
 /**
- * Publicación desde las escrituras del tablero: cada escritura correcta
- * anuncia su evento después de persistir y antes de responder; un 4xx no
- * publica nada. La base es la temporal del setup; no usa `data/`.
+ * Publicación desde las escrituras del tablero y los comentarios: cada
+ * escritura correcta anuncia su evento después de persistir y antes de
+ * responder; un 4xx no publica nada. La base es la temporal del setup; no
+ * usa `data/`.
  */
 import { randomUUID } from "node:crypto";
 
 import {
   boardEventSchema,
   boardResponseSchema,
+  commentSchema,
   taskSchema,
   type BoardEvent,
 } from "@agentic-kanban/schemas";
@@ -230,6 +232,48 @@ describe("publicación tras escribir", () => {
       body: { columnId: board.doneId, position: -1 },
     });
     expect(moved.status).toBe(400);
+
+    expect(events).toEqual([]);
+  });
+});
+
+describe("publicación de comentarios", () => {
+  it("POST comments publica comment.created con el comentario de la respuesta", async () => {
+    const board = await makeBoard();
+    const { events } = listen(board.projectId);
+
+    const response = await apiRequest("POST", `/api/tasks/${board.taskId}/comments`, {
+      cookie: ana.cookie,
+      body: { body: "@Luis mira esto" },
+    });
+    expect(response.status).toBe(201);
+    const saved = commentSchema.parse(await response.json());
+
+    expect(events).toEqual([
+      {
+        type: "comment.created",
+        projectId: board.projectId,
+        actorUserId: ana.userId,
+        comment: saved,
+      },
+    ]);
+  });
+
+  it("un 404 o un 400 en comentarios no publica nada", async () => {
+    const board = await makeBoard();
+    const { events } = listen(board.projectId);
+
+    const foreign = await apiRequest("POST", `/api/tasks/${board.taskId}/comments`, {
+      cookie: stranger.cookie,
+      body: { body: "@Ana hola" },
+    });
+    expect(foreign.status).toBe(404);
+
+    const empty = await apiRequest("POST", `/api/tasks/${board.taskId}/comments`, {
+      cookie: ana.cookie,
+      body: { body: "   " },
+    });
+    expect(empty.status).toBe(400);
 
     expect(events).toEqual([]);
   });

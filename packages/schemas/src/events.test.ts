@@ -20,6 +20,16 @@ const task = {
   createdAt: "2026-10-26T17:00:00.000Z",
 };
 
+const comment = {
+  id: "comment_1",
+  taskId: "task_kanban_1",
+  projectId: "proj_agentic_kanban",
+  authorId: "user_ana",
+  authorName: "Ana",
+  body: "@Luis mira esto",
+  createdAt: "2026-11-04T10:00:00.000Z",
+};
+
 describe("boardEventSchema", () => {
   it("acepta task.created", () => {
     const event = { type: "task.created", ...base, task };
@@ -84,5 +94,25 @@ describe("boardEventSchema", () => {
   it("rechaza task.created sin task", () => {
     const result = boardEventSchema.safeParse({ type: "task.created", ...base });
     expect(result.success).toBe(false);
+  });
+
+  it("acepta comment.created con el comentario", () => {
+    const event = { type: "comment.created", ...base, comment };
+    expect(boardEventSchema.parse(event)).toEqual(event);
+  });
+
+  it("rechaza comment.created sin comment o con un comentario inválido", () => {
+    expect(boardEventSchema.safeParse({ type: "comment.created", ...base }).success).toBe(false);
+    expect(
+      boardEventSchema.safeParse({
+        type: "comment.created",
+        ...base,
+        comment: { ...comment, createdAt: "ayer" },
+      }).success,
+    ).toBe(false);
+    expect(
+      boardEventSchema.safeParse({ type: "comment.created", projectId: base.projectId, comment })
+        .success,
+    ).toBe(false);
   });
 });

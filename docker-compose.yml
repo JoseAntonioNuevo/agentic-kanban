@@ -23,6 +23,7 @@ services:
       # bun isolated deja symlinks a node_modules/.bun en cada paquete;
       # si el Mac los bind-montea, Bun en Linux no encuentra hono/drizzle.
       - /app/apps/api/node_modules
+      - /app/apps/edge/node_modules
       - /app/apps/web/node_modules
       - /app/packages/db/node_modules
       - /app/packages/schemas/node_modules
@@ -53,6 +54,7 @@ services:
       - .:/app
       - /app/node_modules
       - /app/apps/api/node_modules
+      - /app/apps/edge/node_modules
       - /app/apps/web/node_modules
       - /app/packages/db/node_modules
       - /app/packages/schemas/node_modules

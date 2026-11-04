@@ -5,6 +5,11 @@
  * `/api` aquí. `basePath` por defecto es `/api/auth`. El secreto no se
  * escribe en código: Better Auth lo lee de `BETTER_AUTH_SECRET`.
  *
+ * En Cloudflare, `BETTER_AUTH_URL` es `https://thepower-kanban.josenuevo.dev`.
+ * Better Auth 1.7 añade el origen de `baseURL` a los orígenes de confianza
+ * (`getTrustedOrigins`), así que la lista de abajo solo lleva los locales.
+ * Con un `baseURL` https, las cookies salen `Secure` y con prefijo `__Secure-`.
+ *
  * `customRules` se recorre con `Object.keys().find`: gana la primera clave
  * que coincide, así que `"**": false` va la última y deja get-session,
  * sign-out y el resto sin límite. Detrás del proxy de Vite no llega la IP

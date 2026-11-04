@@ -30,12 +30,40 @@ app.route("/", healthRoutes);
   task once with `taskSchema` and use that object for the event and the
   response. `projectId` comes from the row and `actorUserId` from the
   session; a 4xx publishes nothing.
+- `src/routes/comments.ts` exports `commentRoutes`: `GET` (200) and `POST`
+  (201) on `/api/tasks/:taskId/comments`, with `requireSession`, the
+  validators, then `listCommentsForMember` / `createCommentForMember`;
+  `undefined` is 404. Serialize dates with `toISOString()` and pass the
+  response through `commentListResponseSchema` / `commentSchema`. The author
+  is `c.get("userId")`, never the body. No WebSocket publish for comments.
+  `POST` passes `extractMentionTokens(body)` and `composeMentionEmail`
+  (`src/mail/mention.ts`, link from `BETTER_AUTH_URL`) to
+  `createCommentForMember`; after the transaction commits it calls
+  `deliverEmail` once per notification and `markNotificationEmailed` only
+  when that returns `true`. Delivery or marking failures are logged and the
+  response is still 201 with the same body.
+- `src/mail/index.ts` `deliverEmail({ notificationId, to, subject, text })`
+  is the only sending entry point; it never throws and returns whether it
+  delivered. Today it only uses `src/mail/outbox.ts`, which appends one JSON
+  line (`to`, `subject`, `body`, `notificationId`, `createdAt`) to
+  `OUTBOX_PATH` or `outbox.jsonl` next to the `DATABASE_URL` file. No
+  Cloudflare/SMTP transport yet. After delivery the comment `POST` publishes
+  `comment.created` with the parsed response and the session actor.
+- `src/routes/notifications.ts` (`notificationRoutes`): session first (401),
+  then validators. `GET /api/notifications` validates `?before` with
+  `notificationListQuerySchema` (400) and calls
+  `listNotificationsForRecipient(userId, before)`; `GET
+  /api/notifications/unread-count` → `{ count }`; `POST
+  /api/notifications/read-all` → `{ updated }`; `POST
+  /api/notifications/:notificationId/read` → the row or 404. Dates leave with
+  `toISOString()` and every body passes its shared schema.
 - Database access only through `@agentic-kanban/db`. Never import
   `@libsql/client` or `drizzle-orm` from the API, including tests.
 - API tests use a temporary libSQL file per test file (`src/test/setup.ts`
   calls `migrateDatabase()` before the cached client opens). `test.env` in
   the root `vite.config.ts` sets `NODE_ENV`, the test auth secret,
-  `BETTER_AUTH_URL`, and a high `AUTH_RATE_LIMIT_MAX`. Never use `data/`.
+  `BETTER_AUTH_URL`, and a high `AUTH_RATE_LIMIT_MAX`. The setup also sets a
+  temporary `OUTBOX_PATH` and deletes it in `afterAll`. Never use `data/`.
 - `src/auth/index.ts` exports `auth`: `drizzleAdapter` on the lazy `db` proxy
   plus `authSchema` (never `getDb()` at module scope). `GET` and `POST`
   `/api/auth/*` delegate to `auth.handler(c.req.raw)` with no zod-validator.

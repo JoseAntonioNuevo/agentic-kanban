@@ -134,7 +134,8 @@ export function applyBoardMove(board: BoardResponse, move: BoardMove): BoardResp
  * Es idempotente: si no hay nada que cambiar (tarea ya creada, borrada o con
  * esos valores, columna o tarea ausentes, otro proyecto) devuelve la misma
  * referencia. `task.updated` no mueve la tarea; `task.moved` reutiliza
- * `applyBoardMove` con la columna y la posición finales.
+ * `applyBoardMove` con la columna y la posición finales. `comment.created`
+ * devuelve el board sin cambios.
  */
 export function applyBoardEvent(board: BoardResponse, event: BoardEvent): BoardResponse {
   if (event.projectId !== board.project.id) {
@@ -197,6 +198,10 @@ export function applyBoardEvent(board: BoardResponse, event: BoardEvent): BoardR
         columnId: event.columnId,
         position: event.position,
       });
+
+    // El hilo y la campana se refrescan fuera; las columnas no cambian.
+    case "comment.created":
+      return board;
 
     default: {
       const unhandled: never = event;

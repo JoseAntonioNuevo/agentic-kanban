@@ -18,8 +18,9 @@ import { fileURLToPath } from "node:url";
  * Resuelve la URL del fichero SQLite.
  * En Compose: `DATABASE_URL=file:/data/agentic-kanban.db`.
  * En el Mac: `file:<repo>/data/agentic-kanban.db` (el mismo path que TablePlus).
+ * Se exporta para que la API deje el outbox de correo junto a ese fichero.
  */
-function resolveDatabaseUrl(): string {
+export function resolveDatabaseUrl(): string {
   if (process.env.DATABASE_URL) {
     return process.env.DATABASE_URL;
   }

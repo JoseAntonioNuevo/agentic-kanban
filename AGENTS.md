@@ -15,10 +15,15 @@ skipped). Git, this file, and the repository documentation are authoritative.
 The implemented slice is the health check, cookie auth, a classroom seed,
 membership-scoped reads, a workspace dashboard, the board read, and task
 create, edit, delete, move, and optimistic drag-and-drop, plus an
-authenticated per-project WebSocket channel fed by those writes and a
-browser client that patches the cached board from it.
-Tables `workspace`, `workspace_member`, `project`, `column`, and `task`
-exist in `@agentic-kanban/db`. The seed does not run when the API starts.
+authenticated per-project WebSocket channel fed by those writes, a
+browser client that patches the cached board from it, and task comments over
+HTTP with a thread in the edit-task dialog, whose `@Nombre` mentions persist
+notifications, hand their email to a local outbox, and appear in a paginated
+in-app bell.
+Tables `workspace`, `workspace_member`, `project`, `column`, `task`,
+`comment`, and `notification` exist in `@agentic-kanban/db`. There is no
+Cloudflare email transport yet.
+The seed does not run when the API starts.
 It inserts three columns and five tasks on `proj_agentic_kanban`
 (`col_kanban_todo` To Do, `col_kanban_doing` In Progress, `col_kanban_done`
 Done, `task_kanban_1` … `task_kanban_5`) and the same three columns plus
@@ -61,9 +66,51 @@ from the row, `actorUserId` from the session, and a 4xx publishes nothing.
 The open board applies events with the pure, idempotent `applyBoardEvent`
 (`@agentic-kanban/schemas`) through `useBoardEvents`, which reconnects with
 `reconnectDelay` and toasts other users' changes with
-`boardEventToastMessage`. No history, bell, or email. Hub, endpoint,
+`boardEventToastMessage`. No history. Hub, endpoint,
 reducer and hook detail live in `.cursor/rules/api.mdc`, `schemas.mdc` and
 `web.mdc`.
+`GET /api/tasks/:taskId/comments` lists a task's comments by `created_at`
+then `id` ascending (200, `commentListResponseSchema`, each with `authorName`
+from `user.name`); `POST` takes `{ body }` (trimmed, 1–2000) and returns the
+comment (201). Same chain: 401, then validator (400), then membership of the
+task's workspace (404 otherwise). `workspace_id` and `project_id` come from
+the task row and `author_id` from the session. Deleting a task removes its
+comments by cascade.
+A comment's mentions (`extractMentionTokens` in `@agentic-kanban/schemas`:
+`@` + `\p{L}+` at the start or after a non-letter, non-digit; deduped
+case-insensitively) are matched case-insensitively against `user.name` of the
+task's workspace members in one query; unknown names and self-mentions are
+ignored. In the comment's transaction, each match inserts a `mention`
+`notification` with the drafted email (`email_to`, subject «{actor} te
+mencionó en "{título}"», text body with title, comment and
+`BETTER_AUTH_URL/?project=<id>`) and `emailed_at` null. After commit, the
+route calls `deliverEmail` (`apps/api/src/mail/`, the only sending entry
+point) once per notification; it appends a JSON line to `OUTBOX_PATH` or
+`outbox.jsonl` next to the `DATABASE_URL` file (`data/outbox.jsonl`, ignored
+by Git) and only a successful delivery sets `emailed_at`. A failed delivery
+is logged and the comment still returns 201; the HTTP contract is unchanged.
+After that attempt a successful `POST` publishes `comment.created`
+(`{ projectId, actorUserId, comment }`) on the project channel; a 4xx
+publishes nothing. `applyBoardEvent` returns the board unchanged for it, and
+`useBoardEvents` invalidates `commentsQueryKey(taskId, userId)` and
+`["notifications", userId]` even for the actor's own echo and despite a board
+mutation in flight, toasting «Nuevo comentario de {authorName}» only to others.
+The bell (`NotificationBell` in the `SignedIn` header, once for dashboard and
+board) reads only the session user's rows in workspaces they still belong to
+(401 without session; another user's or a missing id is 404):
+`GET /api/notifications` returns up to `NOTIFICATION_PAGE_SIZE` (50), newest
+first, and `?before=<createdAt>|<id>` (`notificationCursor` of the last row,
+400 if malformed) returns the next keyset page; `GET
+/api/notifications/unread-count` → `{ count }` drives the badge;
+`POST /api/notifications/:notificationId/read` returns the row and
+`POST /api/notifications/read-all` → `{ updated }`. The count polls every
+5 s; the list is an infinite query mounted only while the popover is open,
+with **Cargar más**.
+Only the `"edit"` mode of `TaskFormDialog` mounts `TaskComments`
+(`useComments`/`useCreateComment`, key `["comments", userId, taskId]`); its
+**Comentar** button sits outside the task `<form>`, so **Guardar** only
+PATCHes and never creates a comment. The create dialog neither shows nor
+fetches comments.
 No session is 401. No membership, a missing resource, or a `columnId` from
 another project is 404, never 403. The dashboard lists workspaces and
 projects; the accent comes from `workspace.id`. The board read and task
@@ -75,9 +122,16 @@ Choosing a project sets `selectedProjectId` in `App` and opens the board
 (`useBoard`, `useTaskMutations`, `useMoveTask`, `useBoardEvents`) without a router;
 `useSelectedProject` mirrors it in `?project=<id>` (`pushState`, `popstate`) so a
 reload or pasted link reopens that board, and a back button returns to the dashboard. Do not invent further product tables,
-extra demo users, realtime beyond this channel, comments, mentions, email,
-deployment, or session tags before the corresponding course work asks
+extra demo users, realtime beyond this channel, real email transports, or session tags before the corresponding course work asks
 for them.
+
+Locally, Compose runs `web` and `api`. Publicly, `apps/edge` (Worker +
+Container, `bun run deploy:cloudflare`) serves `apps/web/dist` at
+`https://thepower-kanban.josenuevo.dev` and forwards `/api/*` (HTTP and
+WebSocket) to one `ApiContainer` instance `"main"` running the same Bun API.
+Its disk is ephemeral: every start migrates and seeds again. Secrets come
+only from the ignored `.env.cloudflare.local`. Detail in
+`.cursor/rules/edge.mdc`.
 
 ```text
 React → TanStack Query (health, workspaces, board) and authClient.useSession()
@@ -93,7 +147,7 @@ React → TanStack Query (health, workspaces, board) and authClient.useSession()
 Private cache keys are `[scope, userId, ...]`. Sign-out unmounts the private
 UI, then signs out, then `queryClient.clear()`. Switching identity removes
 the previous user's queries. `vp test` gives each file a temporary libSQL
-database via `apps/api/src/test/setup.ts`; `test.env` lives in the root
+database and `OUTBOX_PATH` via `apps/api/src/test/setup.ts`; `test.env` lives in the root
 `vite.config.ts`. Tests never touch `data/`.
 
 Out of scope: billing, RBAC, attachments, mobile, SSO, automations,
@@ -119,7 +173,8 @@ architecture or state-management frameworks.
 - Database access goes through `@agentic-kanban/db` using Drizzle and local
   libSQL. Do not add Prisma, Postgres, Supabase, Turso Cloud, or a database
   container.
-- Keep exactly the `web` and `api` Docker services. The shared database file is
+- Keep exactly the `web` and `api` Docker services; `apps/edge` is a workspace
+  package for Cloudflare, not a Compose service. The shared database file is
   `./data/agentic-kanban.db`; never commit database files.
 - Pin direct third-party dependencies exactly. Preserve the overrides in the
   root `package.json`.
@@ -193,6 +248,7 @@ vp check
 vp test
 vp build apps/web
 docker compose up --build
+bun run deploy:cloudflare   # only when the step asks; check `bunx wrangler whoami` first
 ```
 
 The Session 1 step 01 auth schema and step 02 tenant tables are already

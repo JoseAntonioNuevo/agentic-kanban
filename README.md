@@ -94,7 +94,8 @@ Eso no borra la base de datos.
 
 ## Resetear la base de datos
 
-Este procedimiento **elimina los datos locales** de `agentic-kanban.db`.
+Este procedimiento **elimina los datos locales** de `agentic-kanban.db` y el
+outbox de correo (`data/outbox.jsonl`).
 Hazlo solo si quieres reiniciar la demo, antes de la clase y tras conservar
 lo que necesites. Se limita al fichero de esta app y sus auxiliares SQLite;
 no usa patrones que fallen en zsh cuando no haya coincidencias.
@@ -104,7 +105,8 @@ no usa patrones que fallen en zsh cuando no haya coincidencias.
   set -e
   docker compose down
   rm -f -- data/agentic-kanban.db data/agentic-kanban.db-wal \
-    data/agentic-kanban.db-shm data/agentic-kanban.db-journal
+    data/agentic-kanban.db-shm data/agentic-kanban.db-journal \
+    data/outbox.jsonl
   docker compose up --build -d
 )
 ```
@@ -170,6 +172,48 @@ base libSQL temporal (`apps/api/src/test/setup.ts`); `test.env` está en el
 Finalmente comprueba `http://localhost:5173/api/health`. No generes una nueva
 migración para recuperar las tablas: aplica las existentes. Con Compose
 funcionando, migra y seedea dentro de `api`; no arranques otra API en el Mac.
+
+## Publicar en Cloudflare
+
+En local todo sigue en Compose (`web` y `api`). En público,
+`https://thepower-kanban.josenuevo.dev` lo sirve `apps/edge`: un Worker
+entrega el build de `apps/web` y reenvía `/api/*` (HTTP y WebSocket) a un
+Container con la misma API de Bun, siempre la instancia `"main"` (el hub del
+tiempo real vive en memoria y todos deben llegar al mismo proceso).
+
+### Preparación (una vez, la hace el profesor)
+
+1. Plan **Workers Paid** activo en la cuenta: Containers lo exige.
+2. La zona `josenuevo.dev` activa en esa misma cuenta. El deploy crea el
+   custom domain `thepower-kanban.josenuevo.dev`.
+3. `bunx wrangler login` y después `bunx wrangler whoami`: debe mostrar la
+   cuenta del curso. No uses credenciales de otros proyectos.
+4. `.env.cloudflare.local` en la raíz (Git y Docker lo ignoran por `*.local`)
+   con `BETTER_AUTH_SECRET` (nuevo y largo),
+   `BETTER_AUTH_URL=https://thepower-kanban.josenuevo.dev`,
+   `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_EMAIL_TOKEN`, `MAIL_FROM` y
+   `MAIL_REDIRECT_TO`. No lo muestres ni lo pegues en ningún chat.
+5. Docker Desktop arrancado: wrangler construye la imagen
+   `apps/edge/Dockerfile` en local y la sube al registro de Cloudflare.
+
+### Deploy
+
+```bash
+bunx wrangler whoami
+bun run deploy:cloudflare
+```
+
+El script construye la web (`vp build apps/web`) y ejecuta
+`wrangler deploy --config apps/edge/wrangler.jsonc --secrets-file .env.cloudflare.local`.
+El primer deploy tarda unos minutos más: Cloudflare emite el certificado del
+dominio y aprovisiona el contenedor. Comprueba después
+`https://thepower-kanban.josenuevo.dev/api/health` y el canal `wss://` con
+la prueba de [la guía de la sesión 4](prompts/notifications/README.md#probar-la-url-pública-y-el-canal-wss).
+
+> **Disco efímero.** El disco de Containers no persiste. Cada arranque del
+> contenedor aplica las migraciones y el seed desde cero, y lo que se cree en
+> la URL pública se pierde cuando el contenedor duerme (tras unas horas sin
+> tráfico) o se redespliega. Es una demo de aula; no hay otra base de datos.
 
 ## Cómo está conectado
 

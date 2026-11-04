@@ -21,10 +21,15 @@ presentaciones/
 docs/obsidian/
 
 data/*.db
+# Outbox local de correo (Sesión 4): se regenera con cada mención.
+data/outbox.jsonl
 data/*.db-*
 *.db
 *.db-shm
 *.db-wal
+
+# Caché local de wrangler (apps/edge).
+.wrangler/
 
 coverage
 *.tsbuildinfo

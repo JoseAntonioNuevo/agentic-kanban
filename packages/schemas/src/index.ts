@@ -27,7 +27,32 @@ export {
   type SignInInput,
   type SignUpInput,
 } from "./auth.ts";
+export {
+  commentListResponseSchema,
+  commentSchema,
+  createCommentBodySchema,
+  type Comment,
+  type CommentListResponse,
+  type CreateCommentBody,
+} from "./comment.ts";
 export { boardEventSchema, type BoardEvent } from "./events.ts";
+export { extractMentionTokens } from "./mentions.ts";
+export {
+  NOTIFICATION_PAGE_SIZE,
+  notificationCursor,
+  notificationIdParamSchema,
+  notificationListQuerySchema,
+  notificationListResponseSchema,
+  notificationReadAllResponseSchema,
+  notificationSchema,
+  notificationUnreadCountResponseSchema,
+  type Notification,
+  type NotificationIdParam,
+  type NotificationListQuery,
+  type NotificationListResponse,
+  type NotificationReadAllResponse,
+  type NotificationUnreadCountResponse,
+} from "./notification.ts";
 export {
   healthResponseSchema,
   serviceStatusSchema,

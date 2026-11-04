@@ -2,8 +2,9 @@
  * Un solo diálogo para crear y editar una tarea.
  *
  * El texto vive en estado local. El board no se copia: en modo editar la
- * tarea llega por props desde la query. La Sesión 4 añadirá los comentarios
- * en el modo editar.
+ * tarea llega por props desde la query. En modo editar, `TaskComments` pinta
+ * el hilo debajo del `<form>`: **Comentar** no envía el formulario y
+ * **Guardar** nunca crea un comentario. El modo crear no monta el hilo.
  */
 import { createTaskBodySchema, updateTaskBodySchema, type Task } from "@agentic-kanban/schemas";
 import { useState, type FormEvent } from "react";
@@ -27,8 +28,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog.tsx";
+import { TaskComments } from "@/components/task-comments.tsx";
 import { Input } from "@/components/ui/input.tsx";
 import { Label } from "@/components/ui/label.tsx";
+import { Separator } from "@/components/ui/separator.tsx";
 import { Textarea } from "@/components/ui/textarea.tsx";
 import { useTaskMutations } from "@/hooks/use-task-mutations.ts";
 
@@ -115,7 +118,9 @@ export function TaskFormDialog(props: TaskFormDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-h-[calc(100svh-2rem)] overflow-y-auto sm:max-w-md">
+      <DialogContent
+        className={`max-h-[calc(100svh-2rem)] overflow-y-auto ${props.mode === "edit" ? "sm:max-w-lg" : "sm:max-w-md"}`}
+      >
         <DialogHeader>
           <DialogTitle>{heading}</DialogTitle>
           <DialogDescription>
@@ -181,6 +186,12 @@ export function TaskFormDialog(props: TaskFormDialogProps) {
             </Button>
           </DialogFooter>
         </form>
+        {props.mode === "edit" ? (
+          <>
+            <Separator />
+            <TaskComments taskId={props.task.id} userId={userId} />
+          </>
+        ) : null}
         {props.mode === "edit" ? (
           <AlertDialog
             open={confirmDelete}

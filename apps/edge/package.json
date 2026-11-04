@@ -1,0 +1,16 @@
+{
+  "name": "@agentic-kanban/edge",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "types": "wrangler types",
+    "deploy": "wrangler deploy"
+  },
+  "dependencies": {
+    "@cloudflare/containers": "0.3.7"
+  },
+  "devDependencies": {
+    "typescript": "7.0.2",
+    "wrangler": "4.150.0"
+  }
+}

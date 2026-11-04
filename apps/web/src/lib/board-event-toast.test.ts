@@ -45,4 +45,21 @@ describe("boardEventToastMessage", () => {
     expect(boardEventToastMessage(moved)).toBe("Tarea movida");
     expect(boardEventToastMessage(moved, "")).toBe("Tarea movida");
   });
+
+  it("comment.created usa el autor del comentario", () => {
+    const commented: BoardEvent = {
+      ...base,
+      type: "comment.created",
+      comment: {
+        id: "comment_1",
+        taskId: task.id,
+        projectId: base.projectId,
+        authorId: base.actorUserId,
+        authorName: "Ana",
+        body: "@Luis mira esto",
+        createdAt: task.createdAt,
+      },
+    };
+    expect(boardEventToastMessage(commented)).toBe("Nuevo comentario de Ana");
+  });
 });

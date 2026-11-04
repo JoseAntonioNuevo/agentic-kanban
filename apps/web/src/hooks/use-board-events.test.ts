@@ -8,6 +8,8 @@ import { toast } from "sonner";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { boardQueryKey } from "./use-board.ts";
+import { commentsQueryKey } from "./use-comments.ts";
+import { notificationsQueryKey } from "./use-notifications.ts";
 import {
   boardEventsUrl,
   connectBoardEvents,
@@ -308,5 +310,86 @@ describe("handleBoardEvent", () => {
   it("no invalida si no hay recarga en curso", () => {
     handleBoardEvent({ queryClient, projectId, userId: luis }, deletedByAna);
     expect(queryClient.getQueryState(boardQueryKey(projectId, luis))?.isInvalidated).toBe(false);
+  });
+});
+
+describe("comment.created", () => {
+  const commentedByAna: BoardEvent = {
+    type: "comment.created",
+    projectId,
+    actorUserId: ana,
+    comment: {
+      id: "comment_1",
+      taskId: "task_kanban_1",
+      projectId,
+      authorId: ana,
+      authorName: "Ana",
+      body: "@Luis mira esto",
+      createdAt,
+    },
+  };
+
+  function seedThreadAndBell(userId: string) {
+    queryClient.setQueryData(commentsQueryKey("task_kanban_1", userId), []);
+    queryClient.setQueryData(notificationsQueryKey(userId), []);
+  }
+
+  function invalidated(queryKey: readonly unknown[]) {
+    return queryClient.getQueryState(queryKey)?.isInvalidated;
+  }
+
+  it("invalida hilo y campana del otro usuario y avisa con el autor", () => {
+    seedThreadAndBell(luis);
+    const board = queryClient.getQueryData(boardQueryKey(projectId, luis));
+
+    handleBoardEvent({ queryClient, projectId, userId: luis }, commentedByAna);
+
+    expect(invalidated(commentsQueryKey("task_kanban_1", luis))).toBe(true);
+    expect(invalidated(notificationsQueryKey(luis))).toBe(true);
+    expect(toast.info).toHaveBeenCalledWith("Nuevo comentario de Ana");
+    expect(queryClient.getQueryData(boardQueryKey(projectId, luis))).toBe(board);
+    expect(invalidated(boardQueryKey(projectId, luis))).toBe(false);
+  });
+
+  it("en eco propio invalida igual, aunque haya una mutation del tablero, y no avisa", async () => {
+    seedThreadAndBell(ana);
+    const pending = new MutationObserver(queryClient, {
+      mutationKey: ["board", projectId, "move"],
+      mutationFn: () => new Promise<never>(() => {}),
+    });
+    void pending.mutate();
+    await vi.waitFor(() => {
+      expect(queryClient.isMutating({ mutationKey: ["board", projectId] })).toBe(1);
+    });
+
+    handleBoardEvent({ queryClient, projectId, userId: ana }, commentedByAna);
+
+    expect(invalidated(commentsQueryKey("task_kanban_1", ana))).toBe(true);
+    expect(invalidated(notificationsQueryKey(ana))).toBe(true);
+    expect(toast.info).not.toHaveBeenCalled();
+  });
+
+  it("llega por el mismo socket del tablero", () => {
+    seedThreadAndBell(luis);
+    const cleanup = connectBoardEvents({ queryClient, projectId, userId: luis });
+    expect(FakeWebSocket.instances).toHaveLength(1);
+    const socket = FakeWebSocket.instances[0];
+
+    socket?.onmessage?.({ data: JSON.stringify(commentedByAna) });
+
+    expect(FakeWebSocket.instances).toHaveLength(1);
+    expect(invalidated(notificationsQueryKey(luis))).toBe(true);
+    expect(toast.info).toHaveBeenCalledWith("Nuevo comentario de Ana");
+    cleanup();
+  });
+
+  it("de otro proyecto no hace nada", () => {
+    seedThreadAndBell(luis);
+    handleBoardEvent(
+      { queryClient, projectId, userId: luis },
+      { ...commentedByAna, projectId: "proj_ana_notes" },
+    );
+    expect(invalidated(notificationsQueryKey(luis))).toBe(false);
+    expect(toast.info).not.toHaveBeenCalled();
   });
 });

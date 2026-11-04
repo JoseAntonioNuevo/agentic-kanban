@@ -62,10 +62,45 @@ timer and closes the socket, leaving no timer or socket alive. Toasts: when
 a toast of `boardEventToastMessage(event, title)` (`success` create, `warning` update, `error` delete, `info` move; `richColors` on the Toaster)
 (`src/lib/board-event-toast.ts`), before `setQueryData` and never inside
 its updater; `title` is read with `getQueryData` for deleted and moved.
+`comment.created` is handled before the `isMutating` guard and never touches
+the board: it invalidates `commentsQueryKey(comment.taskId, userId)` and
+`notificationsQueryKey(userId)` always (own echo included) and toasts
+`info` «Nuevo comentario de {authorName}» only when the actor is someone else.
 Extend this hook instead of opening another connection.
 
+Comments: only `TaskFormDialog` in `"edit"` mode mounts `TaskComments`
+(`src/components/task-comments.tsx`) below its `<form>`, after a
+`Separator`; the `"create"` dialog neither renders nor queries comments.
+`src/hooks/use-comments.ts` exports `commentsQueryKey(taskId, userId)`
+(`["comments", userId, taskId]`, cleared by the identity reset),
+`useComments` (relative `GET /api/tasks/${encodeURIComponent(taskId)}/comments`,
+`credentials: "include"`, `commentListResponseSchema.parse`) and
+`useCreateComment` (`POST` with `{ body }`, `commentSchema.parse`;
+`onSuccess` appends with `appendComment`, `onSettled` invalidates the
+key). Its `mutationKey` is `["comments", taskId, "create"]`, never the
+`["board", projectId]` prefix. **Comentar** is `type="button"`, validates
+with `createCommentBodySchema.safeParse({ body })`, is disabled while the
+trimmed text is empty or the request is pending, and clears the text on
+success. **Guardar** only PATCHes the task. Local state is the draft and
+the send error; the list stays in the query cache. Loading, read error
+with **Reintentar**, empty message and list are distinct. Each row shows
+`authorName`, a `<time>` and the body as plain text
+(`whitespace-pre-wrap`), never `dangerouslySetInnerHTML`. `comment.created`
+on the board channel invalidates the thread and the bell (see above).
+
+Bell: `NotificationBell` (`src/components/notification-bell.tsx`) sits once
+in the `SignedIn` header. `src/hooks/use-notifications.ts` keys everything
+under `notificationsQueryKey(userId)` (`["notifications", userId]`):
+`useUnreadNotificationCount` (`[..., "unread-count"]`, refetch on focus and
+every 5 s) drives the badge and «Nada pendiente»/«N sin leer»;
+`useNotifications` (`[..., "list"]`) is a `useInfiniteQuery` over `?before`
+cursors, mounted inside the popover only, with **Cargar más**;
+`useMarkNotificationRead` and `useMarkAllNotificationsRead` invalidate the
+prefix. States come from `src/lib/notification-bell-state.ts`: an error is
+never shown as an empty inbox or «Nada pendiente».
+
 - Private query keys are `[scope, userId, ...]` (`workspacesQueryKey`,
-  `boardQueryKey`).
+  `boardQueryKey`, `commentsQueryKey`, `notificationsQueryKey`).
   `useIdentityCacheReset` in `App` removes the previous user's queries when
   the identity changes, and clears the cache when the session becomes null.
 - `signOutAndClearPrivateData` hides the private UI, then `signOut`, then

@@ -2,6 +2,7 @@
  * Texto del aviso que ve un usuario cuando otro cambia el tablero abierto.
  * `title` es el de la caché para `task.deleted` y `task.moved`, cuyo evento
  * no lo trae; en created y updated manda el del propio evento.
+ * `comment.created` usa el `authorName` del comentario.
  */
 import type { BoardEvent } from "@agentic-kanban/schemas";
 
@@ -15,5 +16,7 @@ export function boardEventToastMessage(event: BoardEvent, title?: string): strin
       return title ? `Tarea eliminada: ${title}` : "Tarea eliminada";
     case "task.moved":
       return title ? `Tarea movida: ${title}` : "Tarea movida";
+    case "comment.created":
+      return `Nuevo comentario de ${event.comment.authorName}`;
   }
 }

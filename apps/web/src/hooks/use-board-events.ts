@@ -9,6 +9,10 @@
  * pida el cleanup, se reabre con `reconnectDelay`; el `onopen` siguiente
  * invalida el board y recupera lo perdido. Un evento de otro usuario además
  * lanza un toast (verde crea, amarillo edita, rojo borra, info mueve).
+ *
+ * `comment.created` no toca el board: invalida siempre el hilo de la tarea y
+ * la campana del usuario, también si el actor soy yo (otra pestaña mía) y
+ * sin mirar `isMutating` del tablero. Solo el toast depende del actor.
  */
 import {
   applyBoardEvent,
@@ -24,6 +28,8 @@ import { boardEventToastMessage } from "../lib/board-event-toast.ts";
 import { reconnectDelay } from "../lib/reconnect-delay.ts";
 
 import { boardQueryKey } from "./use-board.ts";
+import { commentsQueryKey } from "./use-comments.ts";
+import { notificationsQueryKey } from "./use-notifications.ts";
 
 /** URL del canal en el mismo origen: el proxy de Vite+ lo reenvía a la API. */
 export function boardEventsUrl(projectId: string): string {
@@ -67,6 +73,7 @@ const BOARD_EVENT_TOAST: Record<BoardEvent["type"], (message: string) => unknown
   "task.updated": (message) => toast.warning(message),
   "task.deleted": (message) => toast.error(message),
   "task.moved": (message) => toast.info(message),
+  "comment.created": (message) => toast.info(message),
 };
 
 type BoardChannel = { queryClient: QueryClient; projectId: string; userId: string };
@@ -77,6 +84,17 @@ export function handleBoardEvent(
   event: BoardEvent,
 ): void {
   if (event.projectId !== projectId) return;
+
+  if (event.type === "comment.created") {
+    void queryClient.invalidateQueries({
+      queryKey: commentsQueryKey(event.comment.taskId, userId),
+    });
+    void queryClient.invalidateQueries({ queryKey: notificationsQueryKey(userId) });
+    if (event.actorUserId !== userId) {
+      BOARD_EVENT_TOAST[event.type](boardEventToastMessage(event));
+    }
+    return;
+  }
 
   // La mutationKey del tablero empieza por ["board", projectId]; la queryKey
   // es ["board", userId, projectId].

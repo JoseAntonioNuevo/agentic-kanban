@@ -6,17 +6,21 @@ alwaysApply: false
 
 # Docker
 
-Two services only: `web` and `api`. No database container.
+Two services only: `web` and `api`. No database container. The public
+Cloudflare image is `apps/edge/Dockerfile` (see `edge.mdc`), not Compose.
 
 - Images: `oven/bun:1.4.3`. Do not use
   `ghcr.io/voidzero-dev/vite-plus` (unauthenticated pulls are denied).
 - Bind-mount source plus anonymous `/app/node_modules` (and each workspace
   package `node_modules`) so the host does not overwrite Linux deps or leak
-  Bun isolated symlinks (`node_modules/.bun`).
+  Bun isolated symlinks (`node_modules/.bun`). Every workspace manifest,
+  `apps/edge/package.json` included, is copied before
+  `bun install --frozen-lockfile`, and `/app/apps/edge/node_modules` is an
+  anonymous volume in both services.
 - Persist SQLite on **`./data` → `/data`**, not `/app/data`. A volume under
   the source mount plus `bun --hot` caused `SQLITE_READONLY_DBMOVED`.
 - API: `DATABASE_URL=file:/data/agentic-kanban.db`. Web:
   `API_PROXY_TARGET=http://api:3000`.
 - Classroom start: `docker compose up --build`. If host 3000 is taken:
   `API_HOST_PORT=3002`. `docker compose down` keeps `./data`; delete
-  `data/*.db*` to reset. Do not run the host API while Compose is up.
+  `data/*.db*` and `data/outbox.jsonl` to reset. Do not run the host API while Compose is up.

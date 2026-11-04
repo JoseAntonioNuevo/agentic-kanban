@@ -456,6 +456,26 @@ describe("applyBoardEvent", () => {
       }),
     ).toBe(board);
   });
+
+  it("comment.created devuelve la misma referencia del board", () => {
+    const board = sampleBoard();
+
+    expect(
+      applyBoardEvent(board, {
+        type: "comment.created",
+        ...actor,
+        comment: {
+          id: "comment_1",
+          taskId: "task_a",
+          projectId: "proj_agentic_kanban",
+          authorId: "user_ana",
+          authorName: "Ana",
+          body: "@Luis mira esto",
+          createdAt,
+        },
+      }),
+    ).toBe(board);
+  });
 });
 
 describe("taskIdParamSchema", () => {

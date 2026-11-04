@@ -4,7 +4,8 @@
  * `authClient.useSession()` lee la cookie de Better Auth. Es la única
  * excepción a TanStack Query: no va envuelta en `useQuery`. Sin sesión
  * se muestran los formularios y no se monta la lista de workspaces.
- * Con sesión, el nombre del usuario, la card de health y los espacios.
+ * Con sesión, el nombre del usuario, la campana de menciones, la card de
+ * health y los espacios.
  * Un proyecto abre su tablero (`selectedProjectId`); no hay router, pero
  * `useSelectedProject` lo guarda en `?project=` para recargar o compartir.
  * El userId de la sesión limpia la caché privada al cambiar de identidad.
@@ -17,6 +18,7 @@ import { flushSync } from "react-dom";
 import { AuthForms } from "@/components/auth-forms.tsx";
 import { BoardScreen } from "@/components/board-screen.tsx";
 import { HealthCard } from "@/components/health-card.tsx";
+import { NotificationBell } from "@/components/notification-bell.tsx";
 import { WorkspaceList } from "@/components/workspace-list.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { Card, CardContent, CardHeader } from "@/components/ui/card.tsx";
@@ -71,7 +73,11 @@ function SessionSkeleton() {
   );
 }
 
-/** Cabecera con el usuario y, debajo, el dashboard o el tablero del proyecto elegido. */
+/**
+ * Cabecera con el usuario y la campana (una sola, en dashboard y tablero) y,
+ * debajo, el dashboard o el tablero del proyecto elegido. La campana se
+ * desmonta con el resto de la UI privada al cerrar sesión.
+ */
 function SignedIn({ name, email, userId }: { name: string; email: string; userId: string }) {
   const [signingOut, setSigningOut] = useState(false);
   const [privateVisible, setPrivateVisible] = useState(true);
@@ -105,17 +111,20 @@ function SignedIn({ name, email, userId }: { name: string; email: string; userId
           <p className="truncate text-base font-medium">{name}</p>
           <p className="truncate text-sm text-muted-foreground">{email}</p>
         </div>
-        <Button
-          type="button"
-          variant="outline"
-          disabled={signingOut}
-          aria-busy={signingOut}
-          onClick={() => {
-            void handleSignOut();
-          }}
-        >
-          Cerrar sesión
-        </Button>
+        <div className="flex shrink-0 items-center gap-2">
+          {privateVisible ? <NotificationBell userId={userId} /> : null}
+          <Button
+            type="button"
+            variant="outline"
+            disabled={signingOut}
+            aria-busy={signingOut}
+            onClick={() => {
+              void handleSignOut();
+            }}
+          >
+            Cerrar sesión
+          </Button>
+        </div>
       </header>
       {privateVisible ? (
         selectedProjectId ? (
