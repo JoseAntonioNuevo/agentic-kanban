@@ -150,10 +150,10 @@ the `.cursor/rules/*.mdc` of the layers it touches and the code itself.
   mode with Opus 5.5 and no session plan. Opus is the sole executor: it
   inspects, implements, verifies and corrects steps 01–06 one at a time,
   without `Task` or subagents. Each prompt carries its own contracts.
-- **Session 4:** follow [its planning and execution guide](prompts/notifications/README.md)
-  the same way as Session 2: a session plan in Plan mode, then the steps in
-  Agent mode against it. Its prompts name no model; the Agent executor is the
-  sole executor and spawns no subagents.
+- **Session 4:** follow [its guide](prompts/notifications/README.md) in Claude
+  Code with Opus 5.5 and no session plan. Opus is the sole executor: it
+  inspects, implements, verifies and corrects steps 01–07 one at a time,
+  without `Task` or subagents. Each prompt carries its own contracts.
 
 The old `.claude/agents/kanban-*` agents are historical and are not part of
 these four classroom workflows. Do not invoke them or built-in subagents.

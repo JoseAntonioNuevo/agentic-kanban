@@ -11,16 +11,16 @@ Los requisitos funcionales, pruebas y límites siguen en el prompt correspondien
 | 1 · Auth y tenants          | Opus 5.5 en Agent                   | Workers Grok 4.7 xhigh Fast              | Opus orquesta y revisa cada paso de forma autónoma                        |
 | 2 · Kanban y arrastre       | Opus en Plan, después Grok en Agent | Grok 4.7 xhigh Fast en el chat principal | Un plan inicial y un traspaso manual; después Grok ejecuta sin subagentes |
 | 3 · Tiempo real WebSocket   | Opus 5.5 en Agent                   | Opus en el chat principal                | Sin plan previo; Opus ejecuta 01–06 uno cada vez, sin subagentes          |
-| 4 · Comentarios y menciones | Plan, después Agent                 | El agente del chat principal             | Un plan inicial y un traspaso manual; después ejecuta sin subagentes      |
+| 4 · Comentarios y menciones | Opus 5.5 en Claude Code             | Opus en la sesión principal              | Sin plan previo; Opus ejecuta 01–07 uno cada vez, sin subagentes          |
 
 En la clase orquestada (1) selecciona Opus 5.5 con esfuerzo alto en el chat
 principal. Opus coordina, fija contratos a partir de la inspección y revisa
 diffs e informes; Grok inspecciona, implementa, prueba y corrige. Todos los
 prompts de esa clase conservan ese reparto, también los pasos pequeños.
-Las clases 2 y 4 permiten comparar el seguimiento de un plan con la
-supervisión continua de la 1; la 3 muestra a Opus como único ejecutor, sin plan
-ni delegación. La elección didáctica no demuestra que toda tarea pequeña
-necesite un orquestador.
+La clase 2 permite comparar el seguimiento de un plan con la supervisión
+continua de la 1; las clases 3 y 4 muestran a Opus 5.5 como único ejecutor,
+sin plan ni delegación. La elección didáctica no demuestra que toda tarea
+pequeña necesite un orquestador.
 
 ## Delegación: modelo real, no nombre del agente
 
@@ -97,7 +97,7 @@ autorización. Una prueba manual del profesor se declara pendiente hasta
 observarla; no impide seguir con otras comprobaciones independientes y no se
 convierte en una pausa de aprobación del plan.
 
-## Clases 2 y 4: un plan y un traspaso
+## Clase 2: un plan y un traspaso
 
 Ejecuta [00 · Plan de la sesión](kanban/00-plan-sesion.md) con Opus en Plan.
 Lee los ocho pasos y el código de partida; no implementes ni ejecutes cambios
@@ -117,20 +117,15 @@ contrato importante del plan, identifica la discrepancia y solicita la decisión
 indispensable; no inventa un cambio de alcance ni llama a Opus automáticamente.
 El profesor puede devolver esa cuestión concreta a Opus si resulta necesario.
 
-La clase 4 sigue el mismo flujo con su propio plan:
-[00 de la clase 4](notifications/00-plan-sesion.md) con los prompts 01–06.
-Sus prompts no fijan modelo: el profesor lo elige en el selector de Plan y en
-el de Agent, y comprueba ambos. El ejecutor de Agent tampoco crea `Task` ni
-subagentes.
+## Clases 3 y 4: Opus 5.5 directo, sin plan
 
-## Clase 3: Opus en Agent, sin plan
-
-La clase 3 no tiene paso de plan. Selecciona **Agent con Opus 5.5** con
-esfuerzo alto, comprueba ambos selectores y sigue
-[la guía de la sesión](websockets/README.md): un chat para 01–05, uno cada
-vez, y un chat nuevo para la revisión del 06. Cada prompt es autosuficiente:
-fija sus contratos y su aceptación, y el código del paso anterior es el punto
-de partida.
+Las clases 3 y 4 no tienen paso de plan. En la 3 se usa **Agent con Opus 5.5**
+en Cursor ([guía de la sesión 3](websockets/README.md)), y en la 4 se usa
+**Claude Code con Opus 5.5** ([guía de la sesión 4](notifications/README.md)):
+una sesión para los pasos de implementación (01–05 en la 3; 01–06 en la 4),
+uno cada vez, y una sesión nueva para la revisión final (06 en la 3; 07 en la
+4). Cada prompt es autosuficiente: fija sus contratos y su aceptación, y el
+código del paso anterior es el punto de partida.
 
 Opus es el único ejecutor: inspecciona, implementa, verifica, revisa y
 corrige sin `Task`, sin subagentes y sin un «adelante» en cada paso. Si un
